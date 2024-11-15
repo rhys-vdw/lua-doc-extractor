@@ -1,0 +1,12 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "moduleResolution": "Node16",
+    "module": "Node16",
+    "outDir": "dist",
+    "resolveJsonModule": true
+  },
+  "exclude": ["node_modules"],
+  "include": ["src/**/*.ts", "bin/*.ts"]
+}
