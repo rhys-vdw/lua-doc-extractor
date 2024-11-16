@@ -2,6 +2,7 @@ import Comments, { Comment, Tag } from "parse-comments";
 const comments = new Comments();
 import * as project from "../package.json";
 import { remove, trimStart } from "lodash";
+import chalk from "chalk";
 
 export function extract(path: string, source: string): string {
   return `
@@ -29,10 +30,8 @@ function toLuaComment(text: string): string | null {
     .join("\n");
 }
 
-function formatTag({ title, name, description }: Tag): string | null {
-  return toLuaComment(
-    "@" + [title, name, description].filter((s) => s.length > 0).join(" ")
-  );
+function formatTag({ title, name, description }: Tag): string {
+  return "@" + [title, name, description].filter((s) => s.length > 0).join(" ");
 }
 
 function members(source: string): string {
@@ -41,9 +40,9 @@ function members(source: string): string {
     if (!c.value.startsWith("*")) {
       return acc;
     }
-    const desc = toLuaComment(c.description);
-    const tags = c.tags.map(formatTag).join("\n");
     const lua = extractDeclaration(c);
+    const desc = toLuaComment(c.description);
+    const tags = c.tags.map(formatTag).map(toLuaComment).join("\n");
     acc.push(
       [desc, desc && "---", tags, lua].filter((s) => s != null).join("\n")
     );
@@ -52,24 +51,35 @@ function members(source: string): string {
   return members.join("\n\n");
 }
 
+const customTags = ["function", "metatable"];
+
+/** Must be called _before_ tags are used, as it modifies the tags array */
 function extractDeclaration(comment: Comment): string | null {
-  // Remove all the @function tags.
-  const funcs = remove(comment.tags, (t) => t.title === "function");
+  const rules = remove(comment.tags, (t) => customTags.includes(t.title));
 
-  if (funcs.length > 0) {
-    const [func, ...rest] = funcs;
-    if (rest.length > 0) {
-      console.warn(
-        `Multiple @function tags found in comment: ${
-          comment.value
-        }, ignoring: ${rest.map((t) => t.name).join(", ")}`
-      );
-    }
-    const paramNames = comment.tags
-      .filter((t) => t.title === "param")
-      .map((t) => t.name);
+  if (rules.length === 0) {
+    return null;
+  }
 
-    return `function ${func.name}(${paramNames.join(", ")}) end`;
+  const [rule, ...unused] = rules;
+  if (unused.length > 0) {
+    console.warn(
+      `Incompatible tags found in comment:\n` +
+        chalk.rgb(255, 255, 0)(`${comment.raw}`) +
+        `using: ${chalk.rgb(0, 255, 0)(formatTag(rule))}` +
+        `\n---\n`
+    );
+  }
+
+  switch (rule.title) {
+    case "function":
+      const paramNames = comment.tags
+        .filter((t) => t.title === "param")
+        .map((t) => t.name);
+
+      return `function ${rule.name}(${paramNames.join(", ")}) end`;
+    case "metatable":
+      return `${rule.description} = {}`;
   }
 
   return null;

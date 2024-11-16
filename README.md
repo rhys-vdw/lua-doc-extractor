@@ -12,11 +12,9 @@ Extracts lua documentation from C-style comments.
 $ npm install rhys-vdw/lua-doc-extractor
 ```
 
-Note: Global install from GitHub fails.
-
 ## Usage
 
-### Lua language server
+### Annotations
 
 Annotate your code using [lua language server annotations](https://luals.github.io/wiki/annotations/) in C-style code blocks that start with `/***`.
 
@@ -26,21 +24,44 @@ Custom tags are required to generate Lua meta code.
 
 #### `@function <name>`
 
-Required with any function to output
+Outputs the function definition of a function. This is required for any function.
 
-#### Example
+#### `@metatable <name>`
+
+Defines a global table.
+
+### Example
 
 ```cpp
+/***
+ * Main API
+ * @metatable Api
+ */
+
 /***
  * Get name by ID
  * @function Api.GetNames
  * @param id integer The integer of the person.
- * @param boolean firstNameOnly Return only first name.
+ * @param firstNameOnly boolean Return only first name.
  * @return string name The full or first name of the person.
  */
 int SomeClasss::GetNames(lua_State *L)
 {
-  // ...
+```
+
+Generates:
+
+```lua
+---@meta
+
+---Main API
+Api = {}
+
+---Get name by ID
+---@param id integer The integer of the person.
+---@param firstNameOnly boolean Return only first name.
+---@return string name The full or first name of the person.
+function Api.GetNames(id, firstNameOnly) end
 ```
 
 ### CLI
@@ -48,7 +69,9 @@ int SomeClasss::GetNames(lua_State *L)
 #### Usage guide
 
 ```
+
 $ npx lua-doc-extractor -h
+
 ```
 
 ## Contributing
@@ -58,7 +81,3 @@ PRs accepted.
 ## License
 
 MIT
-
-```
-
-```
