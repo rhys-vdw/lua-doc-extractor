@@ -17,15 +17,19 @@ export function extract(path: string, source: string): string {
 ${members(source)}`;
 }
 
-function toLuaComment(text: string): string {
+function toLuaComment(text: string): string | null {
+  text = trimStart(text, "*").trim();
+  if (text.length === 0) {
+    return null;
+  }
   return text
     .trim()
     .split("\n")
-    .map((line) => `---${trimStart(line, " *")}`)
+    .map((line) => `---${line}`)
     .join("\n");
 }
 
-function formatTag({ title, name, description }: Tag): string {
+function formatTag({ title, name, description }: Tag): string | null {
   return toLuaComment(
     "@" + [title, name, description].filter((s) => s.length > 0).join(" ")
   );
@@ -37,11 +41,12 @@ function members(source: string): string {
     if (!c.value.startsWith("*")) {
       return acc;
     }
+    const desc = toLuaComment(c.description);
+    const tags = c.tags.map(formatTag).join("\n");
     const lua = extractDeclaration(c);
-    const doc = `${toLuaComment(c.description)}\n---\n${c.tags
-      .map(formatTag)
-      .join("\n")}`;
-    acc.push(lua == null ? doc : `${doc}\n${lua}`);
+    acc.push(
+      [desc, desc && "---", tags, lua].filter((s) => s != null).join("\n")
+    );
     return acc;
   }, [] as string[]);
   return members.join("\n\n");
