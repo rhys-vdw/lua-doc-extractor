@@ -54,12 +54,12 @@ Defines a global table.
 
 /***
  * Get name by ID
- * @function Api.GetNames
+ * @function Api.GameName
  * @param id integer The integer of the person.
  * @param firstNameOnly boolean Return only first name.
  * @return string name The full or first name of the person.
  */
-int SomeClasss::GetNames(lua_State *L)
+int SomeClass::GameName(lua_State *L)
 {
 ```
 
@@ -75,7 +75,7 @@ Api = {}
 ---@param id integer The integer of the person.
 ---@param firstNameOnly boolean Return only first name.
 ---@return string name The full or first name of the person.
-function Api.GetNames(id, firstNameOnly) end
+function Api.GameName(id, firstNameOnly) end
 ```
 
 ## Contributing
