@@ -30,7 +30,10 @@ $ npx lua-doc-extractor --help
 
 ### Annotations
 
-Annotate your code using [lua language server annotations](https://luals.github.io/wiki/annotations/) in C-style code blocks that start with `/***`.
+Annotate your code using [lua language server annotations](https://luals.github.io/wiki/annotations/) in C-style comment blocks that start with exactly `/**`.
+
+> [!IMPORTANT]
+> Blocks that start with `/*` or `/***` will _not_ be processed.
 
 ### Custom tags
 
@@ -47,12 +50,12 @@ Defines a global table.
 ### Example
 
 ```cpp
-/***
+/**
  * Main API
  * @metatable Api
  */
 
-/***
+/**
  * Get name by ID
  * @function Api.GameName
  * @param id integer The integer of the person.
