@@ -28,13 +28,9 @@ function toLuaComment(text: string): string | null {
     .join("\n");
 }
 
-// function formatTag({ tag, name, description }: Tag): string {
-//   return "@" + [tag, name, description].filter((s) => s.length > 0).join(" ");
-// }
-function formatTag(tag: Tag): string {
-  var s = tag.source[0];
-  return s.source.substring(
-    s.tokens.delimiter.length + s.tokens.postDelimiter.length
+function formatTag({ tag, name, type, description }: Tag): string {
+  return (
+    `@` + [tag, name, type, description].filter((s) => s.length > 0).join(" ")
   );
 }
 

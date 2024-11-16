@@ -2,7 +2,7 @@ declare module "comment-parser" {
   interface Tag {
     tag: string;
     name: string;
-    type?: string;
+    type: string;
     optional?: boolean;
     default?: string;
     description: string;
