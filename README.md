@@ -14,6 +14,20 @@ $ npm install rhys-vdw/lua-doc-extractor
 
 ## Usage
 
+### CLI
+
+Process files:
+
+```
+$ npx lua-doc-extractor some-file.cpp other-files/*.cpp ---dest output
+```
+
+Show usage:
+
+```
+$ npx lua-doc-extractor --help
+```
+
 ### Annotations
 
 Annotate your code using [lua language server annotations](https://luals.github.io/wiki/annotations/) in C-style code blocks that start with `/***`.
@@ -62,16 +76,6 @@ Api = {}
 ---@param firstNameOnly boolean Return only first name.
 ---@return string name The full or first name of the person.
 function Api.GetNames(id, firstNameOnly) end
-```
-
-### CLI
-
-#### Usage guide
-
-```
-
-$ npx lua-doc-extractor -h
-
 ```
 
 ## Contributing
