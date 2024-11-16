@@ -1,7 +1,6 @@
-import Comments, { Comment, Tag } from "parse-comments";
-const comments = new Comments();
+import { parse as parseComments, ParsedComment, Tag } from "comment-parser";
 import * as project from "../package.json";
-import { remove, trimStart } from "lodash";
+import { remove } from "lodash";
 import chalk from "chalk";
 
 export function extract(path: string, source: string): string {
@@ -19,7 +18,6 @@ ${members(source)}`;
 }
 
 function toLuaComment(text: string): string | null {
-  text = trimStart(text, "*").trim();
   if (text.length === 0) {
     return null;
   }
@@ -30,16 +28,20 @@ function toLuaComment(text: string): string | null {
     .join("\n");
 }
 
-function formatTag({ title, name, description }: Tag): string {
-  return "@" + [title, name, description].filter((s) => s.length > 0).join(" ");
+// function formatTag({ tag, name, description }: Tag): string {
+//   return "@" + [tag, name, description].filter((s) => s.length > 0).join(" ");
+// }
+function formatTag(tag: Tag): string {
+  var s = tag.source[0];
+  return s.source.substring(
+    s.tokens.delimiter.length + s.tokens.postDelimiter.length
+  );
 }
 
 function members(source: string): string {
-  const ast = comments.parse(source);
+  const ast = parseComments(source);
+
   const members = ast.reduce((acc, c) => {
-    if (!c.value.startsWith("*")) {
-      return acc;
-    }
     const lua = extractDeclaration(c);
     const desc = toLuaComment(c.description);
     const tags =
@@ -59,8 +61,8 @@ function members(source: string): string {
 const customTags = ["function", "metatable"];
 
 /** Must be called _before_ tags are used, as it modifies the tags array */
-function extractDeclaration(comment: Comment): string | null {
-  const rules = remove(comment.tags, (t) => customTags.includes(t.title));
+function extractDeclaration(comment: ParsedComment): string | null {
+  const rules = remove(comment.tags, (t) => customTags.includes(t.tag));
 
   if (rules.length === 0) {
     return null;
@@ -70,21 +72,21 @@ function extractDeclaration(comment: Comment): string | null {
   if (unused.length > 0) {
     console.warn(
       `Incompatible tags found in comment:\n` +
-        chalk.rgb(255, 255, 0)(`${comment.raw}`) +
+        chalk.rgb(255, 255, 0)(`${unused.map(formatTag).join("\n")}`) +
         `using: ${chalk.rgb(0, 255, 0)(formatTag(rule))}` +
         `\n---\n`
     );
   }
 
-  switch (rule.title) {
+  switch (rule.tag) {
     case "function":
       const paramNames = comment.tags
-        .filter((t) => t.title === "param")
+        .filter((t) => t.tag === "param")
         .map((t) => t.name);
 
       return `function ${rule.name}(${paramNames.join(", ")}) end`;
     case "metatable":
-      return `${rule.description} = {}`;
+      return `${rule.name} = {}`;
   }
 
   return null;

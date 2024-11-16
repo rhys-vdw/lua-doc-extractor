@@ -19,8 +19,8 @@
   "dependencies": {
     "command-line-args": "^6.0.1",
     "command-line-usage": "^7.0.3",
-    "lodash": "^4.17.21",
-    "parse-comments": "^1.0.0"
+    "comment-parser": "^1.4.1",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@tsconfig/node16": "^16.1.3",
