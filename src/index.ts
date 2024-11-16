@@ -42,9 +42,14 @@ function members(source: string): string {
     }
     const lua = extractDeclaration(c);
     const desc = toLuaComment(c.description);
-    const tags = c.tags.map(formatTag).map(toLuaComment).join("\n");
+    const tags =
+      c.tags.length === 0
+        ? null
+        : c.tags.map(formatTag).map(toLuaComment).join("\n");
     acc.push(
-      [desc, desc && "---", tags, lua].filter((s) => s != null).join("\n")
+      [desc, desc && tags && "---", tags, lua]
+        .filter((s) => s != null)
+        .join("\n")
     );
     return acc;
   }, [] as string[]);
