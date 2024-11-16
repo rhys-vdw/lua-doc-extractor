@@ -30,10 +30,7 @@ $ npx lua-doc-extractor --help
 
 ### Annotations
 
-Annotate your code using [lua language server annotations](https://luals.github.io/wiki/annotations/) in C-style comment blocks that start with exactly `/**`.
-
-> [!IMPORTANT]
-> Blocks that start with `/*` or `/***` will _not_ be processed.
+Annotate your using [lua language server annotations](https://luals.github.io/wiki/annotations/) in document comment blocks (`/** <docs> */`).
 
 ### Custom tags
 
