@@ -1,7 +1,8 @@
-import { parse as parseComments, ParsedComment, Tag } from "comment-parser";
+import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import { remove } from "lodash";
 import chalk from "chalk";
+import { logError, logWarning } from "./log";
 
 export function extract(path: string, source: string): string {
   return `
@@ -17,33 +18,33 @@ export function extract(path: string, source: string): string {
 ${members(source)}`;
 }
 
-function toLuaComment(text: string): string | null {
-  if (text.length === 0) {
+function toLuaComment(lines: string[]): string | null {
+  if (lines.length === 0) {
     return null;
   }
-  return text
-    .trim()
-    .split("\n")
-    .map((line) => `---${line}`)
-    .join("\n");
+  return lines.map((line) => `---${line}`).join("\n");
 }
 
-function formatTag({ tag, name, type, description }: Tag): string {
-  return (
-    `@` + [tag, name, type, description].filter((s) => s.length > 0).join(" ")
-  );
+function formatTag({ type, detail }: Tag): string {
+  let result = `@${type}`;
+  if (detail.length > 0) {
+    result += ` ${detail.join("\n")}`;
+  }
+  return result;
 }
 
 function members(source: string): string {
-  const ast = parseComments(source);
-
-  const members = ast.reduce((acc, c) => {
+  const comments = parse(source);
+  const members = comments.reduce((acc, c) => {
     const lua = extractDeclaration(c);
     const desc = toLuaComment(c.description);
     const tags =
       c.tags.length === 0
         ? null
-        : c.tags.map(formatTag).map(toLuaComment).join("\n");
+        : c.tags
+            .map(formatTag)
+            .map((t) => toLuaComment(t.split("\n")))
+            .join("\n");
     acc.push(
       [desc, desc && tags && "---", tags, lua]
         .filter((s) => s != null)
@@ -57,8 +58,8 @@ function members(source: string): string {
 const customTags = ["function", "metatable"];
 
 /** Must be called _before_ tags are used, as it modifies the tags array */
-function extractDeclaration(comment: ParsedComment): string | null {
-  const rules = remove(comment.tags, (t) => customTags.includes(t.tag));
+function extractDeclaration(comment: Comment): string | null {
+  const rules = remove(comment.tags, (t) => customTags.includes(t.type));
 
   if (rules.length === 0) {
     return null;
@@ -74,15 +75,27 @@ function extractDeclaration(comment: ParsedComment): string | null {
     );
   }
 
-  switch (rule.tag) {
+  switch (rule.type) {
     case "function":
       const paramNames = comment.tags
-        .filter((t) => t.tag === "param")
-        .map((t) => t.name);
+        .filter((t) => t.type === "param" && t.detail.length > 0)
+        .map((t) => t.detail[0].split(/\s/, 1));
 
-      return `function ${rule.name}(${paramNames.join(", ")}) end`;
+      if (rule.detail.length === 0) {
+        logError(`@function tag missing function name: ${rule}`);
+        return null;
+      }
+      const firstLine = rule.detail[0].trim();
+      const functionName = firstLine.split(/\s/, 1)[0];
+      if (rule.detail.length > 1 || functionName.length < firstLine.length) {
+        console.warn(
+          chalk.yellow`@function tag has unused data:\n` +
+            `'${rule.detail.join("\n")}'\n`
+        );
+      }
+      return `function ${functionName}(${paramNames.join(", ")}) end`;
     case "metatable":
-      return `${rule.name} = {}`;
+      return `${rule.detail.join(" ")} = {}`;
   }
 
   return null;
