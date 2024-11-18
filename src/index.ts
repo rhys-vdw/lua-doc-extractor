@@ -1,7 +1,7 @@
 import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import chalk from "chalk";
-import { logError } from "./log";
+import { logError, logWarning } from "./log";
 import { remove } from "lodash";
 
 export function extract(path: string, source: string): string {
@@ -55,6 +55,23 @@ function members(source: string): string {
   return members.join("\n\n");
 }
 
+/**
+ * Get the first word from detail array, and warn if there was extra
+ * data.
+ */
+function ensureFirstWord(tag: Tag): string | null {
+  const d = tag.detail.join(" ").trim();
+  const result = d.split(/\s/, 1)[0];
+  if (result.length === 0) {
+    logWarning(`Invalid tag; Word expected: ${formatTag(tag)}`);
+    return null;
+  }
+  if (d.length > result.length) {
+    logWarning(`Invalid tag; Extra text ignored: ${formatTag(tag)}`);
+  }
+  return result;
+}
+
 const ruleHandlers = {
   function(rule: Tag, comment: Comment) {
     const paramNames = comment.tags
@@ -65,18 +82,12 @@ const ruleHandlers = {
       logError(`@function tag missing function name: ${rule}`);
       return null;
     }
-    const firstLine = rule.detail[0].trim();
-    const functionName = firstLine.split(/\s/, 1)[0];
-    if (rule.detail.length > 1 || functionName.length < firstLine.length) {
-      console.warn(
-        chalk.yellow`@function tag has unused data:\n` +
-          `'${rule.detail.join("\n")}'\n`
-      );
-    }
-    return `function ${functionName}(${paramNames.join(", ")}) end`;
+    const functionName = ensureFirstWord(rule);
+    return functionName && `function ${functionName}(${paramNames.join(", ")}) end`;
   },
   table(rule: Tag, _comment: Comment) {
-    return `${rule.detail.join(" ")} = {}`;
+    const tableName = ensureFirstWord(rule);
+    return tableName && `${tableName} = {}`;
   },
 };
 
