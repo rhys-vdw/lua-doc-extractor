@@ -1,7 +1,7 @@
 import { pull, remove } from "lodash";
 import { Tag, Comment } from "./parser";
 import { logError } from "./log";
-import { ensureFirstWord, generateField, isClass } from "./utility";
+import { appendLines, generateField, isClass, splitFirstWord } from "./utility";
 
 export type Rule = (rule: Tag, comment: Comment) => string | null;
 
@@ -16,7 +16,8 @@ export function functionRule(rule: Tag, comment: Comment) {
     logError(`@function tag missing function name: ${rule}`);
     return null;
   }
-  const functionName = ensureFirstWord(rule);
+  const [functionName, ...detail] = splitFirstWord(rule);
+  appendLines(comment.description, detail);
   return (
     functionName && `function ${functionName}(${paramNames.join(", ")}) end`
   );
@@ -25,13 +26,17 @@ export function functionRule(rule: Tag, comment: Comment) {
 export function tableRule(rule: Tag, comment: Comment) {
   pull(comment.tags, rule);
 
-  const tableName = ensureFirstWord(rule);
+  const [tableName, ...detail] = splitFirstWord(rule);
+  if (tableName == null) {
+    return null;
+  }
+  appendLines(comment.description, detail);
   let body = "";
   if (!isClass(comment)) {
     const fields = remove(comment.tags, (t) => t.type === "field");
     body = "\n" + fields.map(generateField).join(",\n\n") + "\n";
   }
-  return tableName && `${tableName} = {${body}}`;
+  return `${tableName} = {${body}}`;
 }
 
 export function enumRule({ detail }: Tag, comment: Comment) {

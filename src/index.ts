@@ -2,7 +2,12 @@ import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import { logWarning } from "./log";
 import { enumRule, functionRule, Rule, tableRule } from "./rules";
-import { ensureFirstWord, formatTag, toLuaComment } from "./utility";
+import {
+  appendLines,
+  formatTag,
+  splitFirstWord,
+  toLuaComment,
+} from "./utility";
 import { without } from "lodash";
 
 export function extract(path: string, source: string): string {
@@ -29,15 +34,17 @@ function mergeTables(comments: Comment[]): Comment[] {
       c.tags.find((t) => t.type === "enum");
 
     if (tableTag != null) {
-      const tableName = ensureFirstWord(tableTag);
+      // Get table name from the tag.
+      const [tableName, ...detail] = splitFirstWord(tableTag);
       if (tableName != null) {
         if (byTable.has(tableName)) {
           const prev = byTable.get(tableName)!;
 
           // Merge descriptions with a blank line.
-          if (c.description.length > 0) {
-            prev.description.push("", ...c.description);
-          }
+          appendLines(prev.description, c.description);
+
+          // Merge in the additional detail from the table tag.
+          appendLines(prev.description, detail);
 
           // Merge all tags, but skip the duplicate table tag.
           prev.tags.push(...without(c.tags, tableTag));

@@ -1,4 +1,5 @@
-import { trimStart, trimEnd, dropWhile, dropRightWhile } from "lodash";
+import { trimStart, trimEnd } from "lodash";
+import { trimArray } from "./utility";
 
 export interface Comment {
   description: string[];
@@ -51,11 +52,6 @@ function getComments(
     index = endIndex + commentEnd.length;
   }
   return result;
-}
-
-function trimArray(array: string[]): string[] {
-  const isEmpty = (l: string) => l === "";
-  return dropWhile(dropRightWhile(array, isEmpty), isEmpty);
 }
 
 function parseComment(

@@ -1,8 +1,25 @@
+import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
 import { Comment, Tag } from "./parser";
+import { inspect } from "util";
+
+export function trimArray(array: readonly string[]): string[] {
+  const isEmpty = (l: string) => l === "";
+  return dropWhile(dropRightWhile(array, isEmpty), isEmpty);
+}
 
 /**
- * Get the first word from detail array, and return the rest.
+ * Adds additional description lines, leaving a blank line between paragraphs.
+ */
+export function appendLines(dest: string[], src: readonly string[]) {
+  if (src.length > 0) {
+    dest.push("", ...src);
+  }
+}
+
+/**
+ * @returns string[] An array containing first word, then the remaining text in
+ * subsequent elements.
  */
 export function splitFirstWord(tag: Tag): string[] {
   const [firstLine, ...rest] = tag.detail;
@@ -13,29 +30,13 @@ export function splitFirstWord(tag: Tag): string[] {
   }
   const firstLineRemainder = firstLine.substring(firstWord.length).trimStart();
   if (firstLineRemainder === "") {
-    return [firstWord, ...rest];
+    return [firstWord, ...trimArray(rest)];
   }
   return [firstWord, firstLineRemainder, ...rest];
 }
 
 export function isClass(comment: Comment) {
   return comment.tags.findIndex((t) => t.type === "class") !== -1;
-}
-
-/**
- * Get the first word from detail array, and warn if there was extra
- * data.
- */
-export function ensureFirstWord(tag: Tag): string | null {
-  const lines = splitFirstWord(tag);
-  if (lines.length === 0) {
-    return null;
-  }
-  const [firstWord, ...rest] = lines;
-  if (rest.length > 0) {
-    logWarning(`Invalid tag; Extra text ignored: ${formatTag(tag)}`);
-  }
-  return firstWord;
 }
 
 export function generateField(rule: Tag) {
