@@ -1,8 +1,8 @@
 import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
-import { remove } from "lodash";
 import chalk from "chalk";
-import { logError, logWarning } from "./log";
+import { logError } from "./log";
+import { remove } from "lodash";
 
 export function extract(path: string, source: string): string {
   return `
@@ -55,11 +55,39 @@ function members(source: string): string {
   return members.join("\n\n");
 }
 
-const customTags = ["function", "metatable"];
+const ruleHandlers = {
+  function(rule: Tag, comment: Comment) {
+    const paramNames = comment.tags
+      .filter((t) => t.type === "param" && t.detail.length > 0)
+      .map((t) => t.detail[0].split(/\s/, 1));
+
+    if (rule.detail.length === 0) {
+      logError(`@function tag missing function name: ${rule}`);
+      return null;
+    }
+    const firstLine = rule.detail[0].trim();
+    const functionName = firstLine.split(/\s/, 1)[0];
+    if (rule.detail.length > 1 || functionName.length < firstLine.length) {
+      console.warn(
+        chalk.yellow`@function tag has unused data:\n` +
+          `'${rule.detail.join("\n")}'\n`
+      );
+    }
+    return `function ${functionName}(${paramNames.join(", ")}) end`;
+  },
+  metatable(rule: Tag, _comment: Comment) {
+    return `${rule.detail.join(" ")} = {}`;
+  },
+};
+
+type RuleType = keyof typeof ruleHandlers;
 
 /** Must be called _before_ tags are used, as it modifies the tags array */
 function extractDeclaration(comment: Comment): string | null {
-  const rules = remove(comment.tags, (t) => customTags.includes(t.type));
+  // Remove custom rule tags from list of tags.
+  const rules = remove(comment.tags, (t) =>
+    ruleHandlers.hasOwnProperty(t.type)
+  ) as (Tag & { type: RuleType })[];
 
   if (rules.length === 0) {
     return null;
@@ -75,28 +103,5 @@ function extractDeclaration(comment: Comment): string | null {
     );
   }
 
-  switch (rule.type) {
-    case "function":
-      const paramNames = comment.tags
-        .filter((t) => t.type === "param" && t.detail.length > 0)
-        .map((t) => t.detail[0].split(/\s/, 1));
-
-      if (rule.detail.length === 0) {
-        logError(`@function tag missing function name: ${rule}`);
-        return null;
-      }
-      const firstLine = rule.detail[0].trim();
-      const functionName = firstLine.split(/\s/, 1)[0];
-      if (rule.detail.length > 1 || functionName.length < firstLine.length) {
-        console.warn(
-          chalk.yellow`@function tag has unused data:\n` +
-            `'${rule.detail.join("\n")}'\n`
-        );
-      }
-      return `function ${functionName}(${paramNames.join(", ")}) end`;
-    case "metatable":
-      return `${rule.detail.join(" ")} = {}`;
-  }
-
-  return null;
+  return ruleHandlers[rule.type](rule, comment);
 }
