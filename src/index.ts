@@ -18,11 +18,11 @@ export function extract(path: string, source: string): string {
 ${members(source)}`;
 }
 
-function toLuaComment(lines: string[]): string | null {
+function toLuaComment(lines: string[], indent = ""): string | null {
   if (lines.length === 0) {
     return null;
   }
-  return lines.map((line) => `---${line}`).join("\n");
+  return lines.map((line) => `${indent}---${line}`).join("\n");
 }
 
 function formatTag({ type, detail }: Tag): string {
@@ -56,20 +56,52 @@ function members(source: string): string {
 }
 
 /**
+ * Get the first word from detail array, and return the rest.
+ */
+function splitFirstWord(tag: Tag): string[] {
+  const [firstLine, ...rest] = tag.detail;
+  const firstWord = firstLine.split(/\s/, 1)[0];
+  if (firstWord == null) {
+    logWarning(`Invalid tag; Word expected: ${formatTag(tag)}`);
+    return [];
+  }
+  const firstLineRemainder = firstLine.substring(firstWord.length).trimStart();
+  if (firstLineRemainder === "") {
+    return [firstWord, ...rest];
+  }
+  return [firstWord, firstLineRemainder, ...rest];
+}
+
+function isClass(comment: Comment) {
+  return comment.tags.findIndex((t) => t.type === "class") !== -1;
+}
+
+/**
  * Get the first word from detail array, and warn if there was extra
  * data.
  */
 function ensureFirstWord(tag: Tag): string | null {
-  const d = tag.detail.join(" ").trim();
-  const result = d.split(/\s/, 1)[0];
-  if (result.length === 0) {
-    logWarning(`Invalid tag; Word expected: ${formatTag(tag)}`);
+  const lines = splitFirstWord(tag);
+  if (lines.length === 0) {
     return null;
   }
-  if (d.length > result.length) {
+  const [firstWord, ...rest] = lines;
+  if (rest.length > 0) {
     logWarning(`Invalid tag; Extra text ignored: ${formatTag(tag)}`);
   }
-  return result;
+  return firstWord;
+}
+
+function generateField(rule: Tag) {
+  const [fieldName, ...detail] = splitFirstWord(rule);
+  if (detail.length === 0) {
+    logWarning(`Invalid tag; Type expected: ${formatTag(rule)}`);
+  }
+  const [typeLine, ...rest] = detail;
+  return (
+    toLuaComment([`@type ${typeLine}`, ...rest], "\t") +
+    `\n\t${fieldName} = nil`
+  );
 }
 
 const ruleHandlers = {
@@ -83,11 +115,18 @@ const ruleHandlers = {
       return null;
     }
     const functionName = ensureFirstWord(rule);
-    return functionName && `function ${functionName}(${paramNames.join(", ")}) end`;
+    return (
+      functionName && `function ${functionName}(${paramNames.join(", ")}) end`
+    );
   },
-  table(rule: Tag, _comment: Comment) {
+  table(rule: Tag, comment: Comment) {
     const tableName = ensureFirstWord(rule);
-    return tableName && `${tableName} = {}`;
+    let body = "";
+    if (!isClass(comment)) {
+      const fields = remove(comment.tags, (t) => t.type === "field");
+      body = "\n" + fields.map(generateField).join(",\n\n") + "\n";
+    }
+    return tableName && `${tableName} = {${body}}`;
   },
 };
 
