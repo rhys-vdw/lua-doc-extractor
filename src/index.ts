@@ -2,7 +2,8 @@ import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import { logWarning } from "./log";
 import { enumRule, functionRule, Rule, tableRule } from "./rules";
-import { formatTag, toLuaComment } from "./utility";
+import { ensureFirstWord, formatTag, toLuaComment } from "./utility";
+import { without } from "lodash";
 
 export function extract(path: string, source: string): string {
   return `
@@ -18,8 +19,46 @@ export function extract(path: string, source: string): string {
 ${members(source)}`;
 }
 
+function mergeTables(comments: Comment[]): Comment[] {
+  const byTable = new Map<string, Comment>();
+  const result = [] as Comment[];
+
+  comments.forEach((c) => {
+    const tableTag =
+      c.tags.find((t) => t.type === "table") ||
+      c.tags.find((t) => t.type === "enum");
+
+    if (tableTag != null) {
+      const tableName = ensureFirstWord(tableTag);
+      if (tableName != null) {
+        if (byTable.has(tableName)) {
+          const prev = byTable.get(tableName)!;
+
+          // Merge descriptions with a blank line.
+          if (c.description.length > 0) {
+            prev.description.push("", ...c.description);
+          }
+
+          // Merge all tags, but skip the duplicate table tag.
+          prev.tags.push(...without(c.tags, tableTag));
+
+          // Exit early to remove comment from list.
+          return;
+        } else {
+          byTable.set(tableName, c);
+        }
+      }
+    }
+
+    // If we didn't merge this comment into another.
+    result.push(c);
+  });
+
+  return result;
+}
+
 function members(source: string): string {
-  const comments = parse(source);
+  const comments = mergeTables(parse(source));
   const members = comments.reduce((acc, c) => {
     const lua = applyRules(c);
     const desc = toLuaComment(c.description);
