@@ -50,16 +50,24 @@ Defines a global table.
 /**
  * Main API
  * @table Api
+ * @field Version integer
+ */
+
+/**
+ * @enum NameType
+ * @field FirstName 1
+ * @field LastName 2
+ * @field FullName 3
  */
 
 /**
  * Get name by ID
- * @function Api.GameName
+ * @function Api.GetName
  * @param id integer The integer of the person.
- * @param firstNameOnly boolean Return only first name.
+ * @param nameType NameType Which name to return.
  * @return string name The full or first name of the person.
  */
-int SomeClass::GameName(lua_State *L)
+int SomeClass::GetName(lua_State *L)
 {
 ```
 
@@ -69,13 +77,24 @@ Generates:
 ---@meta
 
 ---Main API
-Api = {}
+Api = {
+	---@type integer
+	Version = nil
+}
+
+---@enum NameType
+NameType = {
+	FirstName = 1,
+	LastName = 2,
+	FullName = 3
+}
 
 ---Get name by ID
+---
 ---@param id integer The integer of the person.
----@param firstNameOnly boolean Return only first name.
+---@param nameType NameType Which name to return.
 ---@return string name The full or first name of the person.
-function Api.GameName(id, firstNameOnly) end
+function Api.GetName(id, nameType) end
 ```
 
 ## Contributing
