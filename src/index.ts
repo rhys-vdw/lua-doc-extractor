@@ -75,7 +75,7 @@ const ruleHandlers = {
     }
     return `function ${functionName}(${paramNames.join(", ")}) end`;
   },
-  metatable(rule: Tag, _comment: Comment) {
+  table(rule: Tag, _comment: Comment) {
     return `${rule.detail.join(" ")} = {}`;
   },
 };

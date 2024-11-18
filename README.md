@@ -40,7 +40,7 @@ Custom tags are required to generate Lua meta code.
 
 Outputs the function definition of a function. This is required for any function.
 
-#### `@metatable <name>`
+#### `@table <name>`
 
 Defines a global table.
 
@@ -49,7 +49,7 @@ Defines a global table.
 ```cpp
 /**
  * Main API
- * @metatable Api
+ * @table Api
  */
 
 /**
