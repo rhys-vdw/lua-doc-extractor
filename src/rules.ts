@@ -33,3 +33,10 @@ export function tableRule(rule: Tag, comment: Comment) {
   }
   return tableName && `${tableName} = {${body}}`;
 }
+
+export function enumRule({ detail }: Tag, comment: Comment) {
+  if (comment.tags.findIndex((t) => t.type === "table") === -1) {
+    return tableRule({ type: "table", detail }, comment);
+  }
+  return null;
+}

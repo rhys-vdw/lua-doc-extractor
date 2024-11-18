@@ -1,7 +1,7 @@
 import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import { logWarning } from "./log";
-import { functionRule, Rule, tableRule } from "./rules";
+import { enumRule, functionRule, Rule, tableRule } from "./rules";
 import { formatTag, toLuaComment } from "./utility";
 
 export function extract(path: string, source: string): string {
@@ -43,6 +43,7 @@ function members(source: string): string {
 const ruleHandlers = {
   function: functionRule,
   table: tableRule,
+  enum: enumRule,
 } as Record<string, Rule | undefined>;
 
 /**
