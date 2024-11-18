@@ -1,8 +1,8 @@
 import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
-import chalk from "chalk";
-import { logError, logWarning } from "./log";
-import { pull, remove } from "lodash";
+import { logWarning } from "./log";
+import { functionRule, Rule, tableRule } from "./rules";
+import { formatTag, toLuaComment } from "./utility";
 
 export function extract(path: string, source: string): string {
   return `
@@ -18,25 +18,10 @@ export function extract(path: string, source: string): string {
 ${members(source)}`;
 }
 
-function toLuaComment(lines: string[], indent = ""): string | null {
-  if (lines.length === 0) {
-    return null;
-  }
-  return lines.map((line) => `${indent}---${line}`).join("\n");
-}
-
-function formatTag({ type, detail }: Tag): string {
-  let result = `@${type}`;
-  if (detail.length > 0) {
-    result += ` ${detail.join("\n")}`;
-  }
-  return result;
-}
-
 function members(source: string): string {
   const comments = parse(source);
   const members = comments.reduce((acc, c) => {
-    const lua = extractDeclaration(c);
+    const lua = applyRules(c);
     const desc = toLuaComment(c.description);
     const tags =
       c.tags.length === 0
@@ -55,88 +40,16 @@ function members(source: string): string {
   return members.join("\n\n");
 }
 
-/**
- * Get the first word from detail array, and return the rest.
- */
-function splitFirstWord(tag: Tag): string[] {
-  const [firstLine, ...rest] = tag.detail;
-  const firstWord = firstLine.split(/\s/, 1)[0];
-  if (firstWord == null) {
-    logWarning(`Invalid tag; Word expected: ${formatTag(tag)}`);
-    return [];
-  }
-  const firstLineRemainder = firstLine.substring(firstWord.length).trimStart();
-  if (firstLineRemainder === "") {
-    return [firstWord, ...rest];
-  }
-  return [firstWord, firstLineRemainder, ...rest];
-}
-
-function isClass(comment: Comment) {
-  return comment.tags.findIndex((t) => t.type === "class") !== -1;
-}
-
-/**
- * Get the first word from detail array, and warn if there was extra
- * data.
- */
-function ensureFirstWord(tag: Tag): string | null {
-  const lines = splitFirstWord(tag);
-  if (lines.length === 0) {
-    return null;
-  }
-  const [firstWord, ...rest] = lines;
-  if (rest.length > 0) {
-    logWarning(`Invalid tag; Extra text ignored: ${formatTag(tag)}`);
-  }
-  return firstWord;
-}
-
-function generateField(rule: Tag) {
-  const [fieldName, ...detail] = splitFirstWord(rule);
-  if (detail.length === 0) {
-    logWarning(`Invalid tag; Type expected: ${formatTag(rule)}`);
-  }
-  const [typeLine, ...rest] = detail;
-  return (
-    toLuaComment([`@type ${typeLine}`, ...rest], "\t") +
-    `\n\t${fieldName} = nil`
-  );
-}
-
-type RuleHandler = (rule: Tag, comment: Comment) => string | null;
 const ruleHandlers = {
-  function(rule: Tag, comment: Comment) {
-    pull(comment.tags, rule);
+  function: functionRule,
+  table: tableRule,
+} as Record<string, Rule | undefined>;
 
-    const paramNames = comment.tags
-      .filter((t) => t.type === "param" && t.detail.length > 0)
-      .map((t) => t.detail[0].split(/\s/, 1));
-
-    if (rule.detail.length === 0) {
-      logError(`@function tag missing function name: ${rule}`);
-      return null;
-    }
-    const functionName = ensureFirstWord(rule);
-    return (
-      functionName && `function ${functionName}(${paramNames.join(", ")}) end`
-    );
-  },
-  table(rule: Tag, comment: Comment) {
-    pull(comment.tags, rule);
-
-    const tableName = ensureFirstWord(rule);
-    let body = "";
-    if (!isClass(comment)) {
-      const fields = remove(comment.tags, (t) => t.type === "field");
-      body = "\n" + fields.map(generateField).join(",\n\n") + "\n";
-    }
-    return tableName && `${tableName} = {${body}}`;
-  },
-} as Record<string, RuleHandler | null>;
-
-/** Must be called _before_ tags are used, as it modifies the tags array */
-function extractDeclaration(comment: Comment): string | null {
+/**
+ * Apply custom attribute rules, which may generate a declaration or remove tags from the comment.
+ * @return Lua declaration or null.
+ */
+function applyRules(comment: Comment): string | null {
   const actualTags = [...comment.tags];
   const declarations = actualTags.reduce((acc, t) => {
     const handler = ruleHandlers[t.type];
