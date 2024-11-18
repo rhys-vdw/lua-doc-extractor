@@ -2,7 +2,7 @@ import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import chalk from "chalk";
 import { logError, logWarning } from "./log";
-import { remove } from "lodash";
+import { pull, remove } from "lodash";
 
 export function extract(path: string, source: string): string {
   return `
@@ -104,8 +104,11 @@ function generateField(rule: Tag) {
   );
 }
 
+type RuleHandler = (rule: Tag, comment: Comment) => string | null;
 const ruleHandlers = {
   function(rule: Tag, comment: Comment) {
+    pull(comment.tags, rule);
+
     const paramNames = comment.tags
       .filter((t) => t.type === "param" && t.detail.length > 0)
       .map((t) => t.detail[0].split(/\s/, 1));
@@ -120,6 +123,8 @@ const ruleHandlers = {
     );
   },
   table(rule: Tag, comment: Comment) {
+    pull(comment.tags, rule);
+
     const tableName = ensureFirstWord(rule);
     let body = "";
     if (!isClass(comment)) {
@@ -128,30 +133,33 @@ const ruleHandlers = {
     }
     return tableName && `${tableName} = {${body}}`;
   },
-};
-
-type RuleType = keyof typeof ruleHandlers;
+} as Record<string, RuleHandler | null>;
 
 /** Must be called _before_ tags are used, as it modifies the tags array */
 function extractDeclaration(comment: Comment): string | null {
-  // Remove custom rule tags from list of tags.
-  const rules = remove(comment.tags, (t) =>
-    ruleHandlers.hasOwnProperty(t.type)
-  ) as (Tag & { type: RuleType })[];
+  const actualTags = [...comment.tags];
+  const declarations = actualTags.reduce((acc, t) => {
+    const handler = ruleHandlers[t.type];
+    if (handler != null) {
+      const declaration = handler(t, comment);
+      if (declaration != null) {
+        acc.push([t, declaration]);
+      }
+    }
+    return acc;
+  }, [] as [Tag, string][]);
 
-  if (rules.length === 0) {
+  if (declarations.length == 0) {
     return null;
   }
 
-  const [rule, ...unused] = rules;
-  if (unused.length > 0) {
-    console.warn(
-      `Incompatible tags found in comment:\n` +
-        chalk.rgb(255, 255, 0)(`${unused.map(formatTag).join("\n")}`) +
-        `using: ${chalk.rgb(0, 255, 0)(formatTag(rule))}` +
-        `\n---\n`
+  if (declarations.length > 1) {
+    logWarning(
+      `Incompatible attributes found:\n - ${declarations
+        .map(([tag, _]) => formatTag(tag))
+        .join("\n - ")}`
     );
   }
 
-  return ruleHandlers[rule.type](rule, comment);
+  return declarations[0][1];
 }
