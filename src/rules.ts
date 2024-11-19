@@ -1,7 +1,13 @@
 import { pull, remove } from "lodash";
 import { Tag, Comment } from "./parser";
 import { logError } from "./log";
-import { appendLines, generateField, isClass, splitFirstWord } from "./utility";
+import {
+  appendLines,
+  generateField,
+  isClass,
+  splitFirstWord,
+  stripGenericParams,
+} from "./utility";
 
 export type Rule = (rule: Tag, comment: Comment) => string | null;
 
@@ -66,7 +72,11 @@ export function classRule(tag: Tag, comment: Comment) {
   if (comment.tags.findIndex((t) => t.type === "table") === -1) {
     const [className] = splitFirstWord(tag);
     return (
-      "local " + tableRule({ type: "table", detail: [className] }, comment)
+      "local " +
+      tableRule(
+        { type: "table", detail: [stripGenericParams(className)] },
+        comment
+      )
     );
   }
   return null;

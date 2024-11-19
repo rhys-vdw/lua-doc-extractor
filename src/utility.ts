@@ -1,7 +1,11 @@
 import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
 import { Comment, Tag } from "./parser";
-import { inspect } from "util";
+
+export function stripGenericParams(text: string) {
+  const index = text.indexOf("<");
+  return index === -1 ? text : text.substring(0, index);
+}
 
 export function trimArray(array: readonly string[]): string[] {
   const isEmpty = (l: string) => l === "";
