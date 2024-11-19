@@ -1,7 +1,7 @@
 import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import { logWarning } from "./log";
-import { enumRule, functionRule, Rule, tableRule } from "./rules";
+import { classRule, enumRule, functionRule, Rule, tableRule } from "./rules";
 import {
   appendLines,
   formatTag,
@@ -90,6 +90,7 @@ const ruleHandlers = {
   function: functionRule,
   table: tableRule,
   enum: enumRule,
+  class: classRule,
 } as Record<string, Rule | undefined>;
 
 /**
