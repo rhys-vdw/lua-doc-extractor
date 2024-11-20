@@ -4,7 +4,7 @@ import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import { extract } from ".";
 import { readFile, mkdir, writeFile } from "fs/promises";
-import { basename, extname } from "path";
+import { basename, extname, join } from "path";
 import project from "../package.json";
 import chalk from "chalk";
 
@@ -83,7 +83,7 @@ async function runAsync() {
   await Promise.all(
     src.map(async (s) => {
       const output = extract(s, await readFile(s, "utf8"));
-      const destPath = `${dest}/${basename(s, extname(s))}.lua`;
+      const destPath = join(dest, `${basename(s, extname(s))}.lua`);
       await writeFile(destPath, output);
       console.log(`Generated ${destPath}`);
     })
