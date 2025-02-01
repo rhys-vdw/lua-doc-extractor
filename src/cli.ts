@@ -28,8 +28,8 @@ const optionList = [
     alias: "d",
     type: String,
     typeLabel: "{underline directory}",
-    defaultValue: "meta",
-    description: "Folder to export lua meta files to. (Default: 'meta')",
+    defaultValue: "library",
+    description: "Folder to export lua library files to. (Default: 'library')",
   },
   {
     name: "help",
