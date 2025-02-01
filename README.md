@@ -9,7 +9,7 @@ Extracts lua documentation from C-style comments.
 ### From GitHub
 
 ```
-$ npm install rhys-vdw/lua-doc-extractor
+$ npm install lua-doc-extractor
 ```
 
 ## Usage
