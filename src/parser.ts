@@ -1,5 +1,6 @@
 import { trimStart, trimEnd } from "lodash";
 import { trimArray, trimFirstSpace } from "./utility";
+import { logWarning } from "./log";
 
 export interface Comment {
   description: string[];
@@ -32,37 +33,87 @@ const defaultOptions: Options = {
   commentMidChars: "*",
 };
 
-function getComments(
+export interface RawComment {
+  lines: string[];
+  start: Position;
+  end: Position;
+}
+
+export function getRawComments(
   source: string,
-  { commentStart, commentEnd }: Options
-): string[] {
-  const result = [] as string[];
-  let index = 0;
-  while (true) {
-    index = source.indexOf(commentStart, index);
-    if (index === -1) {
-      break;
+  { commentStart, commentEnd }: Pick<Options, "commentStart" | "commentEnd">
+): RawComment[] {
+  const result = [] as RawComment[];
+  const lines = source.split("\n");
+  let current = null as Partial<RawComment> | null;
+
+  lines.forEach((line, i) => {
+    let j = 0;
+
+    // Loop in case we have multiple comments on the same line.
+    while (true) {
+      // Check if a comment was opened on this line.
+      if (current === null) {
+        j = line.indexOf(commentStart, j);
+
+        // If not, then abort.
+        if (j === -1) {
+          break;
+        }
+
+        // Otherwise, initialize the next comment.
+        current = {
+          lines: [],
+          start: { lineNumber: i + 1, columnNumber: j + 1 },
+        };
+        j += commentStart.length;
+      }
+
+      if (current !== null) {
+        // Check if the comment ends on this line.
+        let endIndex = line.indexOf(commentEnd, j);
+
+        // The comment doesn't end, so take the entire line.
+        if (endIndex === -1) {
+          current.lines!.push(line.substring(j));
+          break;
+        }
+
+        // Otherwise take the line up until the end.
+        current.lines!.push(line.substring(j, endIndex));
+        current.end = {
+          lineNumber: i + 1,
+          columnNumber: endIndex + commentEnd.length,
+        };
+        result.push(current as RawComment);
+
+        // Reset current.
+        current = null;
+        j = endIndex;
+      }
     }
-    index += commentStart.length;
-    let endIndex = source.indexOf(commentEnd, index);
-    if (endIndex === -1) {
-      break;
-    }
-    result.push(source.substring(index, endIndex));
-    index = endIndex + commentEnd.length;
+  });
+
+  if (current !== null) {
+    logWarning("Unclosed comment");
   }
+
   return result;
 }
 
 function parseComment(
-  comment: string,
+  raw: RawComment,
   { commentStartChars, commentEndChars, commentMidChars }: Options
 ): Comment | null {
-  comment = trimStart(comment, commentStartChars);
-  comment = trimEnd(comment, commentEndChars);
-  comment.trim();
+  if (raw.lines.length === 0) {
+    logWarning("Comment had zero lines");
+    return null;
+  }
+  const lastIndex = raw.lines.length - 1;
+  raw.lines[0] = trimStart(raw.lines[0], commentStartChars);
+  raw.lines[lastIndex] = trimEnd(raw.lines[lastIndex], commentEndChars);
 
-  const lines = comment.split("\n");
+  const lines = raw.lines;
   let description = [] as string[];
   let currentTag = null as Tag | null;
   const tags = [] as Tag[];
@@ -107,7 +158,7 @@ function parseComment(
 }
 
 export function parse(source: string, options = defaultOptions): Comment[] {
-  return getComments(source, options)
+  return getRawComments(source, options)
     .map((c) => parseComment(c, options))
     .filter((c) => c !== null);
 }
