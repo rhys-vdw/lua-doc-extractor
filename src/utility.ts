@@ -29,7 +29,7 @@ export function appendLines(dest: string[], src: readonly string[]) {
  * @returns string[] An array containing first word, then the remaining text in
  * subsequent elements.
  */
-export function splitFirstWord(tag: Tag): string[] {
+export function splitFirstWord(tag: Readonly<Tag>): string[] {
   const [firstLine, ...rest] = tag.detail;
   const firstWord = firstLine.split(/\s/, 1)[0];
   if (firstWord == null) {
@@ -47,15 +47,15 @@ export function isClass(comment: Comment) {
   return comment.tags.findIndex((t) => t.type === "class") !== -1;
 }
 
-export function generateField(rule: Tag) {
+export function generateField(rule: Tag, indent: string) {
   const [fieldName, ...detail] = splitFirstWord(rule);
   if (detail.length === 0) {
     logWarning(`Invalid tag; Type expected: ${formatTag(rule)}`);
   }
   const [typeLine, ...rest] = detail;
   return (
-    toLuaComment([`@type ${typeLine}`, ...rest], "\t") +
-    `\n\t${fieldName} = nil`
+    toLuaComment([`@type ${typeLine}`, ...rest], indent) +
+    `\n${indent}${fieldName} = nil`
   );
 }
 
@@ -66,7 +66,7 @@ export function toLuaComment(lines: string[], indent = ""): string | null {
   return lines.map((line) => `${indent}---${line}`).join("\n");
 }
 
-export function formatTag({ type, detail }: Tag): string {
+export function formatTag({ type, detail }: Readonly<Tag>): string {
   let result = `@${type}`;
   if (detail.length > 0) {
     result += ` ${detail.join("\n")}`;
