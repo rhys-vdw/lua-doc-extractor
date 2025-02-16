@@ -30,7 +30,7 @@ testGetRawComments(
   `,
   [
     {
-      lines: [" @global foo Foo This is my cool global."],
+      lines: ["@global foo Foo This is my cool global."],
       start: { lineNumber: 1, columnNumber: 1 },
       end: { lineNumber: 1, columnNumber: 47 },
     },
@@ -73,7 +73,7 @@ testGetRawComments(
   `,
   [
     {
-      lines: [" @global foo Foo This is my cool global."],
+      lines: ["@global foo Foo This is my cool global."],
       start: { lineNumber: 1, columnNumber: 1 },
       end: { lineNumber: 1, columnNumber: 47 },
     },
@@ -95,12 +95,12 @@ testGetRawComments(
   " /*** A comment. */ /*** Another! */",
   [
     {
-      lines: [" A comment."],
+      lines: ["A comment."],
       start: { lineNumber: 1, columnNumber: 2 },
       end: { lineNumber: 1, columnNumber: 19 },
     },
     {
-      lines: [" Another!"],
+      lines: ["Another!"],
       start: { lineNumber: 1, columnNumber: 21 },
       end: { lineNumber: 1, columnNumber: 36 },
     },

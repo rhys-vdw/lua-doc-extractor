@@ -23,16 +23,31 @@ export interface Options {
   commentEnd: RegExp;
 }
 
+// TODO: Use a real parser, this is silly.
+// https://github.com/rhys-vdw/lua-doc-extractor/issues/20
 export const defaultOptions: Options = {
-  commentStart: /\/\*{3,}/g,
-  commentLine: /^\s+\*( |$)/g,
-  commentEnd: /\*+\//g,
+  commentStart: /(\/\*{3})/g,
+  commentLine: /(^\s+\*)([^/]|$)/g,
+  commentEnd: /(\*\/)/g,
 };
 
 export interface RawComment {
   lines: string[];
   start: Position;
   end: Position;
+}
+
+function trimLine(line: string) {
+  // Remove trailing whitespace.
+  line = line.trimEnd();
+
+  // If the line is entirely asterisks, return empty string.
+  if (/^\**$/.test(line)) {
+    return "";
+  }
+
+  // Remove the first space in the line.
+  return trimFirstSpace(line);
 }
 
 export function getRawComments(
@@ -65,13 +80,13 @@ export function getRawComments(
           lines: [],
           start: { lineNumber: l + 1, columnNumber: c + 1 },
         };
-        c += start[0].length;
+        c += start[1].length;
       } else {
         // Trim out the the start of the line.
         commentLine.lastIndex = c;
         const mid = commentLine.exec(line);
         if (mid !== null) {
-          c = mid.index + mid[0].length;
+          c = mid.index + mid[1].length;
         }
       }
 
@@ -82,13 +97,13 @@ export function getRawComments(
 
         // The comment doesn't end, so take the entire line.
         if (end === null) {
-          current.lines!.push(line.substring(c).trimEnd());
+          current.lines!.push(trimLine(line.substring(c)));
           break;
         }
 
         // Otherwise take the line up until the end.
-        current.lines!.push(line.substring(c, end.index).trimEnd());
-        c = end.index + end[0].length;
+        current.lines!.push(trimLine(line.substring(c, end.index)));
+        c = end.index + end[1].length;
         current.end = {
           lineNumber: l + 1,
           columnNumber: c,
