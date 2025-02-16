@@ -12,6 +12,10 @@ export function trimArray(array: readonly string[]): string[] {
   return dropWhile(dropRightWhile(array, isEmpty), isEmpty);
 }
 
+export function trimFirstSpace(input: string): string {
+  return input[0] === " " ? input.substring(1) : input;
+}
+
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */

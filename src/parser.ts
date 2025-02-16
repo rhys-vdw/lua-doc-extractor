@@ -1,5 +1,5 @@
 import { trimStart, trimEnd } from "lodash";
-import { trimArray } from "./utility";
+import { trimArray, trimFirstSpace } from "./utility";
 
 export interface Comment {
   description: string[];
@@ -67,9 +67,9 @@ function parseComment(
   let currentTag = null as Tag | null;
   const tags = [] as Tag[];
   lines.forEach((line) => {
-    line = trimStart(line.trim(), commentMidChars).trimStart();
+    line = trimFirstSpace(trimStart(line.trim(), commentMidChars));
 
-    if (line.startsWith("@")) {
+    if (line.trimStart().startsWith("@")) {
       if (currentTag !== null) {
         tags.push(currentTag);
       }
