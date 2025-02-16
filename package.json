@@ -27,6 +27,7 @@
     "command-line-args": "^6.0.1",
     "command-line-usage": "^7.0.3",
     "comment-parser": "^1.4.1",
+    "leac": "^0.6.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
