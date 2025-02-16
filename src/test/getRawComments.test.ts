@@ -1,19 +1,25 @@
 import dedent from "dedent-js";
 import test from "tape";
-import { getRawComments, RawComment } from "../parser";
+import { getRawComments, RawComment, defaultOptions } from "../parser";
 
 function testGetRawComments(
   name: string,
   input: string,
-  expected: readonly RawComment[]
+  expected: readonly RawComment[],
+  only: boolean = false
 ) {
-  test(name, (t) => {
-    const actual = getRawComments(input, {
-      commentStart: "/***",
-      commentEnd: "*/",
-    });
+  const testFn = only ? test.only : test;
+  testFn(name, (t) => {
+    const actual = getRawComments(input, defaultOptions);
     t.deepEqual(actual, expected);
     t.end();
+
+    if (only) {
+      console.log("---EXPECTED---");
+      console.log(expected);
+      console.log("---ACTUAL---");
+      console.log(actual);
+    }
   });
 }
 
@@ -24,7 +30,7 @@ testGetRawComments(
   `,
   [
     {
-      lines: [" @global foo Foo This is my cool global. "],
+      lines: [" @global foo Foo This is my cool global."],
       start: { lineNumber: 1, columnNumber: 1 },
       end: { lineNumber: 1, columnNumber: 47 },
     },
@@ -45,9 +51,9 @@ testGetRawComments(
     {
       lines: [
         "",
-        " * Some description",
-        " * @deprecated",
-        " * @global foo Foo This is my cool global. ",
+        "Some description",
+        "@deprecated",
+        "@global foo Foo This is my cool global.",
       ],
       start: { lineNumber: 3, columnNumber: 1 },
       end: { lineNumber: 6, columnNumber: 45 },
@@ -67,16 +73,16 @@ testGetRawComments(
   `,
   [
     {
-      lines: [" @global foo Foo This is my cool global. "],
+      lines: [" @global foo Foo This is my cool global."],
       start: { lineNumber: 1, columnNumber: 1 },
       end: { lineNumber: 1, columnNumber: 47 },
     },
     {
       lines: [
         "",
-        " * Some description",
-        " * @deprecated",
-        " * @global foo Foo This is my cool global. ",
+        "Some description",
+        "@deprecated",
+        "@global foo Foo This is my cool global.",
       ],
       start: { lineNumber: 3, columnNumber: 1 },
       end: { lineNumber: 6, columnNumber: 45 },
@@ -89,12 +95,12 @@ testGetRawComments(
   " /*** A comment. */ /*** Another! */",
   [
     {
-      lines: [" A comment. "],
+      lines: [" A comment."],
       start: { lineNumber: 1, columnNumber: 2 },
       end: { lineNumber: 1, columnNumber: 19 },
     },
     {
-      lines: [" Another! "],
+      lines: [" Another!"],
       start: { lineNumber: 1, columnNumber: 21 },
       end: { lineNumber: 1, columnNumber: 36 },
     },
