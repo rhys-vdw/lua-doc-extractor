@@ -46,7 +46,10 @@ export function tableRule(rule: Tag, comment: Comment) {
   let body = "";
   if (!isClass(comment)) {
     const fields = remove(comment.tags, (t) => t.type === "field");
-    body = "\n" + fields.map(generateField).join(",\n\n") + "\n";
+    body =
+      fields.length === 0
+        ? ""
+        : "\n" + fields.map(generateField).join(",\n\n") + "\n";
   }
   return `${tableName} = {${body}}`;
 }

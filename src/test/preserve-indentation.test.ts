@@ -17,9 +17,7 @@ testMembers(
     ---- Foo
     ---  - Bar
     ---    - Baz
-    List = {
-
-    }
+    List = {}
   `
 );
 
