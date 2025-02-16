@@ -63,7 +63,7 @@ function mergeTables(comments: Comment[]): Comment[] {
   return result;
 }
 
-function members(source: string): string {
+export function members(source: string): string {
   const comments = mergeTables(parse(source));
   const members = comments.reduce((acc, c) => {
     const lua = applyRules(c);
