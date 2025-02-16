@@ -42,7 +42,7 @@ Outputs the definition of a function.
 
 #### `@table <name>`
 
-Defines a global table.
+Defines a global table. Add fields to the table using `@field name type [description]`.
 
 ### Example
 
