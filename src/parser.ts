@@ -1,20 +1,12 @@
-import { trimStart, trimEnd } from "lodash";
 import { trimArray, trimFirstSpace } from "./utility";
 import { logWarning } from "./log";
+import { Position, Source } from "./source";
+import { Tag } from "./tag";
 
 export interface Comment {
   description: string[];
   tags: Tag[];
-}
-
-export interface Tag {
-  type: string;
-  detail: string[];
-}
-
-export interface Position {
-  lineNumber: number;
-  columnNumber: number;
+  source: Source;
 }
 
 export interface Options {
@@ -33,8 +25,7 @@ export const defaultOptions: Options = {
 
 export interface RawComment {
   lines: string[];
-  start: Position;
-  end: Position;
+  source: Source;
 }
 
 function trimLine(line: string) {
@@ -52,18 +43,20 @@ function trimLine(line: string) {
 
 export function getRawComments(
   source: string,
+  path: string,
   { commentStart, commentLine, commentEnd }: Options
 ): RawComment[] {
   const result = [] as RawComment[];
   const lines = source.split("\n");
-  let current = null as Partial<RawComment> | null;
+  let currentLines = null as string[] | null;
+  let currentStart = null as Position | null;
 
   lines.forEach((line, l) => {
     let c = 0;
 
     // Loop in case we have multiple comments on the same line.
     while (true) {
-      if (current === null) {
+      if (currentLines === null) {
         // Check if a comment was opened on this line.
         commentStart.lastIndex = c;
         const start = commentStart.exec(line);
@@ -76,10 +69,8 @@ export function getRawComments(
         c = start.index;
 
         // Initialize the next comment.
-        current = {
-          lines: [],
-          start: { lineNumber: l + 1, columnNumber: c + 1 },
-        };
+        currentLines = [];
+        currentStart = { lineNumber: l + 1, columnNumber: c + 1 };
         c += start[1].length;
       } else {
         // Trim out the the start of the line.
@@ -90,33 +81,45 @@ export function getRawComments(
         }
       }
 
-      if (current !== null) {
+      if (currentLines !== null) {
         // Check if the comment ends on this line.
         commentEnd.lastIndex = c;
         const end = commentEnd.exec(line);
 
         // The comment doesn't end, so take the entire line.
         if (end === null) {
-          current.lines!.push(trimLine(line.substring(c)));
+          currentLines.push(trimLine(line.substring(c)));
           break;
         }
 
         // Otherwise take the line up until the end.
-        current.lines!.push(trimLine(line.substring(c, end.index)));
+        currentLines.push(trimLine(line.substring(c, end.index)));
         c = end.index + end[1].length;
-        current.end = {
-          lineNumber: l + 1,
-          columnNumber: c,
-        };
-        result.push(current as RawComment);
+
+        if (currentStart === null) {
+          throw new Error("Interal error");
+        }
+
+        result.push({
+          lines: currentLines,
+          source: {
+            path,
+            start: currentStart,
+            end: {
+              lineNumber: l + 1,
+              columnNumber: c,
+            },
+          },
+        });
 
         // Reset current.
-        current = null;
+        currentLines = null;
+        currentStart = null;
       }
     }
   });
 
-  if (current !== null) {
+  if (currentLines !== null) {
     logWarning("Unclosed comment");
   }
 
@@ -168,11 +171,15 @@ function parseComment(raw: RawComment): Comment | null {
 
   return description.length === 0 && tags.length === 0
     ? null
-    : { description, tags };
+    : { description, tags, source: raw.source };
 }
 
-export function parse(source: string, options = defaultOptions): Comment[] {
-  return getRawComments(source, options)
+export function parse(
+  source: string,
+  path: string,
+  options = defaultOptions
+): Comment[] {
+  return getRawComments(source, path, options)
     .map((c) => parseComment(c))
     .filter((c) => c !== null);
 }

@@ -10,7 +10,7 @@ function testGetRawComments(
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
-    const actual = getRawComments(input, defaultOptions);
+    const actual = getRawComments(input, "PATH", defaultOptions);
     t.deepEqual(actual, expected);
     t.end();
 
@@ -31,8 +31,11 @@ testGetRawComments(
   [
     {
       lines: ["@global foo Foo This is my cool global."],
-      start: { lineNumber: 1, columnNumber: 1 },
-      end: { lineNumber: 1, columnNumber: 47 },
+      source: {
+        path: "PATH",
+        start: { lineNumber: 1, columnNumber: 1 },
+        end: { lineNumber: 1, columnNumber: 47 },
+      },
     },
   ]
 );
@@ -55,8 +58,11 @@ testGetRawComments(
         "@deprecated",
         "@global foo Foo This is my cool global.",
       ],
-      start: { lineNumber: 3, columnNumber: 1 },
-      end: { lineNumber: 6, columnNumber: 45 },
+      source: {
+        path: "PATH",
+        start: { lineNumber: 3, columnNumber: 1 },
+        end: { lineNumber: 6, columnNumber: 45 },
+      },
     },
   ]
 );
@@ -74,8 +80,11 @@ testGetRawComments(
   [
     {
       lines: ["@global foo Foo This is my cool global."],
-      start: { lineNumber: 1, columnNumber: 1 },
-      end: { lineNumber: 1, columnNumber: 47 },
+      source: {
+        path: "PATH",
+        start: { lineNumber: 1, columnNumber: 1 },
+        end: { lineNumber: 1, columnNumber: 47 },
+      },
     },
     {
       lines: [
@@ -84,8 +93,11 @@ testGetRawComments(
         "@deprecated",
         "@global foo Foo This is my cool global.",
       ],
-      start: { lineNumber: 3, columnNumber: 1 },
-      end: { lineNumber: 6, columnNumber: 45 },
+      source: {
+        path: "PATH",
+        start: { lineNumber: 3, columnNumber: 1 },
+        end: { lineNumber: 6, columnNumber: 45 },
+      },
     },
   ]
 );
@@ -96,13 +108,19 @@ testGetRawComments(
   [
     {
       lines: ["A comment."],
-      start: { lineNumber: 1, columnNumber: 2 },
-      end: { lineNumber: 1, columnNumber: 19 },
+      source: {
+        path: "PATH",
+        start: { lineNumber: 1, columnNumber: 2 },
+        end: { lineNumber: 1, columnNumber: 19 },
+      },
     },
     {
       lines: ["Another!"],
-      start: { lineNumber: 1, columnNumber: 21 },
-      end: { lineNumber: 1, columnNumber: 36 },
+      source: {
+        path: "PATH",
+        start: { lineNumber: 1, columnNumber: 21 },
+        end: { lineNumber: 1, columnNumber: 36 },
+      },
     },
   ]
 );

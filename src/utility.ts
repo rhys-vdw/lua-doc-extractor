@@ -1,6 +1,7 @@
 import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
-import { Comment, Tag } from "./parser";
+import { Comment } from "./parser";
+import { formatTag, Tag } from "./tag";
 
 export function stripGenericParams(text: string) {
   const index = text.indexOf("<");
@@ -64,12 +65,4 @@ export function toLuaComment(lines: string[], indent = ""): string | null {
     return null;
   }
   return lines.map((line) => `${indent}---${line}`).join("\n");
-}
-
-export function formatTag({ type, detail }: Readonly<Tag>): string {
-  let result = `@${type}`;
-  if (detail.length > 0) {
-    result += ` ${detail.join("\n")}`;
-  }
-  return result;
 }
