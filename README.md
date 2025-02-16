@@ -30,7 +30,7 @@ $ npx lua-doc-extractor --help
 
 ### Annotations
 
-Annotate your using [lua language server annotations](https://luals.github.io/wiki/annotations/) in document comment blocks (`/** <docs> */`).
+Annotate your using [lua language server annotations](https://luals.github.io/wiki/annotations/) in document comment blocks (`/*** <docs> */`).
 
 ### Custom tags
 
@@ -47,20 +47,20 @@ Defines a global table.
 ### Example
 
 ```cpp
-/**
+/***
  * Main API
  * @table Api
  * @field Version integer
  */
 
-/**
+/***
  * @enum NameType
  * @field FirstName 1
  * @field LastName 2
  * @field FullName 3
  */
 
-/**
+/***
  * Get name by ID
  * @function Api.GetName
  * @param id integer The integer of the person.
