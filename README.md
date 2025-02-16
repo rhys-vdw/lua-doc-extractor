@@ -38,7 +38,7 @@ Custom tags are required to generate Lua meta code.
 
 #### `@function <name>`
 
-Outputs the function definition of a function. This is required for any function.
+Outputs the definition of a function.
 
 #### `@table <name>`
 
