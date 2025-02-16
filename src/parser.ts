@@ -25,7 +25,7 @@ export interface Options {
 }
 
 const defaultOptions: Options = {
-  commentStart: "/**",
+  commentStart: "/***",
   commentStartChars: "*",
   commentEnd: "*/",
   commentEndChars: "*",
