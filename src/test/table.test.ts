@@ -36,3 +36,33 @@ testMembers(
     Empty = {}
   `
 );
+
+testMembers(
+  "Supports multi-line field description.",
+  dedent`
+  /***
+   * My table.
+   * @field foo integer
+   * This is foo.
+   *
+   * @field bar string
+   * This is bar.
+   * Bar is good.
+   *
+   * @table TheTable
+   */
+  `,
+  dedent`
+    ---My table.
+    TheTable = {
+    \t---@type integer
+    \t---This is foo.
+    \tfoo = nil,
+
+    \t---@type string
+    \t---This is bar.
+    \t---Bar is good.
+    \tbar = nil
+    }
+  `
+);

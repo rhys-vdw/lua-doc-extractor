@@ -1,7 +1,14 @@
 import { parse, Tag, Comment } from "./parser";
 import * as project from "../package.json";
 import { logWarning } from "./log";
-import { classRule, enumRule, functionRule, Rule, tableRule } from "./rules";
+import {
+  classRule,
+  enumRule,
+  functionRule,
+  globalRule,
+  Rule,
+  tableRule,
+} from "./rules";
 import {
   appendLines,
   formatTag,
@@ -86,6 +93,7 @@ export function members(source: string): string {
 }
 
 const ruleHandlers = {
+  global: globalRule,
   function: functionRule,
   table: tableRule,
   enum: enumRule,

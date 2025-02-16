@@ -3,6 +3,7 @@ import { Tag, Comment } from "./parser";
 import { logError } from "./log";
 import {
   appendLines,
+  formatTag,
   generateField,
   isClass,
   splitFirstWord,
@@ -10,6 +11,16 @@ import {
 } from "./utility";
 
 export type Rule = (rule: Tag, comment: Comment) => string | null;
+
+export function globalRule(rule: Tag, comment: Comment) {
+  pull(comment.tags, rule);
+
+  if (rule.detail.length === 0) {
+    logError(`@global tag missing type: ${formatTag(rule)}`);
+    return null;
+  }
+  return generateField(rule, "");
+}
 
 /**
  * Declare a function.
@@ -49,7 +60,7 @@ export function tableRule(rule: Tag, comment: Comment) {
     body =
       fields.length === 0
         ? ""
-        : "\n" + fields.map(generateField).join(",\n\n") + "\n";
+        : "\n" + fields.map((f) => generateField(f, "\t")).join(",\n\n") + "\n";
   }
   return `${tableName} = {${body}}`;
 }

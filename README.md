@@ -36,13 +36,17 @@ Annotate your using [lua language server annotations](https://luals.github.io/wi
 
 Custom tags are required to generate Lua meta code.
 
+#### `@global <name> <type>`
+
+Defines a global variable with a given type.
+
 #### `@function <name>`
 
-Outputs the function definition of a function. This is required for any function.
+Outputs the definition of a function.
 
 #### `@table <name>`
 
-Defines a global table.
+Defines a global table. Add fields to the table using `@field name type [description]`.
 
 ### Example
 
@@ -51,6 +55,11 @@ Defines a global table.
  * Main API
  * @table Api
  * @field Version integer
+ */
+
+/***
+ * The absolute path to the executable.
+ * @global ExecutablePath string
  */
 
 /***
@@ -81,6 +90,10 @@ Api = {
 	---@type integer
 	Version = nil
 }
+
+---The absolute path to the executable.
+---@type string
+ExectablePath = nil
 
 ---@enum NameType
 NameType = {
