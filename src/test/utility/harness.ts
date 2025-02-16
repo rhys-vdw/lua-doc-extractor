@@ -1,9 +1,23 @@
 import test from "tape";
 import { members } from "../..";
 
-export function testMembers(name: string, input: string, expected: string) {
-  test(name, (t) => {
-    t.isEqual(members(input), expected, "Has correct output");
+export function testMembers(
+  name: string,
+  input: string,
+  expected: string,
+  only: boolean = false
+) {
+  const testFn = only ? test.only : test;
+  testFn(name, (t) => {
+    const actual = members(input);
+    t.isEqual(actual, expected, "Has correct output");
     t.end();
+
+    if (only) {
+      console.log("---EXPECTED---");
+      console.log(expected);
+      console.log("---ACTUAL---");
+      console.log(actual);
+    }
   });
 }
