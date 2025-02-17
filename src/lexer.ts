@@ -14,7 +14,7 @@ const lexer = moo.states({
     indent: /^\s+\*(?!\/)/,
     codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
     blockCommentEnd: { match: "*/", pop: 1 },
-    word: { match: /[^\s$]+/ },
+    word: { match: /[^\s]+/ },
     space: /[ \t]+/,
   },
   codeBlock: {
