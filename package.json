@@ -29,7 +29,8 @@
     "command-line-args": "^6.0.1",
     "command-line-usage": "^7.0.3",
     "comment-parser": "^1.4.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "moo": "^0.5.2"
   },
   "devDependencies": {
     "@detools/tap-diff": "^0.2.2",
@@ -37,6 +38,7 @@
     "@types/command-line-args": "^5.2.3",
     "@types/command-line-usage": "^5.0.4",
     "@types/lodash": "^4.17.13",
+    "@types/moo": "^0.5.10",
     "@types/node": "^22.9.0",
     "@types/tape": "^5.8.1",
     "dedent-js": "^1.0.1",
