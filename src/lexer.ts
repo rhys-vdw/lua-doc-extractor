@@ -1,17 +1,27 @@
 import moo, { Token } from "moo";
 import { Position } from "./source";
+import dedent from "dedent-js";
 
 const lexer = moo.states({
   code: {
+    newline: { match: "\n", lineBreaks: true },
     blockCommentStart: { match: "/***", push: "blockComment" },
     word: /[^\s]+/,
-    space: { match: /\s+/, lineBreaks: true },
+    space: /[ \t]+/,
   },
   blockComment: {
     newline: { match: "\n", lineBreaks: true },
     indent: /^\s+\*(?!\/)/,
+    codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
     blockCommentEnd: { match: "*/", pop: 1 },
     word: { match: /[^\s$]+/ },
+    space: /[ \t]+/,
+  },
+  codeBlock: {
+    newline: { match: "\n", lineBreaks: true },
+    indent: /^\s+\*(?!\/)/,
+    codeBlockEnd: { match: "```", pop: 1 },
+    word: /[^\s]+/,
     space: /[ \t]+/,
   },
 });
@@ -48,6 +58,12 @@ int LuaSyncedCtrl::SetAlly(lua_State* L)
  * @param zMin number top start box boundary (elmos)
  * @param xMax number right start box boundary (elmos)
  * @param zMax number bottom start box boundary (elmos)
+ *
+ * \`\`\`lua
+ * /***
+ *   Nested comment here
+ * */
+ * \`\`\`
  * @return nil
  */
 int LuaSyncedCtrl::SetAllyTeamStartBox(lua_State* L)
@@ -65,7 +81,10 @@ function detail(s: string) {
   const result = [];
   lexer.reset(s);
   for (const entry of lexer) {
-    result.push(`${entry.type} -> ${entry.text}`);
+    const t = `'${entry.text.replace("\t", "\\t")}'`;
+    result.push(
+      `${entry.type} -> ${t.padStart(15 + t.length - entry.type!.length)}`
+    );
     // console.log(entry);
   }
   console.log(result.join("\n"));
@@ -92,7 +111,9 @@ function comments(s: string) {
       } else {
         console.log(entry);
         result.push({
-          text: current.text.join(""),
+          // NOTE: Add an extra empty line at the front, because dedent will not
+          // de-indent the first line. It strips all leading newlines.
+          text: dedent("\n" + current.text.join("")),
           start: current.start,
           end: {
             lineNumber: entry.line,
@@ -126,7 +147,7 @@ function comments(s: string) {
     result
       .map(
         (r) =>
-          `-------- ${r.start.lineNumber}:${r.start.columnNumber}-${r.end.lineNumber}:${r.end.columnNumber}\n${r.text}`
+          `\n-------- ${r.start.lineNumber}:${r.start.columnNumber}-${r.end.lineNumber}:${r.end.columnNumber}\n${r.text}`
       )
       .join("")
   );
@@ -137,7 +158,7 @@ function array(s: string) {
   console.log(JSON.stringify(Array.from(lexer)));
 }
 
-// detail(c);
+detail(c);
 console.log("----");
 comments(c);
 
