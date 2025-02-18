@@ -4,8 +4,8 @@ import dedent from "dedent-js";
 
 function makeState(rules: Readonly<Rules>): Rules {
   return {
-    newline: { match: "\n", lineBreaks: true },
     ...rules,
+    newline: { match: "\n", lineBreaks: true },
     word: /[^\s]+/,
     space: /[ \t]+/,
   };
@@ -29,7 +29,6 @@ const docLexer = moo.states({
     codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
   }),
   codeBlock: makeState({
-    indent: /^\s+\*(?!\/)/,
     codeBlockEnd: { match: "```", pop: 1 },
   }),
 });
