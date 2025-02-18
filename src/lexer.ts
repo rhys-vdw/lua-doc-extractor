@@ -1,8 +1,9 @@
-import moo, { Token } from "moo";
+import moo, { Lexer, Token } from "moo";
 import { Position } from "./source";
 import dedent from "dedent-js";
 
-const lexer = moo.states({
+/** Extracts C-style block comments from input. */
+const commentLexer = moo.states({
   code: {
     newline: { match: "\n", lineBreaks: true },
     blockCommentStart: { match: "/***", push: "blockComment" },
@@ -12,9 +13,19 @@ const lexer = moo.states({
   blockComment: {
     newline: { match: "\n", lineBreaks: true },
     indent: /^\s+\*(?!\/)/,
-    codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
     blockCommentEnd: { match: "*/", pop: 1 },
-    word: { match: /[^\s]+/ },
+    word: /[^\s]+/,
+    space: /[ \t]+/,
+  },
+});
+
+/** Lexes the comment body of Lua doc comments. */
+const docLexer = moo.states({
+  main: {
+    newline: { match: "\n", lineBreaks: true },
+    attribute: /@[^\s]+/,
+    codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
+    word: /[^\s]+/,
     space: /[ \t]+/,
   },
   codeBlock: {
@@ -60,9 +71,12 @@ int LuaSyncedCtrl::SetAlly(lua_State* L)
  * @param zMax number bottom start box boundary (elmos)
  *
  * \`\`\`lua
- * /***
- *   Nested comment here
- * */
+ * ---@param a string
+ * ---@param b string
+ * ---@return string result
+ * local function concat(a, b)
+   * return a .. b
+ * end
  * \`\`\`
  * @return nil
  */
@@ -77,7 +91,7 @@ int LuaSyncedCtrl::SetAllyTeamStartBox(lua_State* L)
 
 const b = `blah blah /*** boo */ blaz`;
 
-function detail(s: string) {
+function detail(lexer: Lexer, s: string) {
   const result = [];
   lexer.reset(s);
   for (const entry of lexer) {
@@ -96,12 +110,12 @@ export interface RawComment {
   text: string;
 }
 
-function comments(s: string) {
-  const result = [] as RawComment[];
+function getRawComments(s: string): RawComment[] {
+  const result = [];
   let current = null as { text: string[]; start: Position } | null;
 
-  lexer.reset(s);
-  for (const entry of lexer) {
+  commentLexer.reset(s);
+  for (const entry of commentLexer) {
     // Check for end of comment.
     if (entry.type === "blockCommentEnd") {
       if (current === null) {
@@ -143,23 +157,17 @@ function comments(s: string) {
       }
     }
   }
+  return result;
+}
+
+const comments = getRawComments(c);
+console.log(comments.length);
+for (let { start, end, text } of comments) {
   console.log(
-    result
-      .map(
-        (r) =>
-          `\n-------- ${r.start.lineNumber}:${r.start.columnNumber}-${r.end.lineNumber}:${r.end.columnNumber}\n${r.text}`
-      )
-      .join("")
+    `\n-------- ${start.lineNumber}:${start.columnNumber}-${end.lineNumber}:${end.columnNumber}`
   );
+  console.log(text);
+  console.log(`--------- Detail`);
+  detail(docLexer, text);
+  console.log(`--------- End detail`);
 }
-
-function array(s: string) {
-  lexer.reset(s);
-  console.log(JSON.stringify(Array.from(lexer)));
-}
-
-detail(c);
-console.log("----");
-comments(c);
-
-// array(c);
