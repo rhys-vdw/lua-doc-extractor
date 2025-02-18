@@ -1,6 +1,7 @@
 import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
-import { Comment, Tag } from "./parser";
+import { Comment } from "./parser";
+import { formatTag, Tag } from "./tag";
 
 export function stripGenericParams(text: string) {
   const index = text.indexOf("<");
@@ -47,29 +48,34 @@ export function isClass(comment: Comment) {
   return comment.tags.findIndex((t) => t.type === "class") !== -1;
 }
 
-export function generateField(rule: Tag, indent: string) {
+export function generateField(rule: Tag, indent: string): string {
   const [fieldName, ...detail] = splitFirstWord(rule);
   if (detail.length === 0) {
     logWarning(`Invalid tag; Type expected: ${formatTag(rule)}`);
   }
   const [typeLine, ...rest] = detail;
   return (
-    toLuaComment([`@type ${typeLine}`, ...rest], indent) +
+    toLuaComment([`@type ${typeLine}`, ...rest].join("\n"), indent) +
     `\n${indent}${fieldName} = nil`
   );
 }
 
-export function toLuaComment(lines: string[], indent = ""): string | null {
-  if (lines.length === 0) {
-    return null;
-  }
-  return lines.map((line) => `${indent}---${line}`).join("\n");
+export function toLuaComment(text: string, indent = ""): string {
+  if (text === "") return "";
+  return text.replace(/^/gm, `${indent}---`);
 }
 
-export function formatTag({ type, detail }: Readonly<Tag>): string {
-  let result = `@${type}`;
-  if (detail.length > 0) {
-    result += ` ${detail.join("\n")}`;
-  }
-  return result;
+/**
+ * Joins strings after trimming any trailing whitespace and discarding any empty
+ * entries.
+ */
+export function joinNonEmpty(
+  text: (string | null)[],
+  separator: string
+): string {
+  return text
+    .filter((t) => t != null)
+    .map((t) => t.trimEnd())
+    .filter((t) => t !== "")
+    .join(separator);
 }

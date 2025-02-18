@@ -12,6 +12,7 @@ interface Options {
   src: string[];
   dest: string;
   help: boolean;
+  repo?: string;
 }
 const optionList = [
   {
@@ -32,6 +33,13 @@ const optionList = [
     description: "Folder to export lua library files to. (Default: 'library')",
   },
   {
+    name: "repo",
+    type: String,
+    typeLabel: "{underline url}",
+    description:
+      "(Optional) The root URL of a repository.\n\nIf provided, `@see` attributes will be added to each generated item with a link to the original source. Should be in format `https://github.com/<user>/<repository>/blob/<commit>/`",
+  },
+  {
     name: "help",
     alias: "h",
     type: Boolean,
@@ -45,6 +53,7 @@ function printUsage() {
   const examples = [
     "$ lua-doc-extractor file_a.cpp file_b.cpp",
     "$ lua-doc-extractor ---src src/lua-files/**/*.cpp --dest output",
+    "$ lua-doc-extractor ---src src/**/*.cpp --dest output --repo https://github.com/user/project/blob/12345c/",
   ];
   console.log(
     commandLineUsage([
@@ -68,7 +77,7 @@ function error(message: string) {
 }
 
 async function runAsync() {
-  const { src, dest, help } = options;
+  const { src, dest, help, repo } = options;
 
   if (help) {
     printUsage();
@@ -82,7 +91,7 @@ async function runAsync() {
   await mkdir(dest, { recursive: true });
   await Promise.all(
     src.map(async (s) => {
-      const output = extract(s, await readFile(s, "utf8"));
+      const output = extract(s, await readFile(s, "utf8"), repo);
       const destPath = join(dest, `${basename(s, extname(s))}.lua`);
       await writeFile(destPath, output);
       console.log(`Generated ${destPath}`);

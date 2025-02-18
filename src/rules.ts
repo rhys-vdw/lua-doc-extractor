@@ -1,14 +1,14 @@
 import { pull, remove } from "lodash";
-import { Tag, Comment } from "./parser";
+import { Comment } from "./parser";
 import { logError } from "./log";
 import {
   appendLines,
-  formatTag,
   generateField,
   isClass,
   splitFirstWord,
   stripGenericParams,
 } from "./utility";
+import { formatTag, Tag } from "./tag";
 
 export type Rule = (rule: Tag, comment: Comment) => string | null;
 

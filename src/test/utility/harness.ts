@@ -9,7 +9,7 @@ export function testMembers(
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
-    const actual = members(input);
+    const actual = members(input, "PATH");
     t.isEqual(actual, expected, "Has correct output");
     t.end();
 
