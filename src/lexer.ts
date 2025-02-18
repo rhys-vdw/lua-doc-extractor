@@ -15,10 +15,15 @@ function makeState(rules: Readonly<Rules>): Rules {
 const commentLexer = moo.states({
   code: makeState({
     blockCommentStart: { match: "/***", push: "blockComment" },
+    lineCommentStart: { match: /^\s*\/{3}/, push: "lineComment" },
   }),
   blockComment: makeState({
     indent: /^\s+\*(?!\/)/,
     blockCommentEnd: { match: "*/", pop: 1 },
+  }),
+  lineComment: makeState({
+    indent: /^\s*\/{3}/,
+    lineCommentEnd: { match: /\n\s*(?!\/{3})/, lineBreaks: true, pop: 1 },
   }),
 });
 
@@ -30,18 +35,18 @@ const docLexer = moo.states({
   }),
   codeBlock: makeState({
     codeBlockEnd: { match: "```", pop: 1 },
+    newline: { match: "\n", lineBreaks: true },
   }),
 });
 
 const c = `
-/*** Changes the value of the (one-sided) alliance between: firstAllyTeamID -> secondAllyTeamID.
- *
- * @function Spring.SetAlly
- * @param firstAllyTeamID integer
- * @param secondAllyTeamID integer
- * @param ally boolean
- * @return nil
- */
+/// Changes the value of the (one-sided) alliance between: firstAllyTeamID -> secondAllyTeamID.
+///
+/// @function Spring.SetAlly
+/// @param firstAllyTeamID integer
+/// @param secondAllyTeamID integer
+/// @param ally boolean
+/// @return nil
 int LuaSyncedCtrl::SetAlly(lua_State* L)
 {
 	const int firstAllyTeamID = luaL_checkint(L, 1);
@@ -55,7 +60,6 @@ int LuaSyncedCtrl::SetAlly(lua_State* L)
 	teamHandler.SetAlly(firstAllyTeamID, secondAllyTeamID, luaL_checkboolean(L, 3));
 	return 0;
 }
-
 
 /*** Changes the start box position of an allyTeam.
  *
@@ -71,7 +75,7 @@ int LuaSyncedCtrl::SetAlly(lua_State* L)
  * ---@param b string
  * ---@return string result
  * local function concat(a, b)
-   * return a .. b
+ *   return a .. b
  * end
  * \`\`\`
  * @return nil
@@ -113,13 +117,12 @@ function getRawComments(s: string): RawComment[] {
   commentLexer.reset(s);
   for (const entry of commentLexer) {
     // Check for end of comment.
-    if (entry.type === "blockCommentEnd") {
+    if (entry.type === "blockCommentEnd" || entry.type === "lineCommentEnd") {
       if (current === null) {
         console.error(
-          `Encountered "${entry.text}" when not in a comment block: ${entry.line}:${entry.col}`
+          `Encountered '${entry.type}' when not in a comment block: ${entry.line}:${entry.col}`
         );
       } else {
-        console.log(entry);
         result.push({
           // NOTE: Add an extra empty line at the front, because dedent will not
           // de-indent the first line. It strips all leading newlines.
@@ -140,7 +143,10 @@ function getRawComments(s: string): RawComment[] {
     }
 
     // Start a new comment.
-    if (entry.type === "blockCommentStart") {
+    if (
+      entry.type === "blockCommentStart" ||
+      entry.type === "lineCommentStart"
+    ) {
       if (current !== null) {
         console.error(
           `Encountered "${entry.text}" when in a comment block: ${entry.line}:${entry.col}`
@@ -153,17 +159,23 @@ function getRawComments(s: string): RawComment[] {
       }
     }
   }
+
+  if (current !== null) {
+    console.error(`Incomplete comment`);
+  }
+
   return result;
 }
 
+// detail(commentLexer, c);
 const comments = getRawComments(c);
 console.log(comments.length);
 for (let { start, end, text } of comments) {
   console.log(
-    `\n-------- ${start.lineNumber}:${start.columnNumber}-${end.lineNumber}:${end.columnNumber}`
+    `-------- ${start.lineNumber}:${start.columnNumber}-${end.lineNumber}:${end.columnNumber}`
   );
-  console.log(text);
-  console.log(`--------- Detail`);
-  detail(docLexer, text);
-  console.log(`--------- End detail`);
+  console.log(`${text}`);
+  // console.log(`--------- Detail`);
+  // detail(docLexer, text);
+  // console.log(`--------- End detail`);
 }
