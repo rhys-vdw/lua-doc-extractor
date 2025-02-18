@@ -9,7 +9,12 @@ import {
   Rule,
   tableRule,
 } from "./rules";
-import { appendLines, splitFirstWord, toLuaComment } from "./utility";
+import {
+  appendLines,
+  joinNonEmpty,
+  splitFirstWord,
+  toLuaComment,
+} from "./utility";
 import { without } from "lodash";
 import { formatTag, Tag } from "./tag";
 import { formatSource, sourceToUrl } from "./source";
@@ -79,25 +84,19 @@ export function members(
   const comments = mergeTables(parse(source, path));
   const members = comments.reduce((acc, c) => {
     const lua = applyRules(c);
-    const desc = toLuaComment(
-      repoUrl == null
-        ? c.description
-        : [...c.description, "", formatSource(repoUrl, c.source)]
+    let description = c.description.join("\n");
+
+    if (repoUrl != null) {
+      description += `\n${formatSource(repoUrl, c.source)}`;
+    }
+
+    const formattedTags = c.tags.map(formatTag).join("\n");
+
+    const comment = toLuaComment(
+      joinNonEmpty([description, formattedTags], "\n\n")
     );
 
-    const formattedTags =
-      c.tags.length === 0
-        ? null
-        : c.tags
-            .map(formatTag)
-            .map((t) => toLuaComment(t.split("\n")))
-            .join("\n");
-
-    acc.push(
-      [desc, desc && formattedTags && "---", formattedTags, lua]
-        .filter((s) => s != null)
-        .join("\n")
-    );
+    acc.push(joinNonEmpty([comment, lua], "\n"));
     return acc;
   }, [] as string[]);
   return members.join("\n\n");
