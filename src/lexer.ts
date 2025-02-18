@@ -1,40 +1,37 @@
-import moo, { Lexer, Token } from "moo";
+import moo, { Lexer, Rules } from "moo";
 import { Position } from "./source";
 import dedent from "dedent-js";
 
+function makeState(rules: Readonly<Rules>): Rules {
+  return {
+    newline: { match: "\n", lineBreaks: true },
+    ...rules,
+    word: /[^\s]+/,
+    space: /[ \t]+/,
+  };
+}
+
 /** Extracts C-style block comments from input. */
 const commentLexer = moo.states({
-  code: {
-    newline: { match: "\n", lineBreaks: true },
+  code: makeState({
     blockCommentStart: { match: "/***", push: "blockComment" },
-    word: /[^\s]+/,
-    space: /[ \t]+/,
-  },
-  blockComment: {
-    newline: { match: "\n", lineBreaks: true },
+  }),
+  blockComment: makeState({
     indent: /^\s+\*(?!\/)/,
     blockCommentEnd: { match: "*/", pop: 1 },
-    word: /[^\s]+/,
-    space: /[ \t]+/,
-  },
+  }),
 });
 
 /** Lexes the comment body of Lua doc comments. */
 const docLexer = moo.states({
-  main: {
-    newline: { match: "\n", lineBreaks: true },
+  main: makeState({
     attribute: /@[^\s]+/,
     codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
-    word: /[^\s]+/,
-    space: /[ \t]+/,
-  },
-  codeBlock: {
-    newline: { match: "\n", lineBreaks: true },
+  }),
+  codeBlock: makeState({
     indent: /^\s+\*(?!\/)/,
     codeBlockEnd: { match: "```", pop: 1 },
-    word: /[^\s]+/,
-    space: /[ \t]+/,
-  },
+  }),
 });
 
 const c = `
@@ -71,7 +68,7 @@ int LuaSyncedCtrl::SetAlly(lua_State* L)
  * @param zMax number bottom start box boundary (elmos)
  *
  * \`\`\`lua
- * ---@param a string
+ * @param a string --Should be "word" not "attribute"
  * ---@param b string
  * ---@return string result
  * local function concat(a, b)
