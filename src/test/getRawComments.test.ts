@@ -1,6 +1,6 @@
 import dedent from "dedent-js";
 import test from "tape";
-import { getRawComments, RawComment, defaultOptions } from "../parser";
+import { getRawComments, RawComment } from "../getRawComments";
 
 function testGetRawComments(
   name: string,
@@ -10,7 +10,7 @@ function testGetRawComments(
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
-    const actual = getRawComments(input, "PATH", defaultOptions);
+    const actual = getRawComments(input);
     t.deepEqual(actual, expected);
     t.end();
 
@@ -30,12 +30,9 @@ testGetRawComments(
   `,
   [
     {
-      lines: ["@global foo Foo This is my cool global."],
-      source: {
-        path: "PATH",
-        start: { lineNumber: 1, columnNumber: 1 },
-        end: { lineNumber: 1, columnNumber: 47 },
-      },
+      text: "@global foo Foo This is my cool global.",
+      start: { lineNumber: 1, columnNumber: 1 },
+      end: { lineNumber: 1, columnNumber: 47 },
     },
   ]
 );
@@ -52,21 +49,36 @@ testGetRawComments(
   `,
   [
     {
-      lines: [
-        "",
-        "Some description",
-        "@deprecated",
-        "@global foo Foo This is my cool global.",
-      ],
-      source: {
-        path: "PATH",
-        start: { lineNumber: 3, columnNumber: 1 },
-        end: { lineNumber: 6, columnNumber: 45 },
-      },
+      text: dedent`
+
+        Some description
+        @deprecated
+        @global foo Foo This is my cool global.
+      `,
+      start: { lineNumber: 3, columnNumber: 1 },
+      end: { lineNumber: 6, columnNumber: 45 },
     },
   ]
 );
 
+testGetRawComments(
+  "getRawComments handles text on first line",
+  dedent`
+    /*** @function MyCoolFunc
+     * This is cool!
+     */
+  `,
+  [
+    {
+      text: dedent`
+        @function MyCoolFunc
+        This is cool!
+      `,
+      start: { lineNumber: 1, columnNumber: 1 },
+      end: { lineNumber: 3, columnNumber: 3 },
+    },
+  ]
+);
 testGetRawComments(
   "getRawComments parses multiple comments",
   dedent`
@@ -79,25 +91,19 @@ testGetRawComments(
   `,
   [
     {
-      lines: ["@global foo Foo This is my cool global."],
-      source: {
-        path: "PATH",
-        start: { lineNumber: 1, columnNumber: 1 },
-        end: { lineNumber: 1, columnNumber: 47 },
-      },
+      text: "@global foo Foo This is my cool global.",
+      start: { lineNumber: 1, columnNumber: 1 },
+      end: { lineNumber: 1, columnNumber: 47 },
     },
     {
-      lines: [
-        "",
-        "Some description",
-        "@deprecated",
-        "@global foo Foo This is my cool global.",
-      ],
-      source: {
-        path: "PATH",
-        start: { lineNumber: 3, columnNumber: 1 },
-        end: { lineNumber: 6, columnNumber: 45 },
-      },
+      text: dedent`
+
+        Some description
+        @deprecated
+        @global foo Foo This is my cool global.
+      `,
+      start: { lineNumber: 3, columnNumber: 1 },
+      end: { lineNumber: 6, columnNumber: 45 },
     },
   ]
 );
@@ -107,20 +113,14 @@ testGetRawComments(
   " /*** A comment. */ /*** Another! */",
   [
     {
-      lines: ["A comment."],
-      source: {
-        path: "PATH",
-        start: { lineNumber: 1, columnNumber: 2 },
-        end: { lineNumber: 1, columnNumber: 19 },
-      },
+      text: "A comment.",
+      start: { lineNumber: 1, columnNumber: 2 },
+      end: { lineNumber: 1, columnNumber: 19 },
     },
     {
-      lines: ["Another!"],
-      source: {
-        path: "PATH",
-        start: { lineNumber: 1, columnNumber: 21 },
-        end: { lineNumber: 1, columnNumber: 36 },
-      },
+      text: "Another!",
+      start: { lineNumber: 1, columnNumber: 21 },
+      end: { lineNumber: 1, columnNumber: 36 },
     },
   ]
 );

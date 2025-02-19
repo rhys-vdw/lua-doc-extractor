@@ -1,6 +1,7 @@
 import moo, { Lexer, Rules } from "moo";
 import { Position } from "./source";
 import dedent from "dedent-js";
+import { getRawComments } from "./getRawComments";
 
 function makeState(rules: Readonly<Rules>): Rules {
   return {
@@ -10,22 +11,6 @@ function makeState(rules: Readonly<Rules>): Rules {
     space: /[ \t]+/,
   };
 }
-
-/** Extracts C-style block comments from input. */
-const commentLexer = moo.states({
-  code: makeState({
-    blockCommentStart: { match: "/***", push: "blockComment" },
-    lineCommentStart: { match: /^\s*\/{3}/, push: "lineComment" },
-  }),
-  blockComment: makeState({
-    indent: /^\s+\*(?!\/)/,
-    blockCommentEnd: { match: "*/", pop: 1 },
-  }),
-  lineComment: makeState({
-    indent: /^\s*\/{3}/,
-    lineCommentEnd: { match: /\n\s*(?!\/{3})/, lineBreaks: true, pop: 1 },
-  }),
-});
 
 /** Lexes the comment body of Lua doc comments. */
 const docLexer = moo.states({
@@ -104,69 +89,6 @@ function detail(lexer: Lexer, s: string) {
   console.log(result.join("\n"));
 }
 
-export interface RawComment {
-  start: Position;
-  end: Position;
-  text: string;
-}
-
-function getRawComments(s: string): RawComment[] {
-  const result = [];
-  let current = null as { text: string[]; start: Position } | null;
-
-  commentLexer.reset(s);
-  for (const entry of commentLexer) {
-    // Check for end of comment.
-    if (entry.type === "blockCommentEnd" || entry.type === "lineCommentEnd") {
-      if (current === null) {
-        console.error(
-          `Encountered '${entry.type}' when not in a comment block: ${entry.line}:${entry.col}`
-        );
-      } else {
-        result.push({
-          // NOTE: Add an extra empty line at the front, because dedent will not
-          // de-indent the first line. It strips all leading newlines.
-          text: dedent("\n" + current.text.join("")),
-          start: current.start,
-          end: {
-            lineNumber: entry.line,
-            columnNumber: entry.col + entry.text.length - 1,
-          },
-        });
-        current = null;
-      }
-    }
-
-    // Accumulate comment body.
-    if (current !== null && entry.type !== "indent") {
-      current.text.push(entry.text);
-    }
-
-    // Start a new comment.
-    if (
-      entry.type === "blockCommentStart" ||
-      entry.type === "lineCommentStart"
-    ) {
-      if (current !== null) {
-        console.error(
-          `Encountered "${entry.text}" when in a comment block: ${entry.line}:${entry.col}`
-        );
-      } else {
-        current = {
-          text: [],
-          start: { lineNumber: entry.line, columnNumber: entry.col },
-        };
-      }
-    }
-  }
-
-  if (current !== null) {
-    console.error(`Incomplete comment`);
-  }
-
-  return result;
-}
-
 // detail(commentLexer, c);
 const comments = getRawComments(c);
 console.log(comments.length);
@@ -176,6 +98,6 @@ for (let { start, end, text } of comments) {
   );
   console.log(`${text}`);
   // console.log(`--------- Detail`);
-  // detail(docLexer, text);
+  detail(docLexer, text);
   // console.log(`--------- End detail`);
 }
