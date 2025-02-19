@@ -21,7 +21,7 @@
     "prepare": "npm run build",
     "build": "npm run grammar && tsc --build",
     "clean": "tsc --build --clean",
-    "test": "tape -r ./src/test/utility/register-tsx.js src/test/**/*.test.ts | tap-diff",
+    "test": "npm run grammar && tape -r ./src/test/utility/register-tsx.js src/test/**/*.test.ts | tap-diff",
     "grammar": "nearleyc src/grammar.ne -o src/grammar.ne.ts"
   },
   "author": "Rhys van der Waerden",

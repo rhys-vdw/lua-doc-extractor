@@ -10,13 +10,13 @@ import { Doc, Attribute } from "./doc";
 
 @lexer docLexer
 
-doc -> text:? attribute:* {% ([description, attributes]) =>
-  ({ description, attributes } as Doc)
-%}
+doc ->
+    text attribute:* {% ([description, attributes]) => ({ description, attributes } as Doc) %}
+  | attribute:* {% ([attributes]) => ({ description: [], attributes } as Doc) %}
 
-attribute -> %attribute %space:? text:? {% ([{ value: type }, _, description]) =>
-  ({ type, description: description ?? [] } as Attribute)
-%}
+attribute ->
+    %attribute %space text {% ([attr, _, description]) => ({ type: attr.value, description } as Attribute) %}
+  | %attribute             {% ([attr]) => ({ type: attr.value, description: [] } as Attribute) %}
 
 code ->
     %codeBlockStart %code %codeBlockEnd

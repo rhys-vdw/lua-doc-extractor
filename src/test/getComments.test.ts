@@ -50,7 +50,6 @@ testGetComments(
   [
     {
       text: dedent`
-
         Some description
         @deprecated
         @global foo Foo This is my cool global.
@@ -97,7 +96,6 @@ testGetComments(
     },
     {
       text: dedent`
-
         Some description
         @deprecated
         @global foo Foo This is my cool global.

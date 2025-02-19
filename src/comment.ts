@@ -33,8 +33,8 @@ const commentLexer = moo.states({
   }),
 });
 
-function trimTrailingWhitespace(s: string): string {
-  return s.replace(/\s+$/, "");
+function trimParagraph(s: string): string {
+  return s.replace(/\s+$/, "").trimStart();
 }
 
 export function getComments(s: string): Comment[] {
@@ -55,7 +55,7 @@ export function getComments(s: string): Comment[] {
         // de-indent the first line. It strips all leading newlines.
         const dedented = dedent("\n" + text);
         result.push({
-          text: trimTrailingWhitespace(dedented),
+          text: trimParagraph(dedented),
           start: current.start,
           end: {
             line: entry.line,
