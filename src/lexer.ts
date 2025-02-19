@@ -1,80 +1,37 @@
 import moo, { Lexer, Rules } from "moo";
-import { Position } from "./source";
-import dedent from "dedent-js";
-import { getRawComments } from "./getRawComments";
-
-function makeState(rules: Readonly<Rules>): Rules {
-  return {
-    ...rules,
-    newline: { match: "\n", lineBreaks: true },
-    word: /[^\s]+/,
-    space: /[ \t]+/,
-  };
-}
 
 /** Lexes the comment body of Lua doc comments. */
 const docLexer = moo.states({
-  main: makeState({
+  main: {
     attribute: /@[^\s]+/,
     codeBlockStart: { match: /```[a-zA-Z]*/, push: "codeBlock" },
-  }),
-  codeBlock: makeState({
-    codeBlockEnd: { match: "```", pop: 1 },
+    inlineCodeStart: { match: /`/, push: "inlineCode" },
     newline: { match: "\n", lineBreaks: true },
-  }),
+    word: /[^\s]+?(?=\s|$|(?!\\)`)/,
+    space: /[ \t]+/,
+  },
+  codeBlock: {
+    // TODO: Support escaping backticks.
+    code: { match: /[^]+?(?=```)/, lineBreaks: true },
+    codeBlockEnd: { match: "```", pop: 1 },
+  },
+  inlineCode: {
+    // TODO: Support escaping backticks.
+    code: { match: /[^]+?(?=`)/, lineBreaks: true },
+    inlineCodeEnd: { match: "`", pop: 1 },
+  },
 });
 
 const c = `
-/// Changes the value of the (one-sided) alliance between: firstAllyTeamID -> secondAllyTeamID.
-///
-/// @function Spring.SetAlly
-/// @param firstAllyTeamID integer
-/// @param secondAllyTeamID integer
-/// @param ally boolean
-/// @return nil
-int LuaSyncedCtrl::SetAlly(lua_State* L)
-{
-	const int firstAllyTeamID = luaL_checkint(L, 1);
-	const int secondAllyTeamID = luaL_checkint(L, 2);
-
-	if (!teamHandler.IsValidAllyTeam(firstAllyTeamID))
-		return 0;
-	if (!teamHandler.IsValidAllyTeam(secondAllyTeamID))
-		return 0;
-
-	teamHandler.SetAlly(firstAllyTeamID, secondAllyTeamID, luaL_checkboolean(L, 3));
-	return 0;
-}
-
-/*** Changes the start box position of an allyTeam.
- *
- * @function Spring.SetAllyTeamStartBox
- * @param allyTeamID integer
- * @param xMin number left start box boundary (elmos)
- * @param zMin number top start box boundary (elmos)
- * @param xMax number right start box boundary (elmos)
- * @param zMax number bottom start box boundary (elmos)
- *
- * \`\`\`lua
- * @param a string --Should be "word" not "attribute"
- * ---@param b string
- * ---@return string result
- * local function concat(a, b)
- *   return a .. b
- * end
- * \`\`\`
- * @return nil
- */
-int LuaSyncedCtrl::SetAllyTeamStartBox(lua_State* L)
-{
-	const unsigned int allyTeamID = luaL_checkint(L, 1);
-	const float xMin = luaL_checkfloat(L, 2);
-	const float zMin = luaL_checkfloat(L, 3);
-	const float xMax = luaL_checkfloat(L, 4);
-	const float zMax = luaL_checkfloat(L, 5);
+\`\`\`lua
+Here is
+  some code! \`
+blah
+\`\`\`
+Changes the value
+\`@function Spring.SetAlly\`
+@param firstAllyTeamID integer
 `;
-
-const b = `blah blah /*** boo */ blaz`;
 
 function detail(lexer: Lexer, s: string) {
   const result = [];
@@ -89,15 +46,16 @@ function detail(lexer: Lexer, s: string) {
   console.log(result.join("\n"));
 }
 
+detail(docLexer, c);
 // detail(commentLexer, c);
-const comments = getRawComments(c);
-console.log(comments.length);
-for (let { start, end, text } of comments) {
-  console.log(
-    `-------- ${start.lineNumber}:${start.columnNumber}-${end.lineNumber}:${end.columnNumber}`
-  );
-  console.log(`${text}`);
-  // console.log(`--------- Detail`);
-  detail(docLexer, text);
-  // console.log(`--------- End detail`);
-}
+// const comments = getRawComments(c);
+// console.log(comments.length);
+// for (let { start, end, text } of comments) {
+//   console.log(
+//     `-------- ${start.lineNumber}:${start.columnNumber}-${end.lineNumber}:${end.columnNumber}`
+//   );
+//   console.log(`${text}`);
+//   // console.log(`--------- Detail`);
+//   detail(docLexer, text);
+//   // console.log(`--------- End detail`);
+// }
