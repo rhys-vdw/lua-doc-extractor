@@ -1,6 +1,6 @@
 export interface Position {
-  lineNumber: number;
-  columnNumber: number;
+  line: number;
+  col: number;
 }
 
 export interface Source {
@@ -20,5 +20,5 @@ export function sourceToUrl(
   repoUrl: string,
   { path, start, end }: Source
 ): string {
-  return `${repoUrl}${path}#L${start.lineNumber}-L${end.lineNumber}`;
+  return `${repoUrl}${path}#L${start.line}-L${end.line}`;
 }

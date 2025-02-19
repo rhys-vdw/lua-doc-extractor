@@ -2,7 +2,7 @@ import moo, { Rules } from "moo";
 import { Position } from "./source";
 import dedent from "dedent-js";
 
-export interface RawComment {
+export interface Comment {
   start: Position;
   end: Position;
   text: string;
@@ -20,7 +20,7 @@ function makeState(rules: Readonly<Rules>): Rules {
 /** Extracts C-style block comments from input. */
 const commentLexer = moo.states({
   code: makeState({
-    blockCommentStart: { match: "/***", push: "blockComment" },
+    blockCommentStart: { match: /\/\*{3,}(?!\/)/, push: "blockComment" },
     lineCommentStart: { match: /^\s*\/{3}/, push: "lineComment" },
   }),
   blockComment: makeState({
@@ -37,8 +37,8 @@ function trimTrailingWhitespace(s: string): string {
   return s.replace(/\s+$/, "");
 }
 
-export function getRawComments(s: string): RawComment[] {
-  const result = [];
+export function getComments(s: string): Comment[] {
+  const result = [] as Comment[];
   let current = null as { text: string[]; start: Position } | null;
 
   commentLexer.reset(s);
@@ -58,8 +58,8 @@ export function getRawComments(s: string): RawComment[] {
           text: trimTrailingWhitespace(dedented),
           start: current.start,
           end: {
-            lineNumber: entry.line,
-            columnNumber: entry.col + entry.text.length - 1,
+            line: entry.line,
+            col: entry.col + entry.text.length - 1,
           },
         });
         current = null;
@@ -83,7 +83,7 @@ export function getRawComments(s: string): RawComment[] {
       } else {
         current = {
           text: [],
-          start: { lineNumber: entry.line, columnNumber: entry.col },
+          start: { line: entry.line, col: entry.col },
         };
       }
     }

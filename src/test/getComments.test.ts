@@ -1,16 +1,16 @@
 import dedent from "dedent-js";
 import test from "tape";
-import { getRawComments, RawComment } from "../getRawComments";
+import { getComments, Comment } from "../comment";
 
-function testGetRawComments(
+function testGetComments(
   name: string,
   input: string,
-  expected: readonly RawComment[],
+  expected: readonly Comment[],
   only: boolean = false
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
-    const actual = getRawComments(input);
+    const actual = getComments(input);
     t.deepEqual(actual, expected);
     t.end();
 
@@ -23,22 +23,22 @@ function testGetRawComments(
   });
 }
 
-testGetRawComments(
-  "getRawComments parses single line",
+testGetComments(
+  "getComments parses single line",
   dedent`
     /*** @global foo Foo This is my cool global. */
   `,
   [
     {
       text: "@global foo Foo This is my cool global.",
-      start: { lineNumber: 1, columnNumber: 1 },
-      end: { lineNumber: 1, columnNumber: 47 },
+      start: { line: 1, col: 1 },
+      end: { line: 1, col: 47 },
     },
   ]
 );
 
-testGetRawComments(
-  "getRawComments parses multiline",
+testGetComments(
+  "getComments parses multiline",
   dedent`
 
 
@@ -55,14 +55,14 @@ testGetRawComments(
         @deprecated
         @global foo Foo This is my cool global.
       `,
-      start: { lineNumber: 3, columnNumber: 1 },
-      end: { lineNumber: 6, columnNumber: 45 },
+      start: { line: 3, col: 1 },
+      end: { line: 6, col: 45 },
     },
   ]
 );
 
-testGetRawComments(
-  "getRawComments handles text on first line",
+testGetComments(
+  "getComments handles text on first line",
   dedent`
     /*** @function MyCoolFunc
      * This is cool!
@@ -74,13 +74,13 @@ testGetRawComments(
         @function MyCoolFunc
         This is cool!
       `,
-      start: { lineNumber: 1, columnNumber: 1 },
-      end: { lineNumber: 3, columnNumber: 3 },
+      start: { line: 1, col: 1 },
+      end: { line: 3, col: 3 },
     },
   ]
 );
-testGetRawComments(
-  "getRawComments parses multiple comments",
+testGetComments(
+  "getComments parses multiple comments",
   dedent`
     /*** @global foo Foo This is my cool global. */
 
@@ -92,8 +92,8 @@ testGetRawComments(
   [
     {
       text: "@global foo Foo This is my cool global.",
-      start: { lineNumber: 1, columnNumber: 1 },
-      end: { lineNumber: 1, columnNumber: 47 },
+      start: { line: 1, col: 1 },
+      end: { line: 1, col: 47 },
     },
     {
       text: dedent`
@@ -102,25 +102,25 @@ testGetRawComments(
         @deprecated
         @global foo Foo This is my cool global.
       `,
-      start: { lineNumber: 3, columnNumber: 1 },
-      end: { lineNumber: 6, columnNumber: 45 },
+      start: { line: 3, col: 1 },
+      end: { line: 6, col: 45 },
     },
   ]
 );
 
-testGetRawComments(
-  "getRawComments parses two in one line",
+testGetComments(
+  "getComments parses two in one line",
   " /*** A comment. */ /*** Another! */",
   [
     {
       text: "A comment.",
-      start: { lineNumber: 1, columnNumber: 2 },
-      end: { lineNumber: 1, columnNumber: 19 },
+      start: { line: 1, col: 2 },
+      end: { line: 1, col: 19 },
     },
     {
       text: "Another!",
-      start: { lineNumber: 1, columnNumber: 21 },
-      end: { lineNumber: 1, columnNumber: 36 },
+      start: { line: 1, col: 21 },
+      end: { line: 1, col: 36 },
     },
   ]
 );

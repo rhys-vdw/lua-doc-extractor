@@ -1,4 +1,3 @@
-import { parse, Comment } from "./parser";
 import * as project from "../package.json";
 import { logWarning } from "./log";
 import {
@@ -11,13 +10,17 @@ import {
 } from "./rules";
 import {
   appendLines,
+  formatAttribute,
+  formatTokens,
   joinNonEmpty,
   splitFirstWord,
   toLuaComment,
+  trimStart,
 } from "./utility";
 import { without } from "lodash";
-import { formatTag, Tag } from "./tag";
-import { formatSource, sourceToUrl } from "./source";
+import { formatSource } from "./source";
+import { getComments } from "./comment";
+import { parseDoc, Attribute, Doc, formatDoc } from "./doc";
 
 export function extract(
   path: string,
@@ -36,41 +39,42 @@ export function extract(
 ${members(source, path, repoUrl)}`;
 }
 
-function mergeTables(comments: Comment[]): Comment[] {
-  const byTable = new Map<string, Comment>();
-  const result = [] as Comment[];
+function mergeTables(docs: Doc[]): Doc[] {
+  const byTable = new Map<string, Doc>();
+  const result = [] as Doc[];
 
-  comments.forEach((c) => {
-    const tableTag =
-      c.tags.find((t) => t.type === "table") ||
-      c.tags.find((t) => t.type === "enum");
+  docs.forEach((doc) => {
+    const tableAttr =
+      doc.attributes.find((a) => a.type === "table") ||
+      doc.attributes.find((a) => a.type === "enum");
 
-    if (tableTag != null) {
+    if (tableAttr != null) {
       // Get table name from the tag.
-      const [tableName, ...detail] = splitFirstWord(tableTag);
-      if (tableName != null) {
-        if (byTable.has(tableName)) {
-          const prev = byTable.get(tableName)!;
+      const [tableToken, ...detail] = splitFirstWord(tableAttr);
+      const table = tableToken?.text;
+      if (table == null) {
+        if (byTable.has(table)) {
+          const prev = byTable.get(table)!;
 
           // Merge descriptions with a blank line.
-          appendLines(prev.description, c.description);
+          appendLines(prev.description, doc.description);
 
           // Merge in the additional detail from the table tag.
           appendLines(prev.description, detail);
 
           // Merge all tags, but skip the duplicate table tag.
-          prev.tags.push(...without(c.tags, tableTag));
+          prev.attributes.push(...without(doc.attributes, tableAttr));
 
           // Exit early to remove comment from list.
           return;
         } else {
-          byTable.set(tableName, c);
+          byTable.set(table, doc);
         }
       }
     }
 
     // If we didn't merge this comment into another.
-    result.push(c);
+    result.push(doc);
   });
 
   return result;
@@ -81,16 +85,20 @@ export function members(
   path: string,
   repoUrl?: string
 ): string {
-  const comments = mergeTables(parse(source, path));
-  const members = comments.reduce((acc, c) => {
-    const lua = applyRules(c);
-    let description = c.description.join("\n");
+  const docs = mergeTables(getComments(source).map(parseDoc));
+  const members = docs.reduce((acc, doc) => {
+    const lua = applyRules(doc);
+    let description = formatTokens(trimStart(doc.description));
 
     if (repoUrl != null) {
-      description += `\n${formatSource(repoUrl, c.source)}`;
+      description += `\n${formatSource(repoUrl, {
+        path: path,
+        start: doc.start,
+        end: doc.end,
+      })}`;
     }
 
-    const formattedTags = c.tags.map(formatTag).join("\n");
+    const formattedTags = doc.attributes.map(formatAttribute).join("\n");
 
     const comment = toLuaComment(
       joinNonEmpty([description, formattedTags], "\n\n")
@@ -111,12 +119,12 @@ const ruleHandlers = {
 } as Record<string, Rule | undefined>;
 
 /**
- * Apply custom attribute rules, which may generate a declaration or remove tags from the comment.
+ * Apply custom attribute rules, which may generate a declaration or remove tags
+ * from the comment.
  * @return Lua declaration or null.
  */
-function applyRules(comment: Comment): string | null {
-  const actualTags = [...comment.tags];
-  const declarations = actualTags.reduce((acc, t) => {
+function applyRules(comment: Doc): string | null {
+  const declarations = comment.attributes.reduce((acc, t) => {
     const handler = ruleHandlers[t.type];
     if (handler != null) {
       const declaration = handler(t, comment);
@@ -125,7 +133,7 @@ function applyRules(comment: Comment): string | null {
       }
     }
     return acc;
-  }, [] as [Tag, string][]);
+  }, [] as [Attribute, string][]);
 
   if (declarations.length == 0) {
     return null;
@@ -134,7 +142,7 @@ function applyRules(comment: Comment): string | null {
   if (declarations.length > 1) {
     logWarning(
       `Incompatible attributes found:\n - ${declarations
-        .map(([tag, _]) => formatTag(tag))
+        .map(([attr, _]) => formatAttribute(attr))
         .join("\n - ")}`
     );
   }

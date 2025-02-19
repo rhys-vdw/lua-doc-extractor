@@ -11,7 +11,6 @@ export function testMembers(
   testFn(name, (t) => {
     const actual = members(input, "PATH");
     t.isEqual(actual, expected, "Has correct output");
-    t.end();
 
     if (only) {
       console.log("---EXPECTED---");
@@ -19,5 +18,6 @@ export function testMembers(
       console.log("---ACTUAL---");
       console.log(actual);
     }
+    t.end();
   });
 }

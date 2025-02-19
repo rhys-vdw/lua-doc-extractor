@@ -4,26 +4,19 @@
 
 @{%
 import { docLexer } from "./docLexer";
-
-import { Token } from "moo";
-
-export interface Doc {
-  description: Token[]
-  attributes: Attribute[]
-}
-
-export interface Attribute {
-  type: Token,
-  description: Token[]
-}
+import { Doc, Attribute } from "./doc";
 
 %}
 
 @lexer docLexer
 
-doc -> text:? attribute:* {% ([description, attributes]) => ({ description, attributes }) %}
+doc -> text:? attribute:* {% ([description, attributes]) =>
+  ({ description, attributes } as Doc)
+%}
 
-attribute -> %attribute %space text {% ([type, _, description]) => ({ type, description }) %}
+attribute -> %attribute %space:? text:? {% ([{ value: type }, _, description]) =>
+  ({ type, description: description ?? [] } as Attribute)
+%}
 
 code ->
     %codeBlockStart %code %codeBlockEnd
