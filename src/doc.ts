@@ -26,9 +26,9 @@ export function parseDoc(comment: Comment): Doc {
   const { text, start, end } = comment;
   parser.feed(text);
   if (parser.results.length > 1) {
-    console.error(
-      `Ambiguous parse for comment (result  count: ${parser.results.length}):\n-----\n${text}\n----\n`
-    );
+    // console.error(
+    //   `Ambiguous parse for comment (result  count: ${parser.results.length}):\n-----\n${text}\n----\n`
+    // );
     // parser.results.forEach((r, i) => {
     //   console.log(`\n-----\nPARSE ${i}\n----`);
     //   console.log(require("util").inspect(r, { depth: Infinity }));
