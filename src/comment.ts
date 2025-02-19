@@ -38,6 +38,15 @@ function trimParagraph(s: string): string {
 }
 
 export function getComments(s: string): Comment[] {
+  try {
+    return getCommentsUnsafe(s);
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+function getCommentsUnsafe(s: string): Comment[] {
   const result = [] as Comment[];
   let current = null as { text: string[]; start: Position } | null;
 
