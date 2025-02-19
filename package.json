@@ -21,7 +21,8 @@
     "prepare": "npm run build",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
-    "test": "tape -r ./src/test/utility/register-tsx.js src/test/**/*.test.ts | tap-diff"
+    "test": "tape -r ./src/test/utility/register-tsx.js src/test/**/*.test.ts | tap-diff",
+    "grammar": "nearleyc src/grammar.ne -o src/grammar.ts"
   },
   "author": "Rhys van der Waerden",
   "license": "MIT",
@@ -30,7 +31,8 @@
     "command-line-usage": "^7.0.3",
     "comment-parser": "^1.4.1",
     "lodash": "^4.17.21",
-    "moo": "^0.5.2"
+    "moo": "^0.5.2",
+    "nearley": "^2.20.1"
   },
   "devDependencies": {
     "@detools/tap-diff": "^0.2.2",
@@ -39,6 +41,7 @@
     "@types/command-line-usage": "^5.0.4",
     "@types/lodash": "^4.17.13",
     "@types/moo": "^0.5.10",
+    "@types/nearley": "^2.11.5",
     "@types/node": "^22.9.0",
     "@types/tape": "^5.8.1",
     "dedent-js": "^1.0.1",
