@@ -29,9 +29,10 @@ code ->
     %codeBlockStart %code %codeBlockEnd
   | %inlineCodeStart %code %inlineCodeEnd
 
+# There has to be a better way.
 text -> (
   code {% id %}
   | %word {% id %}
   | %space {% id %}
   | %newline {% id %}
-):*
+):* {% d => d.flat(2) %}
