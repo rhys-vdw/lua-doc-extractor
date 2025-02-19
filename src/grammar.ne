@@ -4,19 +4,17 @@
 
 @{%
 import { docLexer } from "./docLexer";
-import { Doc, Attribute } from "./doc";
-
 %}
 
 @lexer docLexer
 
 doc ->
-    text attribute:* {% ([description, attributes]) => ({ description, attributes } as Doc) %}
-  | attribute:* {% ([attributes]) => ({ description: [], attributes } as Doc) %}
+    text attribute:* {% ([description, attributes]) => ({ description, attributes }) %}
+  | attribute:* {% ([attributes]) => ({ description: [], attributes }) %}
 
 attribute ->
-    %attribute %space text {% ([attr, _, description]) => ({ type: attr.value, description } as Attribute) %}
-  | %attribute             {% ([attr]) => ({ type: attr.value, description: [] } as Attribute) %}
+    %attribute %space text {% ([attr, _, description]) => ({ type: attr.value, description }) %}
+  | %attribute             {% ([attr]) => ({ type: attr.value, description: [] }) %}
 
 code ->
     %codeBlockStart %code %codeBlockEnd
