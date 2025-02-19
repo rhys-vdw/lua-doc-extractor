@@ -1,5 +1,3 @@
-import { Tag } from "./tag";
-
 export interface Position {
   lineNumber: number;
   columnNumber: number;
