@@ -128,46 +128,19 @@ testGetComments(
 );
 
 testGetComments(
-  "getComments parses SendMsgToSpectators",
+  "getComments parses 'no-break space'",
   dedent`
-    /******************************************************************************
-     * Messages
-     * @section messages
-    ******************************************************************************/
-
-
-    /*** @function Spring.SendMessage
-     * @param message string
-     * @return nil
+    /***
+     * @param message this is non-breakingspace: ' '
      */
-    int LuaUnsyncedCtrl::SendMessage(lua_State* L)
-    {
-      PrintMessage(L, luaL_checksstring(L, 1));
-      return 0;
-    }
-
-
-    /*** @function Spring.SendMessageToSpectators
-     * @param message string \`<PLAYER#>\` (with # being a playerid) inside the string will be replaced with the players name - i.e. : Spring.SendMessage ("\`<PLAYER1>\` did something") might display as "ProRusher did something"
-     * @return nil
-     */
-    int LuaUnsyncedCtrl::SendMessageToSpectators(lua_State* L)
-    {
-      if (gu->spectating)
-        PrintMessage(L, luaL_checksstring(L, 1));
-
-      return 0;
-    }
   `,
   [
     {
       text: dedent`
-      @function Spring.SendMessageToSpectators
-      @param message string \`<PLAYER#>\` (with # being a playerid) inside the string will be replaced with the players name - i.e. : Spring.SendMessage ("\`<PLAYER1>\` did something") might display as "ProRusher did something"
-      @return nil
+      @param message this is non-breakingspace: ' '
     `,
       start: { line: 1, col: 1 },
-      end: { line: 4, col: 3 },
+      end: { line: 3, col: 3 },
     },
   ]
 );

@@ -15,7 +15,9 @@ function makeState(rules: Readonly<Rules>): Rules {
     ...rules,
     newline: { match: "\n", lineBreaks: true },
     word: /[^\s]+/,
-    space: /[ \t]+/,
+    // Matches all whitespace except linefeeds.
+    // https://stackoverflow.com/a/3469155/317135
+    space: /[^\S\r\n]+/,
   };
 }
 
