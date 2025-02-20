@@ -1,7 +1,7 @@
 import dedent from "dedent-js";
-import { testMembers } from "./utility/harness";
+import { testInput } from "./utility/harness";
 
-testMembers(
+testInput(
   "Generates table with fields",
   dedent`
   /***
@@ -23,7 +23,7 @@ testMembers(
   `
 );
 
-testMembers(
+testInput(
   "Generates empty table",
   dedent`
   /***
@@ -37,7 +37,7 @@ testMembers(
   `
 );
 
-testMembers(
+testInput(
   "Supports multi-line field description.",
   dedent`
   /***

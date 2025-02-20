@@ -1,7 +1,7 @@
 import dedent from "dedent-js";
-import { testMembers } from "./utility/harness";
+import { testInput } from "./utility/harness";
 
-testMembers(
+testInput(
   "Generates global",
   dedent`
     /***
@@ -14,7 +14,7 @@ testMembers(
   `
 );
 
-testMembers(
+testInput(
   "Generates global multiline description",
   dedent`
     /***
@@ -31,7 +31,7 @@ testMembers(
   `
 );
 
-testMembers(
+testInput(
   "Generates global with complex type",
   dedent`
     /***

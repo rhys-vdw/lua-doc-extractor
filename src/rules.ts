@@ -1,43 +1,47 @@
 import { pull, remove } from "lodash";
-import { Comment } from "./parser";
 import { logError } from "./log";
 import {
-  appendLines,
+  appendLines as appendText,
+  formatAttribute,
+  formatTokens,
   generateField,
   isClass,
   splitFirstWord,
   stripGenericParams,
 } from "./utility";
-import { formatTag, Tag } from "./tag";
+import { Attribute, Doc } from "./doc";
 
-export type Rule = (rule: Tag, comment: Comment) => string | null;
+export type Rule = (ruleAttr: Attribute, doc: Doc) => string | null;
 
-export function globalRule(rule: Tag, comment: Comment) {
-  pull(comment.tags, rule);
+export function globalRule(ruleAttr: Attribute, comment: Doc) {
+  pull(comment.attributes, ruleAttr);
 
-  if (rule.detail.length === 0) {
-    logError(`@global tag missing type: ${formatTag(rule)}`);
+  if (ruleAttr.description.length === 0) {
+    logError(`@global tag missing type: ${formatAttribute(ruleAttr)}`);
     return null;
   }
-  return generateField(rule, "");
+  return generateField(ruleAttr, "");
 }
 
 /**
  * Declare a function.
  */
-export function functionRule(rule: Tag, comment: Comment) {
-  pull(comment.tags, rule);
+export function functionRule(ruleAttr: Attribute, doc: Doc) {
+  pull(doc.attributes, ruleAttr);
 
-  const paramNames = comment.tags
-    .filter((t) => t.type === "param" && t.detail.length > 0)
-    .map((t) => t.detail[0].split(/\s/, 1));
+  const [functionName, ...description] = splitFirstWord(ruleAttr);
 
-  if (rule.detail.length === 0) {
-    logError(`@function tag missing function name: ${rule}`);
+  if (functionName == null) {
+    logError(`@function tag missing function name: ${ruleAttr}`);
     return null;
   }
-  const [functionName, ...detail] = splitFirstWord(rule);
-  appendLines(comment.description, detail);
+
+  const paramNames = doc.attributes
+    .filter((t) => t.type === "param" && t.description.length > 0)
+    .map((t) => splitFirstWord(t)[0]?.text ?? "");
+
+  appendText(doc.description, description);
+
   return (
     functionName && `function ${functionName}(${paramNames.join(", ")}) end`
   );
@@ -46,17 +50,24 @@ export function functionRule(rule: Tag, comment: Comment) {
 /**
  * Declare a global table.
  */
-export function tableRule(rule: Tag, comment: Comment) {
-  pull(comment.tags, rule);
+export function tableRule(ruleAttr: Attribute, doc: Doc): string | null {
+  pull(doc.attributes, ruleAttr);
 
-  const [tableName, ...detail] = splitFirstWord(rule);
+  const [tableName, ...detail] = splitFirstWord(ruleAttr);
+
   if (tableName == null) {
+    logError(
+      `@${ruleAttr.type} tag missing table name: ${formatTokens(
+        ruleAttr.description
+      )}`
+    );
     return null;
   }
-  appendLines(comment.description, detail);
+
+  appendText(doc.description, detail);
   let body = "";
-  if (!isClass(comment)) {
-    const fields = remove(comment.tags, (t) => t.type === "field");
+  if (!isClass(doc)) {
+    const fields = remove(doc.attributes, (t) => t.type === "field");
     body =
       fields.length === 0
         ? ""
@@ -68,9 +79,9 @@ export function tableRule(rule: Tag, comment: Comment) {
 /**
  * Ensure a global table is created.
  */
-export function enumRule({ detail }: Tag, comment: Comment) {
-  if (comment.tags.findIndex((t) => t.type === "table") === -1) {
-    return tableRule({ type: "table", detail }, comment);
+export function enumRule(ruleAttr: Attribute, comment: Doc): string | null {
+  if (comment.attributes.findIndex((t) => t.type === "table") === -1) {
+    return tableRule(ruleAttr, comment);
   }
   return null;
 }
@@ -82,14 +93,20 @@ export function enumRule({ detail }: Tag, comment: Comment) {
  * If the class needs to be global then it can be combined with an explicit
  * `@table` annotation.
  */
-export function classRule(tag: Tag, comment: Comment) {
-  if (comment.tags.findIndex((t) => t.type === "table") === -1) {
-    const [className] = splitFirstWord(tag);
+export function classRule(ruleAttr: Attribute, doc: Doc) {
+  if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
+    const [classToken, ...description] = splitFirstWord(ruleAttr);
     return (
       "local " +
       tableRule(
-        { type: "table", detail: [stripGenericParams(className)] },
-        comment
+        {
+          type: "table",
+          description: [
+            { ...classToken, text: stripGenericParams(classToken.text) },
+            ...description,
+          ],
+        },
+        doc
       )
     );
   }

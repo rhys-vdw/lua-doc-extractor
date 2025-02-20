@@ -89,14 +89,37 @@ async function runAsync() {
   }
 
   await mkdir(dest, { recursive: true });
+  const errors = [] as string[];
   await Promise.all(
-    src.map(async (s) => {
-      const output = extract(s, await readFile(s, "utf8"), repo);
-      const destPath = join(dest, `${basename(s, extname(s))}.lua`);
-      await writeFile(destPath, output);
-      console.log(`Generated ${destPath}`);
+    src.map(async (path) => {
+      const [luaResult, error] = extract(
+        path,
+        await readFile(path, "utf8"),
+        repo
+      );
+      const destPath = join(dest, `${basename(path, extname(path))}.lua`);
+      if (error != null) {
+        console.error(chalk`{bold.red ✘} '{white ${destPath}}'`);
+        errors.push(chalk`'{white ${path}}': ${error}`);
+        return;
+      }
+
+      const { lua, docErrors } = luaResult;
+
+      errors.push(...docErrors.map((e) => chalk`'{white ${path}}': ${e}`));
+
+      await writeFile(destPath, lua);
+      if (docErrors.length > 0) {
+        console.log(chalk`{bold.yellow ⚠} '{white ${destPath}}'`);
+      } else {
+        console.log(chalk`{bold.green ✔} '{white ${destPath}}'`);
+      }
+      return null;
     })
   );
+  if (errors.length > 0) {
+    console.error(chalk`\n{red.underline ERRORS}\n\n${errors.join("\n")}`);
+  }
 }
 
 runAsync();
