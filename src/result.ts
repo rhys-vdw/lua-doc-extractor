@@ -27,3 +27,11 @@ export function failAny(error: any): Fail {
 export function fail(error: Error): Fail {
   return [null as any, error];
 }
+
+export function toResult<T>(fn: () => T): Result<T> {
+  try {
+    return success(fn());
+  } catch (e) {
+    return failAny(e);
+  }
+}

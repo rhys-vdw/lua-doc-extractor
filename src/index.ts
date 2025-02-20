@@ -20,20 +20,27 @@ import {
 import { without } from "lodash";
 import { formatSource } from "./source";
 import { getComments } from "./comment";
-import { parseDoc, Attribute, Doc, formatDoc } from "./doc";
+import { parseDoc, Attribute, Doc } from "./doc";
 import { fail, Result, success } from "./result";
 import dedent from "dedent-js";
+
+interface LuaResult {
+  lua: string;
+  docErrors: Error[];
+}
 
 export function extract(
   path: string,
   source: string,
   repoUrl?: string
-): Result<string> {
-  const [content, error] = members(source, path, repoUrl);
+): Result<LuaResult> {
+  const [luaResult, error] = members(source, path, repoUrl);
 
   if (error != null) {
     return fail(error);
   }
+
+  const { lua, docErrors } = luaResult;
 
   const header = dedent`
     ---!!! DO NOT MANUALLY EDIT THIS FILE !!!
@@ -44,7 +51,8 @@ export function extract(
     ---
     ---@meta
   `;
-  return success(`${header}\n${content}`);
+
+  return success({ lua: `${header}\n${lua}`, docErrors });
 }
 
 function mergeTables(docs: Doc[]): Doc[] {
@@ -92,12 +100,23 @@ export function members(
   source: string,
   path: string,
   repoUrl?: string
-): Result<string> {
+): Result<LuaResult> {
   const [comments, error] = getComments(source);
   if (error != null) {
     return fail(error);
   }
-  const docs = mergeTables(comments.map(parseDoc));
+  let { docs, docErrors } = comments.map(parseDoc).reduce(
+    (acc, [doc, error]) => {
+      if (error != null) {
+        acc.docErrors.push(error);
+      } else {
+        acc.docs.push(doc);
+      }
+      return acc;
+    },
+    { docs: [] as Doc[], docErrors: [] as Error[] }
+  );
+  docs = mergeTables(docs);
   const members = docs.reduce((acc, doc) => {
     const lua = applyRules(doc);
     let description = formatTokens(trimStart(doc.description));
@@ -119,7 +138,7 @@ export function members(
     acc.push(joinNonEmpty([comment, lua], "\n"));
     return acc;
   }, [] as string[]);
-  return success(members.join("\n\n"));
+  return success({ lua: members.join("\n\n"), docErrors });
 }
 
 const ruleHandlers = {

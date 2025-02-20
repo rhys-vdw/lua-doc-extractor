@@ -5,6 +5,7 @@ import { Comment } from "./comment";
 import { Token } from "moo";
 import { Position } from "./source";
 import { formatAttribute, formatTokens } from "./utility";
+import { Result, toResult } from "./result";
 
 export interface Doc {
   description: Token[];
@@ -18,7 +19,7 @@ export interface Attribute {
   description: Token[];
 }
 
-export function parseDoc(comment: Comment): Doc {
+function parse(comment: Comment): Doc {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   const { text, start, end } = comment;
   parser.feed(text);
@@ -33,13 +34,17 @@ export function parseDoc(comment: Comment): Doc {
     // });
   }
   if (parser.results.length === 0) {
-    throw new Error(`Error parsing comment.`);
+    throw new Error(`No parser output.`);
   }
   return {
     ...parser.results[0],
     start,
     end,
   };
+}
+
+export function parseDoc(comment: Comment): Result<Doc> {
+  return toResult(() => parse(comment));
 }
 
 export function formatDoc({ description, attributes }: Doc): string {
