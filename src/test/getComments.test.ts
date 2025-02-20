@@ -1,6 +1,7 @@
 import dedent from "dedent-js";
 import test from "tape";
 import { getComments, Comment } from "../comment";
+import { testInput } from "./utility/harness";
 
 function testGetComments(
   name: string,
@@ -8,23 +9,7 @@ function testGetComments(
   expected: readonly Comment[],
   only: boolean = false
 ) {
-  const testFn = only ? test.only : test;
-  testFn(name, (t) => {
-    const [actual, error] = getComments(input);
-    if (error != null) {
-      t.error(error);
-    } else {
-      t.deepEqual(actual, expected);
-    }
-    t.end();
-
-    if (only) {
-      console.log("---EXPECTED---");
-      console.log(expected);
-      console.log("---ACTUAL---");
-      console.log(actual);
-    }
-  });
+  testInput(name, input, undefined, expected, only);
 }
 
 testGetComments(

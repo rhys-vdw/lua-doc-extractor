@@ -1,18 +1,23 @@
 import test from "tape";
 import { members } from "../..";
-import { getComments } from "../../comment";
+import { Comment, getComments } from "../../comment";
 import { docLexer } from "../../docLexer";
 
 export function testInput(
   name: string,
   input: string,
-  expected: string,
+  expectedLua?: string,
+  expectedComments?: readonly Comment[],
   only: boolean = false
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
     const [comments, error] = getComments(input);
     t.error(error, "getComments succeeds");
+
+    if (expectedComments !== undefined) {
+      t.deepEqual(comments, expectedComments, "getComments has correct output");
+    }
 
     comments?.forEach(({ text }) => {
       t.doesNotThrow(() => {
@@ -27,13 +32,18 @@ export function testInput(
       t.error(err, "members succeeds");
     } else {
       t.equal(luaResult.docErrors.length, 0, "docErrors is empty");
-      luaResult.docErrors.forEach((e) => t.error(e, "docError"));
+      luaResult.docErrors.forEach((e, i) => {
+        t.true(e instanceof Error, `docError: ${i} is an error`);
+        t.error(e, `docError: ${i}`);
+      });
 
-      t.isEqual(luaResult.lua, expected, "members has correct output");
+      if (expectedLua !== undefined) {
+        t.isEqual(luaResult.lua, expectedLua, "members has correct output");
+      }
 
       if (only) {
         console.log("---EXPECTED---");
-        console.log(expected);
+        console.log(expectedLua);
         console.log("---ACTUAL---");
         console.log(luaResult.lua);
       }
