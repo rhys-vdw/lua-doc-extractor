@@ -89,18 +89,23 @@ async function runAsync() {
   }
 
   await mkdir(dest, { recursive: true });
-  await Promise.all(
+  const results = await Promise.all(
     src.map(async (path) => {
       const [output, error] = extract(path, await readFile(path, "utf8"), repo);
-      if (error != null) {
-        console.error(`'${path}': ${error}`);
-        return null;
-      }
       const destPath = join(dest, `${basename(path, extname(path))}.lua`);
+      if (error != null) {
+        console.error(`'${destPath}': ERROR`);
+        return `'${path}': ${error}`;
+      }
       await writeFile(destPath, output);
-      console.log(`Generated ${destPath}`);
+      console.log(`'${destPath}': Generated`);
+      return null;
     })
   );
+  const errors = results.filter((e) => e != null);
+  if (errors.length > 0) {
+    console.error(`\nERRORS:\n${errors.join("\n")}`);
+  }
 }
 
 runAsync();
