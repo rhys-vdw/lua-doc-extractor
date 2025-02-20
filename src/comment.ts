@@ -27,7 +27,7 @@ const commentLexer = moo.states({
   }),
   blockComment: makeState({
     indent: /^\s+\*(?!\/)/,
-    blockCommentEnd: { match: "*/", pop: 1 },
+    blockCommentEnd: { match: /\*+\//, pop: 1 },
   }),
   lineComment: makeState({
     indent: /^\s*\/{3}/,
