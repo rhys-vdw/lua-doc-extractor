@@ -94,17 +94,17 @@ async function runAsync() {
       const [output, error] = extract(path, await readFile(path, "utf8"), repo);
       const destPath = join(dest, `${basename(path, extname(path))}.lua`);
       if (error != null) {
-        console.error(`'${destPath}': ERROR`);
-        return `'${path}': ${error}`;
+        console.error(chalk`{bold.red ✘} '{white ${destPath}}'`);
+        return chalk`'{white ${path}}': ${error}`;
       }
       await writeFile(destPath, output);
-      console.log(`'${destPath}': Generated`);
+      console.log(chalk`{bold.green ✔} '{white ${destPath}}'`);
       return null;
     })
   );
   const errors = results.filter((e) => e != null);
   if (errors.length > 0) {
-    console.error(`\nERRORS:\n${errors.join("\n")}`);
+    console.error(chalk`\n{red.underline ERRORS}\n\n${errors.join("\n")}`);
   }
 }
 
