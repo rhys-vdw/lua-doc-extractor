@@ -1,6 +1,8 @@
 import moo, { Rules } from "moo";
 import { Position } from "./source";
 import dedent from "dedent-js";
+import * as result from "./result";
+import { Result } from "./result";
 
 export interface Comment {
   start: Position;
@@ -37,12 +39,14 @@ function trimParagraph(s: string): string {
   return s.replace(/\s+$/, "").trimStart();
 }
 
-export function getComments(s: string): Comment[] {
+export function getComments(s: string): Result<Comment[]> {
   try {
-    return getCommentsUnsafe(s);
+    return [getCommentsUnsafe(s), null];
   } catch (e) {
-    console.error(e);
-    return [];
+    if (e instanceof Error) {
+      return result.failAny(e);
+    }
+    throw e;
   }
 }
 

@@ -90,9 +90,13 @@ async function runAsync() {
 
   await mkdir(dest, { recursive: true });
   await Promise.all(
-    src.map(async (s) => {
-      const output = extract(s, await readFile(s, "utf8"), repo);
-      const destPath = join(dest, `${basename(s, extname(s))}.lua`);
+    src.map(async (path) => {
+      const [output, error] = extract(path, await readFile(path, "utf8"), repo);
+      if (error != null) {
+        console.error(`'${path}': ${error}`);
+        return null;
+      }
+      const destPath = join(dest, `${basename(path, extname(path))}.lua`);
       await writeFile(destPath, output);
       console.log(`Generated ${destPath}`);
     })

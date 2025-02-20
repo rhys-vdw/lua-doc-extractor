@@ -18,11 +18,8 @@ export interface Attribute {
   description: Token[];
 }
 
-const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-const initialState = parser.save();
-
 export function parseDoc(comment: Comment): Doc {
-  parser.restore(initialState);
+  const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   const { text, start, end } = comment;
   parser.feed(text);
   if (parser.results.length > 1) {

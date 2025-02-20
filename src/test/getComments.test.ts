@@ -10,8 +10,12 @@ function testGetComments(
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
-    const actual = getComments(input);
-    t.deepEqual(actual, expected);
+    const [actual, error] = getComments(input);
+    if (error != null) {
+      t.error(error);
+    } else {
+      t.deepEqual(actual, expected);
+    }
     t.end();
 
     if (only) {

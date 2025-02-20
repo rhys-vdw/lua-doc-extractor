@@ -9,8 +9,13 @@ export function testMembers(
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
-    const actual = members(input, "PATH");
-    t.isEqual(actual, expected, "Has correct output");
+    const [actual, err] = members(input, "PATH");
+    if (err != null) {
+      t.error(err);
+    } else {
+      t.isEqual(actual, expected, "Has correct output");
+    }
+    t.end();
 
     if (only) {
       console.log("---EXPECTED---");
@@ -18,6 +23,5 @@ export function testMembers(
       console.log("---ACTUAL---");
       console.log(actual);
     }
-    t.end();
   });
 }
