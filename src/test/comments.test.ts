@@ -1,7 +1,7 @@
 import dedent from "dedent-js";
-import { testMembers } from "./utility/harness";
+import { testInput } from "./utility/harness";
 
-testMembers(
+testInput(
   "Parses /*** comments only.",
   dedent`
     /***
@@ -17,7 +17,7 @@ testMembers(
   `
 );
 
-testMembers(
+testInput(
   "Ignores extra asterisks after /***",
   dedent`
     /****************

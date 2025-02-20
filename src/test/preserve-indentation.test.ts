@@ -1,7 +1,7 @@
 import dedent from "dedent-js";
-import { testMembers } from "./utility/harness";
+import { testInput } from "./utility/harness";
 
-testMembers(
+testInput(
   "Preserves indentation in main description",
   dedent`
   /***
@@ -55,7 +55,7 @@ testMembers(
 //   `
 // );
 
-testMembers(
+testInput(
   "Preserves indentation in code block",
   dedent`
     /***

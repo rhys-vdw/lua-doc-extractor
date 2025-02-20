@@ -3,7 +3,7 @@ import { members } from "../..";
 import { getComments } from "../../comment";
 import { docLexer } from "../../docLexer";
 
-export function testMembers(
+export function testInput(
   name: string,
   input: string,
   expected: string,
