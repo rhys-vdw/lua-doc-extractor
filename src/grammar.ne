@@ -13,8 +13,7 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: [], attributes }) %}
 
 attribute ->
-    %attribute %space text {% ([attr, _, description]) => ({ type: attr.value, description }) %}
-  | %attribute             {% ([attr]) => ({ type: attr.value, description: [] }) %}
+    %attribute text {% ([attr, description = []]) => ({ type: attr.value, description }) %}
 
 code ->
     %codeBlockStart %code %codeBlockEnd

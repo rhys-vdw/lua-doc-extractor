@@ -28,3 +28,17 @@ testInput(
     Foo = {}
   `
 );
+
+testInput(
+  "Single attribute followed by newline and text",
+  dedent`
+    /***
+     * @usage
+     * another line
+     */
+  `,
+  dedent`
+    ---@usage
+    ---another line
+  `
+);

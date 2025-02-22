@@ -40,7 +40,7 @@ export function formatAttribute({
   type,
   description,
 }: Readonly<Attribute>): string {
-  return `@${type} ${formatTokens(description).trim()}`;
+  return `@${type}${formatTokens(description)}`;
 }
 
 /**
