@@ -7,8 +7,6 @@ import { readFile, mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import project from "../package.json";
 import chalk from "chalk";
-import { header } from "./header";
-import { trimTrailingWhitespace } from "./utility";
 
 interface Options {
   src: string[];

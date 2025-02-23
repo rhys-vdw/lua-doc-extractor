@@ -14,11 +14,19 @@ testInput(
   `,
   dedent`
     ---@class Car
-    ---@field doorCount integer
-    ---@field maxSpeed number How fast can this baby go?
-    ---@field make string The manufacter.
-    ---@field model string The model of the car.
-    local Car = {}
+    local Car = {
+    \t---@type integer
+    \tdoorCount = nil,
+
+    \t---@type number How fast can this baby go?
+    \tmaxSpeed = nil,
+
+    \t---@type string The manufacter.
+    \tmake = nil,
+
+    \t---@type string The model of the car.
+    \tmodel = nil
+    }
   `
 );
 

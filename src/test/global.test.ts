@@ -25,8 +25,7 @@ testInput(
   `,
   dedent`
     ---@deprecated
-    ---@type Foo
-    ---This is my cool deprecated global.
+    ---@type Foo This is my cool deprecated global.
     foo = nil
   `
 );
