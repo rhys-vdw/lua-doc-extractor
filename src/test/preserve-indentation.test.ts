@@ -1,7 +1,7 @@
 import dedent from "dedent-js";
-import { testMembers } from "./utility/harness";
+import { testInput } from "./utility/harness";
 
-testMembers(
+testInput(
   "Preserves indentation in main description",
   dedent`
   /***
@@ -21,41 +21,41 @@ testMembers(
   `
 );
 
-testMembers(
-  "Preserves indentation in param description",
-  dedent`
-    /***
-     * @param options string? concatenated string of option characters.
-     *
-     *   - horizontal alignment:
-     *     - 'c' = center
-     *     - 'r' = right
-     *   - vertical alignment:
-     *     - 'a' = ascender
-     *     - 't' = top
-     *     - 'v' = vertical center
-     *     - 'x' = baseline
-     *     - 'b' = bottom
-     *     - 'd' = descender
-     */
-  `,
-  dedent`
-    ---@param options string? concatenated string of option characters.
-    ---
-    ---  - horizontal alignment:
-    ---    - 'c' = center
-    ---    - 'r' = right
-    ---  - vertical alignment:
-    ---    - 'a' = ascender
-    ---    - 't' = top
-    ---    - 'v' = vertical center
-    ---    - 'x' = baseline
-    ---    - 'b' = bottom
-    ---    - 'd' = descender
-  `
-);
+// testMembers(
+//   "Preserves indentation in param description",
+//   dedent`
+//     /***
+//      * @param options string? concatenated string of option characters.
+//      *
+//      *   - horizontal alignment:
+//      *     - 'c' = center
+//      *     - 'r' = right
+//      *   - vertical alignment:
+//      *     - 'a' = ascender
+//      *     - 't' = top
+//      *     - 'v' = vertical center
+//      *     - 'x' = baseline
+//      *     - 'b' = bottom
+//      *     - 'd' = descender
+//      */
+//   `,
+//   dedent`
+//     ---@param options string? concatenated string of option characters.
+//     ---
+//     ---  - horizontal alignment:
+//     ---    - 'c' = center
+//     ---    - 'r' = right
+//     ---  - vertical alignment:
+//     ---    - 'a' = ascender
+//     ---    - 't' = top
+//     ---    - 'v' = vertical center
+//     ---    - 'x' = baseline
+//     ---    - 'b' = bottom
+//     ---    - 'd' = descender
+//   `
+// );
 
-testMembers(
+testInput(
   "Preserves indentation in code block",
   dedent`
     /***

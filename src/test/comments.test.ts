@@ -1,7 +1,7 @@
 import dedent from "dedent-js";
-import { testMembers } from "./utility/harness";
+import { testInput } from "./utility/harness";
 
-testMembers(
+testInput(
   "Parses /*** comments only.",
   dedent`
     /***
@@ -17,7 +17,27 @@ testMembers(
   `
 );
 
-testMembers(
+testInput(
+  "Parses single line @table attribute.",
+  dedent`
+    /*** @table Foo */
+  `,
+  dedent`
+    Foo = {}
+  `
+);
+
+testInput(
+  "Parses single line @deprecated attribute.",
+  dedent`
+    /*** @deprecated */
+  `,
+  dedent`
+    ---@deprecated
+  `
+);
+
+testInput(
   "Ignores extra asterisks after /***",
   dedent`
     /****************
@@ -26,5 +46,31 @@ testMembers(
   `,
   dedent`
     Foo = {}
+  `
+);
+
+testInput(
+  "Single attribute followed by newline and text",
+  dedent`
+    /***
+     * @usage
+     * another line
+     */
+  `,
+  dedent`
+    ---@usage
+    ---another line
+  `
+);
+
+testInput(
+  "Correctly handles double quotes inline code",
+  dedent`
+    /***
+     * @param message string \`\`"\`<PLAYER#>\`"\`\` where \`#\` is a player ID.
+     */
+  `,
+  dedent`
+    ---@param message string \`\`"\`<PLAYER#>\`"\`\` where \`#\` is a player ID.
   `
 );

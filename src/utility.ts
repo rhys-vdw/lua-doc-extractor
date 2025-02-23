@@ -1,7 +1,7 @@
 import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
-import { Comment } from "./parser";
-import { formatTag, Tag } from "./tag";
+import { Attribute, Doc } from "./doc";
+import { Token } from "moo";
 
 export function stripGenericParams(text: string) {
   const index = text.indexOf("<");
@@ -17,46 +17,74 @@ export function trimFirstSpace(input: string): string {
   return input[0] === " " ? input.substring(1) : input;
 }
 
+function newLine(): Token {
+  return { type: "space", text: "\n", value: "\n" } as any;
+}
+
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */
-export function appendLines(dest: string[], src: readonly string[]) {
-  if (src.length > 0) {
-    dest.push("", ...src);
+export function joinLines(dest: readonly Token[], src: readonly Token[]) {
+  const s = trimStart(src);
+  const d = trimEnd(dest);
+  if (src.length === 0) {
+    return d;
   }
+  return [...d, newLine(), newLine(), ...s];
+}
+
+export function formatTokens(tokens: readonly Token[]): string {
+  return tokens.map((t) => t.text).join("");
+}
+
+export function trimStart(tokens: readonly Token[]): Token[] {
+  return dropWhile(tokens, (t) => t.text.trim() === "");
+}
+
+export function trimEnd(tokens: readonly Token[]): Token[] {
+  return dropRightWhile(tokens, (t) => t.text.trim() === "");
+}
+
+export function formatAttribute({
+  type,
+  description,
+}: Readonly<Attribute>): string {
+  return `@${type}${formatTokens(description)}`;
 }
 
 /**
- * @returns string[] An array containing first word, then the remaining text in
+ * @returns An array containing first word, then the remaining text in
  * subsequent elements.
  */
-export function splitFirstWord(tag: Readonly<Tag>): string[] {
-  const [firstLine, ...rest] = tag.detail;
-  const firstWord = firstLine.split(/\s/, 1)[0];
+export function splitFirstWord(attribute: Readonly<Attribute>): Token[] {
+  const [firstWord, ...rest] = trimStart(attribute.description);
   if (firstWord == null) {
-    logWarning(`Invalid tag; Word expected: ${formatTag(tag)}`);
+    logWarning(
+      `Invalid attribute; Word expected: ${formatAttribute(attribute)}`
+    );
     return [];
   }
-  const firstLineRemainder = firstLine.substring(firstWord.length).trimStart();
-  if (firstLineRemainder === "") {
-    return [firstWord, ...trimArray(rest)];
-  }
-  return [firstWord, firstLineRemainder, ...rest];
+  return [firstWord, ...rest];
 }
 
-export function isClass(comment: Comment) {
-  return comment.tags.findIndex((t) => t.type === "class") !== -1;
+export function isClass(comment: Doc) {
+  return comment.attributes.findIndex((t) => t.type === "class") !== -1;
 }
 
-export function generateField(rule: Tag, indent: string): string {
-  const [fieldName, ...detail] = splitFirstWord(rule);
-  if (detail.length === 0) {
-    logWarning(`Invalid tag; Type expected: ${formatTag(rule)}`);
+export function generateField(rule: Attribute, indent: string): string {
+  const [fieldName, ...rest] = splitFirstWord(rule);
+  if (fieldName == null) {
+    logWarning(
+      `Invalid attribute, field name expected: ${formatAttribute(rule)}`
+    );
   }
-  const [typeLine, ...rest] = detail;
+  const description = formatTokens(rest).trim();
+  if (description.length === 0) {
+    logWarning(`Invalid attribute, Type expected: ${formatAttribute(rule)}`);
+  }
   return (
-    toLuaComment([`@type ${typeLine}`, ...rest].join("\n"), indent) +
-    `\n${indent}${fieldName} = nil`
+    toLuaComment(`@type ${description}`, indent) +
+    `\n${indent}${fieldName.value} = nil`
   );
 }
 
@@ -78,4 +106,8 @@ export function joinNonEmpty(
     .map((t) => t.trimEnd())
     .filter((t) => t !== "")
     .join(separator);
+}
+
+export function trimTrailingWhitespace(input: string): string {
+  return input.replace(/[^\S\n\r]+$/gm, "");
 }
