@@ -68,7 +68,7 @@ function mergeTables(docs: Doc[]): Doc[] {
       // Get table name from the tag.
       const [tableToken, ...detail] = splitFirstWord(tableAttr);
       const table = tableToken?.text;
-      if (table == null) {
+      if (table != null) {
         if (byTable.has(table)) {
           const prev = byTable.get(table)!;
 
@@ -134,7 +134,6 @@ export function members(
     const comment = toLuaComment(
       joinNonEmpty([description, formattedTags], "\n\n")
     );
-
 
     if (!isEmpty(comment) || !isEmpty(lua)) {
       acc.push(joinNonEmpty([comment, lua], "\n"));
