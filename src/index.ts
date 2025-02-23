@@ -129,7 +129,7 @@ export function members(
       })}`;
     }
 
-    const formattedTags = doc.attributes.map(formatAttribute).join("\n");
+    const formattedTags = doc.attributes.map(formatAttribute).join("");
 
     const comment = toLuaComment(
       joinNonEmpty([description, formattedTags], "\n\n")
