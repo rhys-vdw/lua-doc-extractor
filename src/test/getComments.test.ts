@@ -1,15 +1,15 @@
 import dedent from "dedent-js";
 import test from "tape";
 import { getComments, Comment } from "../comment";
-import { testInput } from "./utility/harness";
+import { testInput, TestInputOptions } from "./utility/harness";
 
 function testGetComments(
   name: string,
   input: string,
   expected: readonly Comment[],
-  only: boolean = false
+  options: TestInputOptions = {}
 ) {
-  testInput(name, input, undefined, expected, only);
+  testInput(name, input, undefined, expected, options);
 }
 
 testGetComments(
