@@ -107,3 +107,7 @@ export function joinNonEmpty(
     .filter((t) => t !== "")
     .join(separator);
 }
+
+export function trimTrailingWhitespace(input: string): string {
+  return input.replace(/[^\S\n\r]+$/gm, "");
+}

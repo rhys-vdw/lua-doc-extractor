@@ -16,6 +16,7 @@ import {
   splitFirstWord,
   toLuaComment,
   trimStart,
+  trimTrailingWhitespace,
 } from "./utility";
 import { isEmpty, without } from "lodash";
 import { formatSource } from "./source";
@@ -52,7 +53,10 @@ export function extract(
     ---@meta
   `;
 
-  return success({ lua: `${header}\n\n${lua}`, docErrors });
+  return success({
+    lua: trimTrailingWhitespace(`${header}\n\n${lua}`),
+    docErrors,
+  });
 }
 
 function mergeTables(docs: Doc[]): Doc[] {
