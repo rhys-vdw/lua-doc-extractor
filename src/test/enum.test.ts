@@ -2,7 +2,7 @@ import dedent from "dedent-js";
 import { testInput } from "./utility/harness";
 
 testInput(
-  "Parses /*** comments only.",
+  "Generates enum table.",
   dedent`
     /***
      * @enum Numbers
