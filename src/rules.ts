@@ -79,9 +79,12 @@ export function tableRule(ruleAttr: Attribute, doc: Doc): string | null {
 /**
  * Ensure a global table is created.
  */
-export function enumRule(ruleAttr: Attribute, comment: Doc): string | null {
+export function enumRule(
+  { description }: Attribute,
+  comment: Doc
+): string | null {
   if (comment.attributes.findIndex((t) => t.type === "table") === -1) {
-    return tableRule(ruleAttr, comment);
+    return tableRule({ type: "table", description }, comment);
   }
   return null;
 }
