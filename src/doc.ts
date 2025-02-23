@@ -12,6 +12,7 @@ export interface Doc {
   attributes: Attribute[];
   start: Position;
   end: Position;
+  lua: string[];
 }
 
 export interface Attribute {

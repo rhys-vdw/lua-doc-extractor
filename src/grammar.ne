@@ -9,8 +9,8 @@ import { docLexer } from "./docLexer";
 @lexer docLexer
 
 doc ->
-    text attribute:* {% ([description, attributes]) => ({ description, attributes }) %}
-  | attribute:* {% ([attributes]) => ({ description: [], attributes }) %}
+    text attribute:* {% ([description, attributes]) => ({ description, attributes, lua: [] }) %}
+  | attribute:* {% ([attributes]) => ({ description: [], attributes, lua: [] }) %}
 
 attribute ->
     %attribute text {% ([attr, description = []]) => ({ type: attr.value, description }) %}

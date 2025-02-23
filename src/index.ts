@@ -111,10 +111,14 @@ export function members(
   );
   docs = mergeTables(docs);
   const members = docs.reduce((acc, doc) => {
-    const lua = applyRules(doc);
+    applyRules(doc);
     const description = formatTokens(trimStart(doc.description));
 
-    if (isEmpty(lua) && isEmpty(description) && doc.attributes.length == 0) {
+    if (
+      doc.lua.length === 0 &&
+      isEmpty(description) &&
+      doc.attributes.length == 0
+    ) {
       return acc;
     }
 
@@ -133,7 +137,7 @@ export function members(
       joinNonEmpty([description, sourceLink, formattedTags], "\n\n")
     );
 
-    acc.push(joinNonEmpty([comment, lua], "\n"));
+    acc.push(joinNonEmpty([comment, doc.lua[0]], "\n"));
     return acc;
   }, [] as string[]);
   return success({ lua: members.join("\n\n"), docErrors });
@@ -152,29 +156,21 @@ const ruleHandlers = {
  * from the comment.
  * @return Lua declaration or null.
  */
-function applyRules(comment: Doc): string | null {
-  const declarations = comment.attributes.reduce((acc, t) => {
+function applyRules(doc: Doc): void {
+  // Keep a copy of attributes so we can modify the original.
+  const prevAttrs = [...doc.attributes];
+  prevAttrs.forEach((t) => {
     const handler = ruleHandlers[t.type];
     if (handler != null) {
-      const declaration = handler(t, comment);
-      if (declaration != null) {
-        acc.push([t, declaration]);
-      }
+      handler(t, doc);
     }
-    return acc;
-  }, [] as [Attribute, string][]);
+  });
 
-  if (declarations.length == 0) {
-    return null;
-  }
-
-  if (declarations.length > 1) {
+  if (doc.lua.length > 1) {
     logWarning(
-      `Incompatible attributes found:\n - ${declarations
-        .map(([attr, _]) => formatAttribute(attr))
+      `Multiple generators found:\n - ${prevAttrs
+        .map(formatAttribute)
         .join("\n - ")}`
     );
   }
-
-  return declarations[0][1];
 }
