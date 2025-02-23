@@ -52,7 +52,7 @@ export function extract(
     ---@meta
   `;
 
-  return success({ lua: `${header}\n${lua}`, docErrors });
+  return success({ lua: `${header}\n\n${lua}`, docErrors });
 }
 
 function mergeTables(docs: Doc[]): Doc[] {
