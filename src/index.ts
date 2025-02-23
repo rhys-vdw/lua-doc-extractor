@@ -123,11 +123,12 @@ export function members(
   docs = mergeTables(docs);
   const members = docs.reduce((acc, doc) => {
     const lua = applyRules(doc);
-    let description = formatTokens(trimStart(doc.description));
+    const description = formatTokens(trimStart(doc.description));
+    let sourceLink = null;
 
     if (repoUrl != null) {
-      description += `\n${formatSource(repoUrl, {
-        path: path,
+      sourceLink = `${formatSource(repoUrl, {
+        path,
         start: doc.start,
         end: doc.end,
       })}`;
@@ -136,7 +137,7 @@ export function members(
     const formattedTags = doc.attributes.map(formatAttribute).join("");
 
     const comment = toLuaComment(
-      joinNonEmpty([description, formattedTags], "\n\n")
+      joinNonEmpty([description, sourceLink, formattedTags], "\n\n")
     );
 
     if (!isEmpty(comment) || !isEmpty(lua)) {

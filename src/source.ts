@@ -1,3 +1,5 @@
+import { join } from "path";
+
 export interface Position {
   line: number;
   col: number;
@@ -20,5 +22,10 @@ export function sourceToUrl(
   repoUrl: string,
   { path, start, end }: Source
 ): string {
-  return `${repoUrl}${path}#L${start.line}-L${end.line}`;
+  const url = URL.parse(repoUrl);
+  if (url == null) {
+    return "";
+  }
+  url.pathname = join(url.pathname, path);
+  return `${url}#L${start.line}-L${end.line}`;
 }

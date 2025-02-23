@@ -3,12 +3,18 @@ import { members } from "../..";
 import { Comment, getComments } from "../../comment";
 import { docLexer } from "../../docLexer";
 
+export interface TestInputOptions {
+  repoUrl?: string;
+  only?: boolean;
+  path?: string;
+}
+
 export function testInput(
   name: string,
   input: string,
   expectedLua?: string,
   expectedComments?: readonly Comment[],
-  only: boolean = false
+  { only, repoUrl, path = "PATH" }: TestInputOptions = {}
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
@@ -26,7 +32,7 @@ export function testInput(
       }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
     });
 
-    const [luaResult, err] = members(input, "PATH");
+    const [luaResult, err] = members(input, path, repoUrl);
 
     if (err != null) {
       t.error(err, "members succeeds");
@@ -42,9 +48,9 @@ export function testInput(
       }
 
       if (only) {
-        console.log("---EXPECTED---");
+        console.log(">>>EXPECTED>>>");
         console.log(expectedLua);
-        console.log("---ACTUAL---");
+        console.log("<<<ACTUAL<<<");
         console.log(luaResult.lua);
       }
     }
