@@ -18,6 +18,26 @@ testInput(
 );
 
 testInput(
+  "Parses single line @table attribute.",
+  dedent`
+    /*** @table Foo */
+  `,
+  dedent`
+    Foo = {}
+  `
+);
+
+testInput(
+  "Parses single line @deprecated attribute.",
+  dedent`
+    /*** @deprecated */
+  `,
+  dedent`
+    ---@deprecated
+  `
+);
+
+testInput(
   "Ignores extra asterisks after /***",
   dedent`
     /****************
