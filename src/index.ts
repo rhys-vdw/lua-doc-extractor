@@ -124,8 +124,12 @@ export function members(
   const members = docs.reduce((acc, doc) => {
     const lua = applyRules(doc);
     const description = formatTokens(trimStart(doc.description));
-    let sourceLink = null;
 
+    if (isEmpty(lua) && isEmpty(description) && doc.attributes.length == 0) {
+      return acc;
+    }
+
+    let sourceLink = null;
     if (repoUrl != null) {
       sourceLink = `${formatSource(repoUrl, {
         path,
@@ -140,9 +144,7 @@ export function members(
       joinNonEmpty([description, sourceLink, formattedTags], "\n\n")
     );
 
-    if (!isEmpty(comment) || !isEmpty(lua)) {
-      acc.push(joinNonEmpty([comment, lua], "\n"));
-    }
+    acc.push(joinNonEmpty([comment, lua], "\n"));
     return acc;
   }, [] as string[]);
   return success({ lua: members.join("\n\n"), docErrors });

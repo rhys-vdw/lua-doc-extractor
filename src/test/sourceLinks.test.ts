@@ -30,7 +30,7 @@ test("formatSource", (t) => {
 });
 
 testInput(
-  "extract with source links",
+  "Extract with source links",
   dedent`
     /***
      * @table MyTable
@@ -50,6 +50,23 @@ testInput(
     ---@param x number
     function MyTable.Boop(x) end
   `,
+  undefined,
+  {
+    path: "cool/file.txt",
+    repoUrl: "https://github.com/rhys-vdw/lua-doc-extractor/blob/main/",
+  }
+);
+
+testInput(
+  "Does not add source links if nothing is generated",
+  dedent`
+    /*************************************/
+
+    /*************************************/
+
+    /*************************************/
+  `,
+  "",
   undefined,
   {
     path: "cool/file.txt",
