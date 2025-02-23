@@ -24,7 +24,7 @@ function makeState(rules: Readonly<Rules>): Rules {
 const commentLexer = moo.states({
   code: makeState({
     blockCommentStart: { match: /\/\*{3,}(?!\/)/, push: "blockComment" },
-    lineCommentStart: { match: /^\s*\/{3}/, push: "lineComment" },
+    lineCommentStart: { match: /^\s*\/{3,}/, push: "lineComment" },
   }),
   blockComment: makeState({
     indent: /^\s+\*(?!\/)/,
@@ -32,6 +32,7 @@ const commentLexer = moo.states({
   }),
   lineComment: makeState({
     indent: /^\s*\/{3}/,
+    // TODO: Exit line comment when they are the final line of the file.
     lineCommentEnd: { match: /\n\s*(?!\/{3})/, lineBreaks: true, pop: 1 },
   }),
 });
