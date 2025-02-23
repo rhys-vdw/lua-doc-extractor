@@ -9,7 +9,7 @@ import {
   tableRule,
 } from "./rules";
 import {
-  appendLines,
+  joinLines,
   formatAttribute,
   formatTokens,
   joinNonEmpty,
@@ -73,10 +73,10 @@ function mergeTables(docs: Doc[]): Doc[] {
           const prev = byTable.get(table)!;
 
           // Merge descriptions with a blank line.
-          appendLines(prev.description, doc.description);
+          prev.description = joinLines(prev.description, doc.description);
 
           // Merge in the additional detail from the table tag.
-          appendLines(prev.description, detail);
+          prev.description = joinLines(prev.description, detail);
 
           // Merge all tags, but skip the duplicate table tag.
           prev.attributes.push(...without(doc.attributes, tableAttr));

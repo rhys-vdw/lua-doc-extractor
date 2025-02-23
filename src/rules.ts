@@ -1,7 +1,7 @@
 import { pull, remove } from "lodash";
 import { logError } from "./log";
 import {
-  appendLines as appendText,
+  joinLines,
   formatAttribute,
   formatTokens,
   generateField,
@@ -40,7 +40,7 @@ export function functionRule(ruleAttr: Attribute, doc: Doc) {
     .filter((t) => t.type === "param" && t.description.length > 0)
     .map((t) => splitFirstWord(t)[0]?.text ?? "");
 
-  appendText(doc.description, description);
+  doc.description = joinLines(doc.description, description);
 
   return (
     functionName && `function ${functionName}(${paramNames.join(", ")}) end`
@@ -64,7 +64,7 @@ export function tableRule(ruleAttr: Attribute, doc: Doc): string | null {
     return null;
   }
 
-  appendText(doc.description, detail);
+  doc.description = joinLines(doc.description, detail);
   let body = "";
   if (!isClass(doc)) {
     const fields = remove(doc.attributes, (t) => t.type === "field");

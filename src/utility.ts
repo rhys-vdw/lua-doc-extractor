@@ -17,15 +17,20 @@ export function trimFirstSpace(input: string): string {
   return input[0] === " " ? input.substring(1) : input;
 }
 
+function newLine(): Token {
+  return { type: "space", text: "\n", value: "\n" } as any;
+}
+
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */
-export function appendLines(dest: Token[], src: readonly Token[]) {
-  src = trimStart(src);
+export function joinLines(dest: readonly Token[], src: readonly Token[]) {
+  const s = trimStart(src);
+  const d = trimEnd(dest);
   if (src.length === 0) {
-    return;
+    return d;
   }
-  dest.push({ type: "space", text: "\n", value: "\n" } as any, ...src);
+  return [...d, newLine(), newLine(), ...s];
 }
 
 export function formatTokens(tokens: readonly Token[]): string {
@@ -34,6 +39,10 @@ export function formatTokens(tokens: readonly Token[]): string {
 
 export function trimStart(tokens: readonly Token[]): Token[] {
   return dropWhile(tokens, (t) => t.text.trim() === "");
+}
+
+export function trimEnd(tokens: readonly Token[]): Token[] {
+  return dropRightWhile(tokens, (t) => t.text.trim() === "");
 }
 
 export function formatAttribute({
