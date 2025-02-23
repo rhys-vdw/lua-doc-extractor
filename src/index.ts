@@ -19,11 +19,6 @@ import {
   trimTrailingWhitespace,
 } from "./utility";
 
-interface LuaResult {
-  lua: string;
-  docErrors: Error[];
-}
-
 export function addHeader(body: string): string {
   return trimTrailingWhitespace(`${header()}\n\n${body}`);
 }
