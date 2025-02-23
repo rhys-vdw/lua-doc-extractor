@@ -9,7 +9,7 @@ Extracts lua documentation from C-style comments.
 ### From GitHub
 
 ```
-$ npm install lua-doc-extractor
+$ npm install -g lua-doc-extractor
 ```
 
 ## Usage
@@ -18,14 +18,20 @@ $ npm install lua-doc-extractor
 
 Process files:
 
-```
-$ npx lua-doc-extractor some-file.cpp other-files/*.cpp ---dest output
+```sh
+$ lua-doc-extractor some-file.cpp other-files/*.cpp --dest output
 ```
 
 Show usage:
 
+```sh
+$ lua-doc-extractor --help
 ```
-$ npx lua-doc-extractor --help
+
+To add GitHub source links to the exported library. Provide the `--repo` argument.
+
+```sh
+$ lua-doc-extractor **/*.cpp --dest library --repo https://github.com/beyond-all-reason/spring/blob/62ee0b4/
 ```
 
 ### Annotations
