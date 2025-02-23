@@ -2,7 +2,7 @@ import dedent from "dedent-js";
 import { testInput } from "./utility/harness";
 
 testInput(
-  "Parses /*** comments only.",
+  "Generates class.",
   dedent`
     /***
      * @class Car
@@ -19,5 +19,22 @@ testInput(
     ---@field make string The manufacter.
     ---@field model string The model of the car.
     local Car = {}
+  `
+);
+
+testInput(
+  "Handles generic class.",
+  dedent`
+    /***
+     * A table of uniform name to value.
+     *
+     * @class UniformParam<T> : { [string]: T|T[] }
+     */
+  `,
+  dedent`
+    ---A table of uniform name to value.
+    ---
+    ---@class UniformParam<T> : { [string]: T|T[] }
+    local UniformParam = {}
   `
 );

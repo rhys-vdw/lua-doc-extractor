@@ -98,16 +98,16 @@ export function enumRule(
  */
 export function classRule(ruleAttr: Attribute, doc: Doc) {
   if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
-    const [classToken, ...description] = splitFirstWord(ruleAttr);
+    // NOTE: Don't do anything with the remaining text, as it will be retained
+    // on the `@class` tag.
+    const [classToken] = splitFirstWord(ruleAttr);
+    const tableName = stripGenericParams(classToken.text);
     return (
       "local " +
       tableRule(
         {
           type: "table",
-          description: [
-            { ...classToken, text: stripGenericParams(classToken.text) },
-            ...description,
-          ],
+          description: [{ ...classToken, text: tableName, value: tableName }],
         },
         doc
       )
