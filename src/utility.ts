@@ -78,12 +78,12 @@ export function generateField(rule: Attribute, indent: string): string {
       `Invalid attribute, field name expected: ${formatAttribute(rule)}`
     );
   }
-  const description = trimStart(rest);
+  const description = formatTokens(rest).trim();
   if (description.length === 0) {
     logWarning(`Invalid attribute, Type expected: ${formatAttribute(rule)}`);
   }
   return (
-    toLuaComment(`@type ${formatTokens(description).trimEnd()}`, indent) +
+    toLuaComment(`@type ${description}`, indent) +
     `\n${indent}${fieldName.value} = nil`
   );
 }
