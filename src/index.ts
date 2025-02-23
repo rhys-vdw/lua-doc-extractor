@@ -21,7 +21,7 @@ import { isEmpty, without } from "lodash";
 import { formatSource } from "./source";
 import { getComments } from "./comment";
 import { parseDoc, Attribute, Doc } from "./doc";
-import { fail, Result, success } from "./result";
+import { fail, isSuccess, Result, success } from "./result";
 import { header } from "./header";
 
 interface LuaResult {
@@ -89,26 +89,35 @@ function mergeTables(docs: Doc[]): Doc[] {
   return result;
 }
 
+function getDocs(source: string, path: string): Result<[Doc[], Error[]]> {
+  const [comments, error] = getComments(source);
+  if (error != null) {
+    return fail(error);
+  }
+  const docs = [] as Doc[];
+  const docErrors = [] as Error[];
+  comments.map(parseDoc).forEach(([doc, error]) => {
+    if (error != null) {
+      docErrors.push(error);
+    } else {
+      doc.path = path;
+      docs.push(doc);
+    }
+  });
+  return success([docs, docErrors]);
+}
+
 export function members(
   source: string,
   path: string,
   repoUrl?: string
 ): Result<LuaResult> {
-  const [comments, error] = getComments(source);
+  const [docResult, error] = getDocs(source, path);
   if (error != null) {
     return fail(error);
   }
-  let { docs, docErrors } = comments.map(parseDoc).reduce(
-    (acc, [doc, error]) => {
-      if (error != null) {
-        acc.docErrors.push(error);
-      } else {
-        acc.docs.push(doc);
-      }
-      return acc;
-    },
-    { docs: [] as Doc[], docErrors: [] as Error[] }
-  );
+  let [docs, docErrors] = docResult;
+
   docs = mergeTables(docs);
   const members = docs.reduce((acc, doc) => {
     applyRules(doc);

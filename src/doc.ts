@@ -10,6 +10,7 @@ import { Result, toResult } from "./result";
 export interface Doc {
   description: Token[];
   attributes: Attribute[];
+  path?: string;
   start: Position;
   end: Position;
   lua: string[];
