@@ -2,11 +2,13 @@
 
 import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
-import { extract } from ".";
+import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import { readFile, mkdir, writeFile } from "fs/promises";
-import { basename, extname, join } from "path";
+import { join } from "path";
 import project from "../package.json";
 import chalk from "chalk";
+import { header } from "./header";
+import { trimTrailingWhitespace } from "./utility";
 
 interface Options {
   src: string[];
@@ -90,33 +92,36 @@ async function runAsync() {
 
   await mkdir(dest, { recursive: true });
   const errors = [] as string[];
-  await Promise.all(
-    src.map(async (path) => {
-      const [luaResult, error] = extract(
-        path,
-        await readFile(path, "utf8"),
-        repo
-      );
-      const destPath = join(dest, `${basename(path, extname(path))}.lua`);
-      if (error != null) {
-        console.error(chalk`{bold.red ✘} '{white ${destPath}}'`);
-        errors.push(chalk`'{white ${path}}': ${error}`);
-        return;
-      }
+  const docs = (
+    await Promise.all(
+      src.map(async (path) => {
+        const [docResult, error] = getDocs(await readFile(path, "utf8"), path);
 
-      const { lua, docErrors } = luaResult;
+        if (error != null) {
+          console.error(chalk`{bold.red ✘} '{white ${path}}'`);
+          errors.push(chalk`'{white ${path}}': ${error}`);
+          return [];
+        }
 
-      errors.push(...docErrors.map((e) => chalk`'{white ${path}}': ${e}`));
+        const [docs, docErrors] = docResult;
 
-      await writeFile(destPath, lua);
-      if (docErrors.length > 0) {
-        console.log(chalk`{bold.yellow ⚠} '{white ${destPath}}'`);
-      } else {
-        console.log(chalk`{bold.green ✔} '{white ${destPath}}'`);
-      }
-      return null;
-    })
-  );
+        if (docErrors.length > 0) {
+          errors.push(...docErrors.map((e) => chalk`'{white ${path}}': ${e}`));
+          console.log(chalk`{bold.yellow ⚠} '{white ${path}}'`);
+        } else {
+          console.log(chalk`{bold.green ✔} '{white ${path}}'`);
+        }
+
+        return docs;
+      })
+    )
+  ).flat();
+
+  processDocs(docs);
+
+  const formattedDocs = formatDocs(docs, repo ?? null);
+  await writeFile(join(dest, "library.lua"), addHeader(formattedDocs));
+
   if (errors.length > 0) {
     console.error(chalk`\n{red.underline ERRORS}\n\n${errors.join("\n")}`);
   }

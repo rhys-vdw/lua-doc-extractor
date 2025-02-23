@@ -3,7 +3,7 @@ import grammar from "./grammar.ne";
 import { Comment } from "./comment";
 
 import { Token } from "moo";
-import { Position } from "./source";
+import { formatSource, Position } from "./source";
 import {
   formatAttribute,
   formatTokens,
@@ -62,7 +62,16 @@ function formatDocComment(doc: Doc, sourceLink: string | null): string {
   return toLuaComment(joinNonEmpty([fDesc, sourceLink, fAttrs], "\n\n"));
 }
 
-export function formatDoc(doc: Doc, sourceLink: string | null): string {
+export function formatDoc(doc: Doc, repoUrl: string | null): string {
+  let sourceLink = null;
+  if (repoUrl && doc.path) {
+    sourceLink = `${formatSource(repoUrl, {
+      path: doc.path,
+      start: doc.start,
+      end: doc.end,
+    })}`;
+  }
+
   return joinNonEmpty([formatDocComment(doc, sourceLink), doc.lua[0]], "\n");
 }
 

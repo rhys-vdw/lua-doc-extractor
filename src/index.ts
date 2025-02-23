@@ -10,11 +10,7 @@ import {
 import {
   joinLines,
   formatAttribute,
-  formatTokens,
-  joinNonEmpty,
   splitFirstWord,
-  toLuaComment,
-  trimStart,
   trimTrailingWhitespace,
 } from "./utility";
 import { isEmpty, without } from "lodash";
@@ -29,23 +25,8 @@ interface LuaResult {
   docErrors: Error[];
 }
 
-export function extract(
-  path: string,
-  source: string,
-  repoUrl?: string
-): Result<LuaResult> {
-  const [luaResult, error] = members(source, path, repoUrl);
-
-  if (error != null) {
-    return fail(error);
-  }
-
-  const { lua, docErrors } = luaResult;
-
-  return success({
-    lua: trimTrailingWhitespace(`${header(path)}\n\n${lua}`),
-    docErrors,
-  });
+export function addHeader(body: string): string {
+  return trimTrailingWhitespace(`${header()}\n\n${body}`);
 }
 
 function mergeTables(docs: Doc[]): Doc[] {
@@ -89,7 +70,10 @@ function mergeTables(docs: Doc[]): Doc[] {
   return result;
 }
 
-function getDocs(source: string, path: string): Result<[Doc[], Error[]]> {
+export function getDocs(
+  source: string,
+  path: string
+): Result<[Doc[], Error[]]> {
   const [comments, error] = getComments(source);
   if (error != null) {
     return fail(error);
@@ -113,34 +97,15 @@ export function processDocs(docs: Doc[]): Doc[] {
   return merged;
 }
 
-export function members(
-  source: string,
-  path: string,
+export function formatDocs(
+  docs: Readonly<Doc[]>,
   repoUrl: string | null
-): Result<LuaResult> {
-  const [docResult, error] = getDocs(source, path);
-  if (error != null) {
-    return fail(error);
-  }
-  let [docs, docErrors] = docResult;
-
-  processDocs(docs);
-
+): string {
   const members = docs
     .filter((e) => !isDocEmpty(e))
-    .reduce((acc, doc) => {
-      const sourceLink =
-        repoUrl &&
-        `${formatSource(repoUrl, {
-          path,
-          start: doc.start,
-          end: doc.end,
-        })}`;
+    .map((d) => formatDoc(d, repoUrl));
 
-      acc.push(formatDoc(doc, sourceLink));
-      return acc;
-    }, [] as string[]);
-  return success({ lua: members.join("\n\n"), docErrors });
+  return members.join("\n\n");
 }
 
 const ruleHandlers = {

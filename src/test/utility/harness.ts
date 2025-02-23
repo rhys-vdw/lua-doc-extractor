@@ -1,5 +1,5 @@
 import test from "tape";
-import { members } from "../..";
+import { formatDocs, getDocs, processDocs } from "../..";
 import { Comment, getComments } from "../../comment";
 import { docLexer } from "../../docLexer";
 
@@ -12,7 +12,7 @@ export interface TestInputOptions {
 export function testInput(
   name: string,
   input: string,
-  expectedLua?: string,
+  expected?: string,
   expectedComments?: readonly Comment[],
   { only, repoUrl, path = "PATH" }: TestInputOptions = {}
 ) {
@@ -32,26 +32,31 @@ export function testInput(
       }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
     });
 
-    const [luaResult, err] = members(input, path, repoUrl);
+    const [docResult, err] = getDocs(input, path);
 
     if (err != null) {
-      t.error(err, "members succeeds");
+      t.error(err, "getDocs succeeds");
     } else {
-      t.equal(luaResult.docErrors.length, 0, "docErrors is empty");
-      luaResult.docErrors.forEach((e, i) => {
+      const [docs, docErrors] = docResult;
+      t.equal(docErrors.length, 0, "docErrors is empty");
+      docErrors.forEach((e, i) => {
         t.true(e instanceof Error, `docError: ${i} is an error`);
         t.error(e, `docError: ${i}`);
       });
 
-      if (expectedLua !== undefined) {
-        t.isEqual(luaResult.lua, expectedLua, "members has correct output");
+      processDocs(docs);
+
+      const actual = formatDocs(docs, repoUrl || null);
+
+      if (expected !== undefined) {
+        t.isEqual(actual, expected, "members has correct output");
       }
 
       if (only) {
         console.log(">>>EXPECTED>>>");
-        console.log(expectedLua);
+        console.log(expected);
         console.log("<<<ACTUAL<<<");
-        console.log(luaResult.lua);
+        console.log(actual);
       }
     }
 
