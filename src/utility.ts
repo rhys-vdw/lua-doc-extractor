@@ -74,10 +74,8 @@ export function generateField(rule: Attribute, indent: string): string {
     logWarning(`Invalid attribute, Type expected: ${formatAttribute(rule)}`);
   }
   return (
-    toLuaComment(
-      [`@type ${formatTokens(description).trimEnd()}`].join("\n"),
-      indent
-    ) + `\n${indent}${fieldName.value} = nil`
+    toLuaComment(`@type ${formatTokens(description).trimEnd()}`, indent) +
+    `\n${indent}${fieldName.value} = nil`
   );
 }
 
