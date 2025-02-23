@@ -9,23 +9,30 @@ import {
   formatTokens,
   joinNonEmpty,
   toLuaComment,
-  trimStart,
 } from "./utility";
 import { Result, toResult } from "./result";
 
 export interface Doc {
-  description: Token[];
-  attributes: Attribute[];
+  description: string;
+  attributes: (FieldAttribute | Attribute)[];
   path?: string;
   start: Position;
   end: Position;
   lua: string[];
 }
 
-export interface Attribute {
-  type: string;
-  description: Token[];
+export interface DefaultAttribute {
+  type: Exclude<string, "field" | "global">;
+  description: string;
 }
+
+export interface FieldAttribute {
+  type: "field" | "global";
+  field: { name: string; type: string };
+  description: string;
+}
+
+export type Attribute = FieldAttribute | DefaultAttribute;
 
 function parse(comment: Comment): Doc {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
@@ -56,7 +63,7 @@ export function parseDoc(comment: Comment): Result<Doc> {
 }
 
 function formatDocComment(doc: Doc, sourceLink: string | null): string {
-  const fDesc = formatTokens(doc.description).trimStart();
+  const fDesc = doc.description.trimStart();
   const fAttrs = doc.attributes.map(formatAttribute).join("");
 
   return toLuaComment(joinNonEmpty([fDesc, sourceLink, fAttrs], "\n\n"));
@@ -78,7 +85,7 @@ export function formatDoc(doc: Doc, repoUrl: string | null): string {
 export function isDocEmpty(doc: Doc): boolean {
   return (
     doc.lua.length === 0 &&
-    formatTokens(doc.description).length === 0 &&
+    doc.description.length === 0 &&
     doc.attributes.length === 0
   );
 }

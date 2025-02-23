@@ -20,7 +20,9 @@ testInput(
     \t---@type string This is bar.
     \tbar = nil
     }
-  `
+  `,
+  undefined,
+  { only: true }
 );
 
 testInput(

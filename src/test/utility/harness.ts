@@ -28,7 +28,10 @@ export function testInput(
     comments?.forEach(({ text }) => {
       t.doesNotThrow(() => {
         docLexer.reset(text);
-        Array.from(docLexer);
+        const docTokens = Array.from(docLexer);
+        docTokens.forEach((t) => {
+          console.log(`${t.type}: |${t.text}|`);
+        });
       }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
     });
 
@@ -49,7 +52,7 @@ export function testInput(
       const actual = formatDocs(docs, repoUrl || null);
 
       if (expected !== undefined) {
-        t.isEqual(actual, expected, "members has correct output");
+        t.isEqual(actual, expected, "formatDocs has correct output");
       }
 
       if (only) {

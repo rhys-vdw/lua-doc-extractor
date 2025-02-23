@@ -7,12 +7,18 @@ import {
   generateField,
   stripGenericParams,
   splitFirstWord,
+  formatField,
 } from "./utility";
-import { Attribute, Doc } from "./doc";
+import { Attribute, Doc, FieldAttribute } from "./doc";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 
-export const globalRule: Rule = (ruleAttr, doc) => {
+export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
+  if (ruleAttr.type !== "global") {
+    logError(`@global tag failed to parse.`);
+    return;
+  }
+
   pull(doc.attributes, ruleAttr);
 
   if (ruleAttr.description.length === 0) {
@@ -20,7 +26,7 @@ export const globalRule: Rule = (ruleAttr, doc) => {
     return;
   }
 
-  doc.lua.push(generateField(ruleAttr, ""));
+  doc.lua.push(generateField(ruleAttr as FieldAttribute, ""));
 };
 
 /**
@@ -29,16 +35,18 @@ export const globalRule: Rule = (ruleAttr, doc) => {
 export const functionRule: Rule = (ruleAttr, doc) => {
   pull(doc.attributes, ruleAttr);
 
-  const [functionName, ...description] = splitFirstWord(ruleAttr);
+  const split = splitFirstWord(ruleAttr);
 
-  if (functionName == null) {
+  if (split == null) {
     logError(`@function tag missing function name: ${ruleAttr}`);
     return;
   }
 
+  const [functionName, description] = split;
+
   const paramNames = doc.attributes
     .filter((t) => t.type === "param" && t.description.length > 0)
-    .map((t) => splitFirstWord(t)[0]?.text ?? "");
+    .map((t) => splitFirstWord(t)?.[0] ?? "");
 
   doc.description = joinLines(doc.description, description);
   doc.lua.push(`function ${functionName}(${paramNames.join(", ")}) end`);
@@ -50,19 +58,19 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 export const tableRule: Rule = (ruleAttr, doc) => {
   pull(doc.attributes, ruleAttr);
 
-  const [tableName, ...detail] = splitFirstWord(ruleAttr);
+  const split = splitFirstWord(ruleAttr);
 
-  if (tableName == null) {
+  if (split == null) {
     logError(
-      `@${ruleAttr.type} tag missing table name: ${formatTokens(
-        ruleAttr.description
-      )}`
+      `@${ruleAttr.type} tag missing table name: ${ruleAttr.description}`
     );
     return;
   }
 
+  const [tableName, detail] = split;
+
   doc.description = joinLines(doc.description, detail);
-  doc.lua.push(formatTable(tableName.text, formatTableFields(doc.attributes)));
+  doc.lua.push(formatTable(tableName, formatTableFields(doc.attributes)));
 };
 
 /**
@@ -72,20 +80,18 @@ export const enumRule: Rule = (ruleAttr: Attribute, doc: Doc) => {
   if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
     // NOTE: Don't do anything with the remaining text, as it will be retained
     // on the `@enum` tag.
-    const [enumName] = splitFirstWord(ruleAttr);
+    const split = splitFirstWord(ruleAttr);
 
-    if (enumName == null) {
+    if (split == null) {
       logError(
-        `@${ruleAttr.type} tag missing class name: ${formatTokens(
-          ruleAttr.description
-        )}`
+        `@${ruleAttr.type} tag missing class name: ${ruleAttr.description}`
       );
       return;
     }
 
-    doc.lua.push(
-      formatTable(enumName.value, formatTableFields(doc.attributes))
-    );
+    const [enumName] = split;
+
+    doc.lua.push(formatTable(enumName, formatTableFields(doc.attributes)));
   }
 };
 
@@ -100,17 +106,17 @@ export const classRule: Rule = (ruleAttr, doc): void => {
   if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
     // NOTE: Don't do anything with the remaining text, as it will be retained
     // on the `@class` tag.
-    const [className] = splitFirstWord(ruleAttr);
-    const tableName = stripGenericParams(className.text);
+    const split = splitFirstWord(ruleAttr);
 
-    if (className == null) {
+    if (split == null) {
       logError(
-        `@${ruleAttr.type} tag missing class name: ${formatTokens(
-          ruleAttr.description
-        )}`
+        `@${ruleAttr.type} tag missing class name: ${ruleAttr.description}`
       );
       return;
     }
+
+    const [className] = split;
+    const tableName = stripGenericParams(className);
 
     doc.lua.push(`local ${formatTable(tableName, "")}`);
   }
@@ -132,5 +138,13 @@ function formatTableFields(attributes: Attribute[]): string {
     return "";
   }
 
-  return "\n" + fields.map((f) => generateField(f, "\t")).join(",\n\n") + "\n";
+  console.log("==========");
+  fields.forEach((f) => console.log(f));
+  console.log("==========");
+
+  return (
+    "\n" +
+    fields.map((f) => generateField(f as FieldAttribute, "\t")).join(",\n\n") +
+    "\n"
+  );
 }

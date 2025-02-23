@@ -1,6 +1,6 @@
 import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
-import { Attribute, Doc } from "./doc";
+import { Attribute, Doc, FieldAttribute } from "./doc";
 import { Token } from "moo";
 
 export function stripGenericParams(text: string) {
@@ -24,13 +24,13 @@ function newLine(): Token {
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */
-export function joinLines(dest: readonly Token[], src: readonly Token[]) {
-  const s = trimStart(src);
-  const d = trimEnd(dest);
+export function joinLines(dest: string, src: string) {
+  const s = src.trimStart();
+  const d = dest.trimEnd();
   if (src.length === 0) {
     return d;
   }
-  return [...d, newLine(), newLine(), ...s];
+  return `${d}\n\n${s}`;
 }
 
 export function formatTokens(tokens: readonly Token[]): string {
@@ -49,42 +49,53 @@ export function formatAttribute({
   type,
   description,
 }: Readonly<Attribute>): string {
-  return `@${type}${formatTokens(description)}`;
+  return `@${type}${description}`;
 }
 
 /**
  * @returns An array containing first word, then the remaining text in
  * subsequent elements.
  */
-export function splitFirstWord(attribute: Readonly<Attribute>): Token[] {
-  const [firstWord, ...rest] = trimStart(attribute.description);
+export function splitFirstWord(
+  attribute: Readonly<Attribute>
+): [string, string] | null {
+  const [firstWord, rest] = attribute.description.trimStart().split(" ", 2);
   if (firstWord == null) {
     logWarning(
       `Invalid attribute; Word expected: ${formatAttribute(attribute)}`
     );
-    return [];
+    return null;
   }
-  return [firstWord, ...rest];
+  return [firstWord, rest];
 }
 
 export function isClass(comment: Doc) {
   return comment.attributes.findIndex((t) => t.type === "class") !== -1;
 }
 
-export function generateField(rule: Attribute, indent: string): string {
-  const [fieldName, ...rest] = splitFirstWord(rule);
-  if (fieldName == null) {
+export function generateField(rule: FieldAttribute, indent: string): string {
+  if (rule.field == null) {
     logWarning(
       `Invalid attribute, field name expected: ${formatAttribute(rule)}`
     );
   }
-  const description = formatTokens(rest).trim();
-  if (description.length === 0) {
-    logWarning(`Invalid attribute, Type expected: ${formatAttribute(rule)}`);
+  if (rule.field == null) {
+    console.error(`No field property`, rule);
+    return "";
   }
+  var { name, type } = rule.field;
+  return formatField(name, type, rule.description.trimStart(), indent);
+}
+
+export function formatField(
+  name: string,
+  type: string,
+  description: string,
+  indent: string
+) {
   return (
-    toLuaComment(`@type ${description}`, indent) +
-    `\n${indent}${fieldName.value} = nil`
+    toLuaComment(`@type ${type} ${description}`, indent) +
+    `\n${indent}${name} = nil`
   );
 }
 

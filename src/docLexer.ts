@@ -1,9 +1,13 @@
-import moo from "moo";
+import moo, { keywords } from "moo";
 
 /** Lexes the comment body of Lua doc comments. */
 export const docLexer = moo.states({
   main: {
-    attribute: { match: /@[^\s]+/, value: (x) => x.substring(1) },
+    attribute: {
+      type: keywords({ field: "@field", global: "@global" }),
+      match: /@[^\s]+/,
+      value: (x) => x.substring(1),
+    },
     codeBlockStart: { match: /```[a-zA-Z]*\s*\n/, push: "codeBlock" },
     // Handle double escaped backticks.
     // TODO: This should support arbitrary numbers of backticks, not sure how.

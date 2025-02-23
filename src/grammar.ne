@@ -4,16 +4,32 @@
 
 @{%
 import { docLexer } from "./docLexer";
+
 %}
 
 @lexer docLexer
 
 doc ->
-    text attribute:* {% ([description, attributes]) => ({ description, attributes, lua: [] }) %}
-  | attribute:* {% ([attributes]) => ({ description: [], attributes, lua: [] }) %}
+    lines attribute:* {% ([description, attributes]) => ({ description, attributes, lua: [] }) %}
+  | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %attribute text {% ([attr, description = []]) => ({ type: attr.value, description }) %}
+    (%field {% id %} | %global {% id %}) %space %word %space %word lines {% ([attr, _s, name, _, type, description]) => {
+      console.log(`FIELD name=${name.value} -> type=${type.value} -> desc=${JSON.stringify(description)}`);
+      return ({ type: attr.value, field: { name: name.value, type: type.value }, description })
+    }%}
+  | %attribute lines {% ([attr, description]) => {
+    console.log(`NON-FIELD value=${attr.value} -> desc=${JSON.stringify(description)}`);
+    return ({ type: attr.value, description })
+  }%}
+
+lines -> (line %newline):+ {% (d) => d.flat(2).join("") %}
+
+line -> (
+  code {% id %}
+  | %word {% id %}
+  | %space {% id %}
+):* {% d => d.flat(2).join("") %}
 
 code ->
     %codeBlockStart %code %codeBlockEnd

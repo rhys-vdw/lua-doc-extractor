@@ -13,9 +13,9 @@ export function mergeTables(docs: Doc[]): Doc[] {
 
     if (tableAttr != null) {
       // Get table name from the tag.
-      const [tableToken, ...detail] = splitFirstWord(tableAttr);
-      const table = tableToken?.text;
-      if (table != null) {
+      const split = splitFirstWord(tableAttr);
+      if (split != null) {
+        const [table, detail] = split;
         if (byTable.has(table)) {
           const prev = byTable.get(table)!;
 
