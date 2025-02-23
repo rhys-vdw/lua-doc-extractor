@@ -9,6 +9,10 @@ export const docLexer = moo.states({
     newline: { match: "\n", lineBreaks: true },
     word: /[^\s]+?(?=\s|$|(?!\\)`)/,
     space: /[ \t]+/,
+    word: /\S+?(?=\s|$|(?!\\)`)/,
+    // Matches all whitespace except linefeeds.
+    // https://stackoverflow.com/a/3469155/317135
+    space: /[^\S\r\n]+/,
   },
   codeBlock: {
     codeBlockEnd: { match: "```", pop: 1 },
