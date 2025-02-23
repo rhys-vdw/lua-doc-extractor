@@ -1,6 +1,6 @@
 {
   "name": "lua-doc-extractor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Extracts lua documentation from C-style comments",
   "main": "dist/src/index.js",
   "homepage": "https://github.com/rhys-vdw/lua-doc-extractor",
@@ -19,7 +19,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "prepare": "npm run build",
-    "build": "npm run grammar && tsc --build",
+    "build": "rm -rf dist && npm run grammar && tsc --build",
     "clean": "tsc --build --clean",
     "test-raw": "npm run grammar && tape -r ./src/test/utility/register-tsx.js src/test/**/*.test.ts",
     "test": "npm run test-raw | tap-diff",
