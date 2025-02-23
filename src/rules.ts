@@ -5,9 +5,7 @@ import {
   formatAttribute,
   formatTokens,
   generateField,
-  splitFirstWord,
   stripGenericParams,
-  trimStart,
   splitFirstWord,
 } from "./utility";
 import { Attribute, Doc } from "./doc";
