@@ -42,3 +42,15 @@ testInput(
     ---another line
   `
 );
+
+testInput(
+  "Correctly handles double quotes inline code",
+  dedent`
+    /***
+     * @param message string \`\`"\`<PLAYER#>\`"\`\` where \`#\` is a player ID.
+     */
+  `,
+  dedent`
+    ---@param message string \`\`"\`<PLAYER#>\`"\`\` where \`#\` is a player ID.
+  `
+);
