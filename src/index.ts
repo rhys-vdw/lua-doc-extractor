@@ -17,7 +17,7 @@ import {
   toLuaComment,
   trimStart,
 } from "./utility";
-import { without } from "lodash";
+import { isEmpty, without } from "lodash";
 import { formatSource } from "./source";
 import { getComments } from "./comment";
 import { parseDoc, Attribute, Doc } from "./doc";
@@ -135,7 +135,10 @@ export function members(
       joinNonEmpty([description, formattedTags], "\n\n")
     );
 
-    acc.push(joinNonEmpty([comment, lua], "\n"));
+
+    if (!isEmpty(comment) || !isEmpty(lua)) {
+      acc.push(joinNonEmpty([comment, lua], "\n"));
+    }
     return acc;
   }, [] as string[]);
   return success({ lua: members.join("\n\n"), docErrors });
