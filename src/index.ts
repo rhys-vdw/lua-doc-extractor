@@ -18,9 +18,9 @@ import {
   trimTrailingWhitespace,
 } from "./utility";
 import { isEmpty, without } from "lodash";
-import { formatSource } from "./source";
+import { formatSource, sourceToUrl } from "./source";
 import { getComments } from "./comment";
-import { parseDoc, Attribute, Doc } from "./doc";
+import { parseDoc, Attribute, Doc, isDocEmpty, formatDoc } from "./doc";
 import { fail, isSuccess, Result, success } from "./result";
 import { header } from "./header";
 
@@ -107,10 +107,16 @@ function getDocs(source: string, path: string): Result<[Doc[], Error[]]> {
   return success([docs, docErrors]);
 }
 
+export function processDocs(docs: Doc[]): Doc[] {
+  const merged = mergeTables(docs);
+  merged.forEach(applyRules);
+  return merged;
+}
+
 export function members(
   source: string,
   path: string,
-  repoUrl?: string
+  repoUrl: string | null
 ): Result<LuaResult> {
   const [docResult, error] = getDocs(source, path);
   if (error != null) {
@@ -118,37 +124,22 @@ export function members(
   }
   let [docs, docErrors] = docResult;
 
-  docs = mergeTables(docs);
-  const members = docs.reduce((acc, doc) => {
-    applyRules(doc);
-    const description = formatTokens(trimStart(doc.description));
+  processDocs(docs);
 
-    if (
-      doc.lua.length === 0 &&
-      isEmpty(description) &&
-      doc.attributes.length == 0
-    ) {
+  const members = docs
+    .filter((e) => !isDocEmpty(e))
+    .reduce((acc, doc) => {
+      const sourceLink =
+        repoUrl &&
+        `${formatSource(repoUrl, {
+          path,
+          start: doc.start,
+          end: doc.end,
+        })}`;
+
+      acc.push(formatDoc(doc, sourceLink));
       return acc;
-    }
-
-    let sourceLink = null;
-    if (repoUrl != null) {
-      sourceLink = `${formatSource(repoUrl, {
-        path,
-        start: doc.start,
-        end: doc.end,
-      })}`;
-    }
-
-    const formattedTags = doc.attributes.map(formatAttribute).join("");
-
-    const comment = toLuaComment(
-      joinNonEmpty([description, sourceLink, formattedTags], "\n\n")
-    );
-
-    acc.push(joinNonEmpty([comment, doc.lua[0]], "\n"));
-    return acc;
-  }, [] as string[]);
+    }, [] as string[]);
   return success({ lua: members.join("\n\n"), docErrors });
 }
 

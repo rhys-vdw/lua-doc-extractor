@@ -4,7 +4,13 @@ import { Comment } from "./comment";
 
 import { Token } from "moo";
 import { Position } from "./source";
-import { formatAttribute, formatTokens } from "./utility";
+import {
+  formatAttribute,
+  formatTokens,
+  joinNonEmpty,
+  toLuaComment,
+  trimStart,
+} from "./utility";
 import { Result, toResult } from "./result";
 
 export interface Doc {
@@ -49,8 +55,21 @@ export function parseDoc(comment: Comment): Result<Doc> {
   return toResult(() => parse(comment));
 }
 
-export function formatDoc({ description, attributes }: Doc): string {
-  return [formatTokens(description), ...attributes.map(formatAttribute)].join(
-    "\n"
+function formatDocComment(doc: Doc, sourceLink: string | null): string {
+  const fDesc = formatTokens(doc.description).trimStart();
+  const fAttrs = doc.attributes.map(formatAttribute).join("");
+
+  return toLuaComment(joinNonEmpty([fDesc, sourceLink, fAttrs], "\n\n"));
+}
+
+export function formatDoc(doc: Doc, sourceLink: string | null): string {
+  return joinNonEmpty([formatDocComment(doc, sourceLink), doc.lua[0]], "\n");
+}
+
+export function isDocEmpty(doc: Doc): boolean {
+  return (
+    doc.lua.length === 0 &&
+    formatTokens(doc.description).length === 0 &&
+    doc.attributes.length === 0
   );
 }
