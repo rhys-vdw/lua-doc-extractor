@@ -1,4 +1,9 @@
+import { without } from "lodash";
+import { getComments } from "./comment";
+import { Doc, formatDoc, isDocEmpty, parseDoc } from "./doc";
+import { header } from "./header";
 import { logWarning } from "./log";
+import { fail, Result, success } from "./result";
 import {
   classRule,
   enumRule,
@@ -8,17 +13,11 @@ import {
   tableRule,
 } from "./rules";
 import {
-  joinLines,
   formatAttribute,
+  joinLines,
   splitFirstWord,
   trimTrailingWhitespace,
 } from "./utility";
-import { isEmpty, without } from "lodash";
-import { formatSource, sourceToUrl } from "./source";
-import { getComments } from "./comment";
-import { parseDoc, Attribute, Doc, isDocEmpty, formatDoc } from "./doc";
-import { fail, isSuccess, Result, success } from "./result";
-import { header } from "./header";
 
 interface LuaResult {
   lua: string;
