@@ -47,9 +47,7 @@ export function testInput(
         t.error(e, `docError: ${i}`);
       });
 
-      processDocs(docs);
-
-      const actual = formatDocs(docs, repoUrl || null);
+      const actual = formatDocs(processDocs(docs), repoUrl || null);
 
       if (expected !== undefined) {
         t.isEqual(actual, expected, "formatDocs has correct output");

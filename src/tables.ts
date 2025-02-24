@@ -44,6 +44,9 @@ export function addTables(docs: Doc[]): Doc[] {
   return docs;
 }
 
+/**
+ * Merge tables with the same name.
+ */
 export function mergeTables(docs: Doc[]): Doc[] {
   const byTable = new Map<string, Doc>();
   const result = [] as Doc[];
@@ -52,18 +55,15 @@ export function mergeTables(docs: Doc[]): Doc[] {
     const tableAttr = findAttribute(doc, "table");
 
     if (tableAttr != null) {
-      const table = tableAttr.table.name;
-      const detail = tableAttr.description;
-      if (byTable.has(table)) {
-        const prev = byTable.get(table)!;
+      const { table } = tableAttr;
+      if (byTable.has(table.name)) {
+        const prev = byTable.get(table.name)!;
 
         // Merge descriptions with a blank line.
         prev.description = joinLines(prev.description, doc.description);
 
         // Merge in the additional detail from the table tag.
-        if (detail != null) {
-          prev.description = joinLines(prev.description, detail);
-        }
+        prev.description = joinLines(prev.description, table.description);
 
         // Merge all tags, but skip the duplicate table tag.
         prev.attributes.push(...without(doc.attributes, tableAttr));
@@ -71,7 +71,7 @@ export function mergeTables(docs: Doc[]): Doc[] {
         // Exit early to remove comment from list.
         return;
       } else {
-        byTable.set(table, doc);
+        byTable.set(table.name, doc);
       }
     }
 
