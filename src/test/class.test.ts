@@ -14,19 +14,11 @@ testInput(
   `,
   dedent`
     ---@class Car
-    local Car = {
-    \t---@type integer
-    \tdoorCount = nil,
-
-    \t---@type number How fast can this baby go?
-    \tmaxSpeed = nil,
-
-    \t---@type string The manufacter.
-    \tmake = nil,
-
-    \t---@type string The model of the car.
-    \tmodel = nil
-    }
+    ---@field doorCount integer
+    ---@field maxSpeed number How fast can this baby go?
+    ---@field make string The manufacter.
+    ---@field model string The model of the car.
+    local Car = {}
   `
 );
 
@@ -58,13 +50,9 @@ testInput(
   `,
   dedent`
     ---@class Widget
-    local Widget = {
-    \t---@type Bar | Baz Bar or baz?
-    \tunion = nil,
-
-    \t---@type Foo<Bar | Baz> A generic.
-    \tgeneric = nil
-    }
+    ---@field union Bar | Baz Bar or baz?
+    ---@field generic Foo<Bar | Baz> A generic.
+    local Widget = {}
   `
 );
 
@@ -84,10 +72,8 @@ testInput(
   `,
   dedent`
     ---@class Widget
-    widget = {
-    \t---@type integer
-    \ta = nil
-    }
+    ---@field a integer
+    widget = {}
 
     ---@param b integer
     function widget.Foo(b) end

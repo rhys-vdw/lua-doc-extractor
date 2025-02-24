@@ -88,6 +88,16 @@ export function findAttribute<TType extends string>(
 }
 
 /**
+ * Check if a document has an attribute of a given type.
+ * @param doc The document to search.
+ * @param type The type of attribute to find.
+ * @returns True if the document has an attribute of the given type.
+ */
+export function hasAttribute(doc: Doc, type: string): boolean {
+  return doc.attributes.some((d) => d.type === type);
+}
+
+/**
  * Remove all attributes of a given type from a document and return them.
  * @param doc The document to remove attributes from.
  * @param type The type of attribute to remove.

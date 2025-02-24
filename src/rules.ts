@@ -1,6 +1,6 @@
 import { pull } from "lodash";
 import { Attribute, FieldAttribute, isAttribute } from "./attribute";
-import { Doc, removeAttributes } from "./doc";
+import { Doc, hasAttribute, removeAttributes } from "./doc";
 import { logError, logWarning } from "./log";
 import {
   formatAttribute,
@@ -60,7 +60,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 };
 
 /**
- * Declare a global table.
+ * Declare a table.
  */
 export const tableRule: Rule = (ruleAttr, doc) => {
   // Ensure this is a TableAttribute.
@@ -77,7 +77,9 @@ export const tableRule: Rule = (ruleAttr, doc) => {
 
   // Generate code.
   const { name, isLocal } = ruleAttr.table;
-  const fieldAttrs = removeAttributes(doc, "field");
+  const fieldAttrs = hasAttribute(doc, "class")
+    ? []
+    : removeAttributes(doc, "field");
   const fields = formatTableFields(fieldAttrs);
   if (isLocal) {
     doc.lua.push(`local ${name} = {${fields}}`);
