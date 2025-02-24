@@ -1,7 +1,7 @@
 import { pull } from "lodash";
 import { Attribute, FieldAttribute, isAttribute } from "./attribute";
 import { Doc, removeAttributes } from "./doc";
-import { logError } from "./log";
+import { logError, logWarning } from "./log";
 import {
   formatAttribute,
   formatField,
@@ -92,4 +92,39 @@ function formatTableFields(fields: readonly FieldAttribute[]): string {
   }
 
   return "\n" + fields.map((f) => generateField(f, "\t")).join(",\n\n") + "\n";
+}
+
+export function applyRules(docs: Doc[]): Doc[] {
+  docs.forEach(apply);
+  return docs;
+}
+
+const ruleHandlers = {
+  global: globalRule,
+  function: functionRule,
+  table: tableRule,
+} as Record<string, Rule | undefined>;
+
+/**
+ * Apply custom attribute rules, which may generate a declaration or remove tags
+ * from the comment.
+ * @return Lua declaration or null.
+ */
+function apply(doc: Doc): void {
+  // Keep a copy of attributes so we can modify the original.
+  const prevAttrs = [...doc.attributes];
+  prevAttrs.forEach((t) => {
+    const handler = ruleHandlers[t.type];
+    if (handler != null) {
+      handler(t, doc);
+    }
+  });
+
+  if (doc.lua.length > 1) {
+    logWarning(
+      `Multiple generators found:\n - ${prevAttrs
+        .map(formatAttribute)
+        .join("\n - ")}`
+    );
+  }
 }
