@@ -11,6 +11,13 @@ export function stripGenericParams(text: string) {
  * Adds additional description lines, leaving a blank line between paragraphs.
  */
 export function joinLines(dest: string, src: string) {
+  if (src == null) {
+    throw new Error(`src is ${src}`);
+  }
+  if (dest == null) {
+    throw new Error(`dest is ${src}`);
+  }
+
   const s = src.trimStart();
   const d = dest.trimEnd();
   if (src.length === 0) {
@@ -20,7 +27,6 @@ export function joinLines(dest: string, src: string) {
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  console.log(`formatAttribute`, attribute);
   const { type, description } = attribute;
   return `@${type}${description}`;
 }
@@ -53,8 +59,8 @@ export function generateField(rule: FieldAttribute, indent: string): string {
     console.error(`No field property`, rule);
     return "";
   }
-  var { name } = rule.field;
-  return formatField(name, rule.description.trimStart(), indent);
+  var { name, description } = rule.field;
+  return formatField(name, description.trimStart(), indent);
 }
 
 export function formatField(name: string, description: string, indent: string) {

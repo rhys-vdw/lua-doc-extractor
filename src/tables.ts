@@ -16,7 +16,11 @@ export function addTables(docs: Doc[]): Doc[] {
       const className = classAttr.class.name;
       const tableAttr: TableAttribute = {
         type: "table",
-        table: { name: stripGenericParams(className), isLocal: true },
+        table: {
+          name: stripGenericParams(className),
+          isLocal: true,
+          description: "",
+        },
         description: "",
       };
       doc.attributes.push(tableAttr);
@@ -29,7 +33,7 @@ export function addTables(docs: Doc[]): Doc[] {
       const enumName = enumAttr.enum.name;
       const tableAttr: TableAttribute = {
         type: "table",
-        table: { name: enumName, isLocal: false },
+        table: { name: enumName, isLocal: false, description: "" },
         description: "",
       };
       doc.attributes.push(tableAttr);

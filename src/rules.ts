@@ -4,6 +4,7 @@ import { Doc, removeAttributes } from "./doc";
 import { logError } from "./log";
 import {
   formatAttribute,
+  formatField,
   generateField,
   joinLines,
   splitFirstWord,
@@ -12,8 +13,8 @@ import {
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 
 export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
-  if (ruleAttr.type !== "global") {
-    logError(`@global tag failed to parse.`);
+  if (!isAttribute(ruleAttr, "global")) {
+    logError(`Invalid table attribute: ${ruleAttr.type}`);
     return;
   }
 
@@ -24,13 +25,19 @@ export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
     return;
   }
 
-  doc.lua.push(generateField(ruleAttr as FieldAttribute, ""));
+  const { name, description } = ruleAttr.global;
+  doc.lua.push(formatField(name, description.trimStart(), ""));
 };
 
 /**
  * Declare a function.
  */
 export const functionRule: Rule = (ruleAttr, doc) => {
+  if (!isAttribute(ruleAttr, "function")) {
+    logError(`Invalid table attribute: ${ruleAttr.type}`);
+    return;
+  }
+
   pull(doc.attributes, ruleAttr);
 
   const split = splitFirstWord(ruleAttr);
@@ -66,7 +73,7 @@ export const tableRule: Rule = (ruleAttr, doc) => {
   pull(doc.attributes, ruleAttr);
 
   // Add the table description to the main doc.
-  doc.description = joinLines(doc.description, ruleAttr.description);
+  doc.description = joinLines(doc.description, ruleAttr.table.description);
 
   // Generate code.
   const { name, isLocal } = ruleAttr.table;

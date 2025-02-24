@@ -4,33 +4,34 @@
 
 @{%
 import { docLexer } from "./docLexer";
+import { createAttribute as create } from "./attribute";
 
 %}
 
 @lexer docLexer
 
 doc ->
-    lines attribute:* {% ([description, attributes]) => ({ description, attributes, lua: [] }) %}
+    lines attribute:* {% ([description = "", attributes]) => ({ description, attributes, lua: [] })%}
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
     %tableAttr %space %word lines {% ([attr, _s, name, description]) =>
-      ({ type: attr.value, table: { name: name.value, isLocal: false }, description })
+      create("table", description, { name: name.value, isLocal: false, description })
     %}
   | %enumAttr %space %word lines {% ([attr, _s, name, description]) =>
-      ({ type: attr.value, enum: { name: name.value }, description })
+      create("enum", description, { name: name.value })
     %}
   | %classAttr %space %word lines {% ([attr, _s, name, description]) =>
-      ({ type: attr.value, class: { name: name.value }, description })
+      create("class", description, { name: name.value })
     %}
   | %fieldAttr %space %word lines {% ([attr, _s, name, description]) =>
-      ({ type: attr.value, field: { name: name.value }, description })
+      create("field", description, { name: name.value, description })
     %}
   | %globalAttr %space %word lines {% ([attr, _s, name, description]) =>
-      ({ type: attr.value, field: { name: name.value }, description })
+      create("global", description, { name: name.value, description })
     %}
   | %attribute lines {% ([attr, description]) =>
-      ({ type: attr.value, description })
+      create(attr.value, description)
     %}
 
 lines -> (line %newline):+ {% (d) => d.flat(2).join("") %}

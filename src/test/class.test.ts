@@ -65,7 +65,5 @@ testInput(
     \t---@type Foo<Bar | Baz> A generic.
     \tgeneric = nil
     }
-  `,
-  undefined,
-  { only: true }
+  `
 );

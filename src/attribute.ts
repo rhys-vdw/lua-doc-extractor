@@ -1,9 +1,10 @@
 export type Attribute =
   | ClassAttribute
-  | TableAttribute
-  | FieldAttribute
+  | DefaultAttribute
   | EnumAttribute
-  | DefaultAttribute;
+  | FieldAttribute
+  | GlobalAttribute
+  | TableAttribute;
 
 interface BaseAttribute {
   description: string;
@@ -20,7 +21,7 @@ export interface EnumAttribute extends BaseAttribute {
 
 export interface TableAttribute extends BaseAttribute {
   type: "table";
-  table: { name: string; isLocal: boolean };
+  table: { name: string; isLocal: boolean; description: string };
 }
 
 export interface ClassAttribute extends BaseAttribute {
@@ -28,20 +29,25 @@ export interface ClassAttribute extends BaseAttribute {
   class: { name: string };
 }
 
+export interface GlobalAttribute extends BaseAttribute {
+  type: "global";
+  global: { name: string; description: string };
+}
+
 export interface FieldAttribute extends BaseAttribute {
-  type: "field" | "global";
-  field: { name: string };
+  type: "field";
+  field: { name: string; description: string };
 }
 
 export function createAttribute<TType extends string>(
   type: TType,
-  data: any = null,
-  description: string = ""
+  description: string = "",
+  data: any = null
 ): Extract<Attribute, { type: TType }> {
   if (data != null && typeof data.name === "string") {
-    description = `${data.name}${description}`;
+    description = ` ${data.name}${description}`;
   }
-  return { type, [type]: data, description } as any;
+  return { type, description, [type]: data } as any;
 }
 
 export function isAttribute<TType extends string>(
