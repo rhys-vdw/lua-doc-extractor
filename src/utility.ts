@@ -2,6 +2,7 @@ import { dropRightWhile, dropWhile } from "lodash";
 import { logWarning } from "./log";
 import { Attribute, Doc, FieldAttribute } from "./doc";
 import { Token } from "moo";
+import { isKeyword } from "./lua";
 
 export function stripGenericParams(text: string) {
   const index = text.indexOf("<");
@@ -82,9 +83,10 @@ export function formatField(
   description: string,
   indent: string
 ) {
+  const fieldName = isKeyword(name) ? `["${name}"]` : name;
   return (
     toLuaComment(`@type ${type} ${description.trimEnd()}`, indent) +
-    `\n${indent}${name} = nil`
+    `\n${indent}${fieldName} = nil`
   );
 }
 
