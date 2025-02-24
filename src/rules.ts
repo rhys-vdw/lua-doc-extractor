@@ -65,7 +65,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 export const tableRule: Rule = (ruleAttr, doc) => {
   // Ensure this is a TableAttribute.
   if (!isAttribute(ruleAttr, "table")) {
-    console.error(`Invalid table attribute: ${ruleAttr.type}`);
+    logError(`Invalid table attribute: ${ruleAttr.type}`);
     return;
   }
 
