@@ -27,7 +27,7 @@ export function joinLines(dest: string, src: string) {
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  const { type, description } = attribute;
+  const { type, rawText: description } = attribute;
   return `@${type}${description}`;
 }
 
@@ -39,7 +39,7 @@ export function splitFirstWord(
   attribute: Readonly<Attribute>
 ): [string, string?] | null {
   // https://stackoverflow.com/a/4607799/317135
-  const [firstWord, rest] = attribute.description.trimStart().split(/\s+(.*)/s);
+  const [firstWord, rest] = attribute.rawText.trimStart().split(/\s+(.*)/s);
   if (firstWord == null) {
     logWarning(
       `Invalid attribute; Word expected: ${formatAttribute(attribute)}`

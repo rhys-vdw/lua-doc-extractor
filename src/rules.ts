@@ -20,7 +20,7 @@ export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
 
   pull(doc.attributes, ruleAttr);
 
-  if (ruleAttr.description.length === 0) {
+  if (ruleAttr.rawText.length === 0) {
     logError(`@global tag missing type: ${formatAttribute(ruleAttr)}`);
     return;
   }
@@ -50,7 +50,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
   const [functionName, description] = split;
 
   const paramNames = doc.attributes
-    .filter((t) => t.type === "param" && t.description.length > 0)
+    .filter((t) => t.type === "param" && t.rawText.length > 0)
     .map((t) => splitFirstWord(t)?.[0] ?? "");
 
   if (description != null) {
