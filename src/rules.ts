@@ -1,13 +1,14 @@
 import { pull, remove } from "lodash";
+import { Attribute, FieldAttribute } from "./attribute";
+import { Doc } from "./doc";
 import { logError } from "./log";
 import {
-  joinLines,
   formatAttribute,
   generateField,
-  stripGenericParams,
+  joinLines,
   splitFirstWord,
+  stripGenericParams,
 } from "./utility";
-import { Attribute, Doc, FieldAttribute } from "./doc";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 

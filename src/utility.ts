@@ -1,7 +1,7 @@
 import { dropRightWhile, dropWhile } from "lodash";
-import { logWarning } from "./log";
-import { Attribute, Doc, FieldAttribute } from "./doc";
 import { Token } from "moo";
+import { Attribute, FieldAttribute } from "./attribute";
+import { logWarning } from "./log";
 import { isKeyword } from "./lua";
 
 export function stripGenericParams(text: string) {
