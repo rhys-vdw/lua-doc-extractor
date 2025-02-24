@@ -5,33 +5,43 @@ export type Attribute =
   | EnumAttribute
   | DefaultAttribute;
 
-export interface DefaultAttribute {
-  type: Exclude<string, "class" | "enum" | "field" | "global" | "table">;
+interface BaseAttribute {
   description: string;
 }
 
-export interface EnumAttribute {
+export interface DefaultAttribute extends BaseAttribute {
+  type: Exclude<string, "class" | "enum" | "field" | "global" | "table">;
+}
+
+export interface EnumAttribute extends BaseAttribute {
   type: "enum";
   enum: { name: string };
-  description: string;
 }
 
-export interface TableAttribute {
+export interface TableAttribute extends BaseAttribute {
   type: "table";
   table: { name: string; isLocal: boolean };
-  description: string;
 }
 
-export interface ClassAttribute {
+export interface ClassAttribute extends BaseAttribute {
   type: "class";
   class: { name: string };
-  description: string;
 }
 
-export interface FieldAttribute {
+export interface FieldAttribute extends BaseAttribute {
   type: "field" | "global";
-  field: { name: string; type: string };
-  description: string;
+  field: { name: string };
+}
+
+export function createAttribute<TType extends string>(
+  type: TType,
+  data: any = null,
+  description: string = ""
+): Extract<Attribute, { type: TType }> {
+  if (data != null && typeof data.name === "string") {
+    description = `${data.name}${description}`;
+  }
+  return { type, [type]: data, description } as any;
 }
 
 export function isAttribute<TType extends string>(

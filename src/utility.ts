@@ -19,10 +19,9 @@ export function joinLines(dest: string, src: string) {
   return `${d}\n\n${s}`;
 }
 
-export function formatAttribute({
-  type,
-  description,
-}: Readonly<Attribute>): string {
+export function formatAttribute(attribute: Readonly<Attribute>): string {
+  console.log(`formatAttribute`, attribute);
+  const { type, description } = attribute;
   return `@${type}${description}`;
 }
 
@@ -54,19 +53,14 @@ export function generateField(rule: FieldAttribute, indent: string): string {
     console.error(`No field property`, rule);
     return "";
   }
-  var { name, type } = rule.field;
-  return formatField(name, type, rule.description.trimStart(), indent);
+  var { name } = rule.field;
+  return formatField(name, rule.description.trimStart(), indent);
 }
 
-export function formatField(
-  name: string,
-  type: string,
-  description: string,
-  indent: string
-) {
+export function formatField(name: string, description: string, indent: string) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
   return (
-    toLuaComment(`@type ${type} ${description.trimEnd()}`, indent) +
+    toLuaComment(`@type ${description.trimEnd()}`, indent) +
     `\n${indent}${fieldName} = nil`
   );
 }
