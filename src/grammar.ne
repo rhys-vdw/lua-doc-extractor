@@ -14,10 +14,19 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %field %space %word %space %word lines {% ([attr, _s, name, _, type, description]) =>
+    %tableAttr %space %word lines {% ([attr, _s, name, _, type, description]) =>
+      ({ type: attr.value, table: { name: name.value, isLocal: false }, description })
+    %}
+  | %enumAttr %space %word lines {% ([attr, _s, name, _, type, description]) =>
+      ({ type: attr.value, enum: { name: name.value }, description })
+    %}
+  | %classAttr %space %word lines {% ([attr, _s, name, _, type, description]) =>
+      ({ type: attr.value, class: { name: name.value }, description })
+    %}
+  | %fieldAttr %space %word %space %word lines {% ([attr, _s, name, _, type, description]) =>
       ({ type: attr.value, field: { name: name.value, type: type.value }, description })
     %}
-  | %global %space %word %space %word lines {% ([attr, _s, name, _, type, description]) =>
+  | %globalAttr %space %word %space %word lines {% ([attr, _s, name, _, type, description]) =>
       ({ type: attr.value, field: { name: name.value, type: type.value }, description })
     %}
   | %attribute lines {% ([attr, description]) =>

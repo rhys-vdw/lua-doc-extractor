@@ -1,5 +1,3 @@
-import { dropRightWhile, dropWhile } from "lodash";
-import { Token } from "moo";
 import { Attribute, FieldAttribute } from "./attribute";
 import { logWarning } from "./log";
 import { isKeyword } from "./lua";
@@ -7,15 +5,6 @@ import { isKeyword } from "./lua";
 export function stripGenericParams(text: string) {
   const index = text.indexOf("<");
   return index === -1 ? text : text.substring(0, index);
-}
-
-export function trimArray(array: readonly string[]): string[] {
-  const isEmpty = (l: string) => l === "";
-  return dropWhile(dropRightWhile(array, isEmpty), isEmpty);
-}
-
-export function trimFirstSpace(input: string): string {
-  return input[0] === " " ? input.substring(1) : input;
 }
 
 /**
@@ -28,14 +17,6 @@ export function joinLines(dest: string, src: string) {
     return d;
   }
   return `${d}\n\n${s}`;
-}
-
-export function trimStart(tokens: readonly Token[]): Token[] {
-  return dropWhile(tokens, (t) => t.text.trim() === "");
-}
-
-export function trimEnd(tokens: readonly Token[]): Token[] {
-  return dropRightWhile(tokens, (t) => t.text.trim() === "");
 }
 
 export function formatAttribute({

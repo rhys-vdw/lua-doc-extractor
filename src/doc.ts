@@ -1,12 +1,12 @@
 import nearley from "nearley";
-import grammar from "./grammar.ne";
 import { Comment } from "./comment";
+import grammar from "./grammar.ne";
 
-import { Token } from "moo";
+import { remove } from "lodash";
+import { Attribute } from "./attribute";
+import { Result, toResult } from "./result";
 import { formatSource, Position } from "./source";
 import { formatAttribute, joinNonEmpty, toLuaComment } from "./utility";
-import { Result, toResult } from "./result";
-import { Attribute } from "./attribute";
 
 export interface Doc {
   description: string;
@@ -72,4 +72,30 @@ export function isDocEmpty(doc: Doc): boolean {
     doc.description.trim() === "" &&
     doc.attributes.length === 0
   );
+}
+
+/**
+ * Find an attribute of a given type in a document.
+ * @param doc The document to search.
+ * @param type The type of attribute to find.
+ * @returns The attribute if found, otherwise null.
+ */
+export function findAttribute<TType extends string>(
+  doc: Doc,
+  type: TType
+): Extract<Attribute, { type: TType }> | null {
+  return doc.attributes.find((d) => d.type === type) ?? (null as any);
+}
+
+/**
+ * Remove all attributes of a given type from a document and return them.
+ * @param doc The document to remove attributes from.
+ * @param type The type of attribute to remove.
+ * @returns The removed attributes.
+ */
+export function removeAttributes<TType extends string>(
+  doc: Doc,
+  type: TType
+): Extract<Attribute, { type: TType }>[] {
+  return remove(doc.attributes, (d) => d.type === type) as any;
 }

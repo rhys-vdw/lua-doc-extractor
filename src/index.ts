@@ -3,15 +3,8 @@ import { Doc, formatDoc, isDocEmpty, parseDoc } from "./doc";
 import { header } from "./header";
 import { logWarning } from "./log";
 import { fail, Result, success } from "./result";
-import {
-  classRule,
-  enumRule,
-  functionRule,
-  globalRule,
-  Rule,
-  tableRule,
-} from "./rules";
-import { mergeTables } from "./tables";
+import { functionRule, globalRule, Rule, tableRule } from "./rules";
+import { addTables, mergeTables } from "./tables";
 import { formatAttribute, trimTrailingWhitespace } from "./utility";
 
 export function addHeader(body: string): string {
@@ -39,10 +32,16 @@ export function getDocs(
   return success([docs, docErrors]);
 }
 
+export type DocProcessor = (docs: Doc[]) => Doc[];
+
+function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
+  return processors.reduce((acc, processor) => processor(acc), docs);
+}
+
 export function processDocs(docs: Doc[]): Doc[] {
-  const merged = mergeTables(docs);
-  merged.forEach(applyRules);
-  return merged;
+  const processed = runProcessors(docs, [addTables, mergeTables]);
+  processed.forEach(applyRules);
+  return processed;
 }
 
 export function formatDocs(
@@ -60,8 +59,6 @@ const ruleHandlers = {
   global: globalRule,
   function: functionRule,
   table: tableRule,
-  enum: enumRule,
-  class: classRule,
 } as Record<string, Rule | undefined>;
 
 /**

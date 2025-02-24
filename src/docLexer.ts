@@ -4,7 +4,13 @@ import moo, { keywords } from "moo";
 export const docLexer = moo.states({
   main: {
     attribute: {
-      type: keywords({ field: "@field", global: "@global" }),
+      type: keywords({
+        classAttr: "@class",
+        enumAttr: "@enum",
+        fieldAttr: "@field",
+        globalAttr: "@global",
+        tableAttr: "@table",
+      }),
       match: /@[^\s]+/,
       value: (x) => x.substring(1),
     },
