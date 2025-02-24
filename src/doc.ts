@@ -32,6 +32,7 @@ export type Attribute = FieldAttribute | DefaultAttribute;
 function parse(comment: Comment): Doc {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   const { text, start, end } = comment;
+  // Force final newline.
   parser.feed(text + "\n");
   if (parser.results.length > 1) {
     // console.error(
@@ -80,7 +81,7 @@ export function formatDoc(doc: Doc, repoUrl: string | null): string {
 export function isDocEmpty(doc: Doc): boolean {
   return (
     doc.lua.length === 0 &&
-    doc.description.length === 0 &&
+    doc.description.trim() === "" &&
     doc.attributes.length === 0
   );
 }

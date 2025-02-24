@@ -23,7 +23,9 @@ export function mergeTables(docs: Doc[]): Doc[] {
           prev.description = joinLines(prev.description, doc.description);
 
           // Merge in the additional detail from the table tag.
-          prev.description = joinLines(prev.description, detail);
+          if (detail != null) {
+            prev.description = joinLines(prev.description, detail);
+          }
 
           // Merge all tags, but skip the duplicate table tag.
           prev.attributes.push(...without(doc.attributes, tableAttr));

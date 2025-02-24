@@ -122,7 +122,9 @@ export const classRule: Rule = (ruleAttr, doc): void => {
     const [className] = split;
     const tableName = stripGenericParams(className);
 
-    doc.lua.push(`local ${formatTable(tableName, "")}`);
+    doc.lua.push(
+      `local ${formatTable(tableName, formatTableFields(doc.attributes))}`
+    );
   }
 };
 

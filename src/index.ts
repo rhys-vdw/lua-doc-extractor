@@ -15,7 +15,7 @@ import { mergeTables } from "./tables";
 import { formatAttribute, trimTrailingWhitespace } from "./utility";
 
 export function addHeader(body: string): string {
-  return trimTrailingWhitespace(`${header()}\n\n${body}`);
+  return `${header()}\n\n${body}`;
 }
 
 export function getDocs(
@@ -53,7 +53,7 @@ export function formatDocs(
     .filter((e) => !isDocEmpty(e))
     .map((d) => formatDoc(d, repoUrl));
 
-  return members.join("\n\n");
+  return trimTrailingWhitespace(members.join("\n\n"));
 }
 
 const ruleHandlers = {

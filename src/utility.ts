@@ -62,10 +62,6 @@ export function splitFirstWord(
   return [firstWord, rest];
 }
 
-export function isClass(comment: Doc) {
-  return comment.attributes.findIndex((t) => t.type === "class") !== -1;
-}
-
 export function generateField(rule: FieldAttribute, indent: string): string {
   if (rule.field == null) {
     logWarning(
