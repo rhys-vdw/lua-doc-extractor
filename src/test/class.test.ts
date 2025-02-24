@@ -2,7 +2,7 @@ import dedent from "dedent-js";
 import { testInput } from "./utility/harness";
 
 testInput(
-  "Generates class.",
+  "Generates class",
   dedent`
     /***
      * @class Car
@@ -31,7 +31,7 @@ testInput(
 );
 
 testInput(
-  "Handles generic class.",
+  "Handles generic class",
   dedent`
     /***
      * A table of uniform name to value.
@@ -48,7 +48,7 @@ testInput(
 );
 
 testInput(
-  "Handles complicated field type.",
+  "Handles complicated field type",
   dedent`
     /***
      * @class Widget
@@ -65,5 +65,31 @@ testInput(
     \t---@type Foo<Bar | Baz> A generic.
     \tgeneric = nil
     }
+  `
+);
+
+testInput(
+  "Global class",
+  dedent`
+    /***
+     * @class Widget
+     * @table widget
+     * @field a integer
+     */
+
+    /***
+     * @function widget.Foo
+     * @param b integer
+     */
+  `,
+  dedent`
+    ---@class Widget
+    widget = {
+    \t---@type integer
+    \ta = nil
+    }
+
+    ---@param b integer
+    function widget.Foo(b) end
   `
 );
