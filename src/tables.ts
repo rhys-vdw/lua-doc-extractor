@@ -21,7 +21,7 @@ export function addTables(docs: Doc[]): Doc[] {
           isLocal: true,
           description: "",
         },
-        description: "",
+        rawText: "",
       };
       doc.attributes.push(tableAttr);
       return;
@@ -34,7 +34,7 @@ export function addTables(docs: Doc[]): Doc[] {
       const tableAttr: TableAttribute = {
         type: "table",
         table: { name: enumName, isLocal: false, description: "" },
-        description: "",
+        rawText: "",
       };
       doc.attributes.push(tableAttr);
       return;

@@ -7,7 +7,7 @@ export type Attribute =
   | TableAttribute;
 
 interface BaseAttribute {
-  description: string;
+  rawText: string;
 }
 
 export interface DefaultAttribute extends BaseAttribute {
@@ -41,13 +41,13 @@ export interface FieldAttribute extends BaseAttribute {
 
 export function createAttribute<TType extends string>(
   type: TType,
-  description: string = "",
-  data: any = null
+  rawText: string = "",
+  data?: any
 ): Extract<Attribute, { type: TType }> {
   if (data != null && typeof data.name === "string") {
-    description = ` ${data.name}${description}`;
+    rawText = ` ${data.name}${rawText}`;
   }
-  return { type, description, [type]: data } as any;
+  return { type, rawText, [type]: data } as any;
 }
 
 export function isAttribute<TType extends string>(
