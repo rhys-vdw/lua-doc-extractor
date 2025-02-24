@@ -6,28 +6,16 @@ import { Token } from "moo";
 import { formatSource, Position } from "./source";
 import { formatAttribute, joinNonEmpty, toLuaComment } from "./utility";
 import { Result, toResult } from "./result";
+import { Attribute } from "./attribute";
 
 export interface Doc {
   description: string;
-  attributes: (FieldAttribute | Attribute)[];
+  attributes: Attribute[];
   path?: string;
   start: Position;
   end: Position;
   lua: string[];
 }
-
-export interface DefaultAttribute {
-  type: Exclude<string, "field" | "global">;
-  description: string;
-}
-
-export interface FieldAttribute {
-  type: "field" | "global";
-  field: { name: string; type: string };
-  description: string;
-}
-
-export type Attribute = FieldAttribute | DefaultAttribute;
 
 function parse(comment: Comment): Doc {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
