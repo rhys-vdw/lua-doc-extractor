@@ -53,13 +53,9 @@ testInput(
     ---Second.
     ---
     ---@class Foo First.
-    local Foo = {
-    \t---@type integer This is foo.
-    \tfoo = nil,
-
-    \t---@type string This is bar.
-    \tbar = nil
-    }
+    ---@field foo integer This is foo.
+    ---@field bar string This is bar.
+    local Foo = {}
   `
 );
 
