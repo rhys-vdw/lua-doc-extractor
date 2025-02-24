@@ -69,8 +69,6 @@ export const tableRule: Rule = (ruleAttr, doc) => {
 
   const [tableName, detail] = split;
 
-  console.log({ tableName, detail });
-
   if (detail != null) {
     doc.description = joinLines(doc.description, detail);
   }
@@ -143,10 +141,6 @@ function formatTableFields(attributes: Attribute[]): string {
   if (fields.length === 0) {
     return "";
   }
-
-  console.log("==========");
-  fields.forEach((f) => console.log(f));
-  console.log("==========");
 
   return (
     "\n" +

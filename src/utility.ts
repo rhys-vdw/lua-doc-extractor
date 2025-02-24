@@ -82,7 +82,6 @@ export function formatField(
   description: string,
   indent: string
 ) {
-  console.log;
   return (
     toLuaComment(`@type ${type} ${description.trimEnd()}`, indent) +
     `\n${indent}${name} = nil`

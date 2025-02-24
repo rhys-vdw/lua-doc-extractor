@@ -14,18 +14,15 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %field %space %word %space %word lines {% ([attr, _s, name, _, type, description]) => {
-      console.log(`FIELD name=${name.value} -> type=${type.value} -> desc=${JSON.stringify(description)}`);
-      return ({ type: attr.value, field: { name: name.value, type: type.value }, description })
-    }%}
-  | %global %space %word %space %word lines {% ([attr, _s, name, _, type, description]) => {
-      console.log(`GLOBAL name=${name.value} -> type=${type.value} -> desc=${JSON.stringify(description)}`);
-      return ({ type: attr.value, field: { name: name.value, type: type.value }, description })
-    }%}
-  | %attribute lines {% ([attr, description]) => {
-    console.log(`NON-FIELD value=${attr.value} -> desc=${JSON.stringify(description)}`);
-    return ({ type: attr.value, description })
-  }%}
+    %field %space %word %space %word lines {% ([attr, _s, name, _, type, description]) =>
+      ({ type: attr.value, field: { name: name.value, type: type.value }, description })
+    %}
+  | %global %space %word %space %word lines {% ([attr, _s, name, _, type, description]) =>
+      ({ type: attr.value, field: { name: name.value, type: type.value }, description })
+    %}
+  | %attribute lines {% ([attr, description]) =>
+      ({ type: attr.value, description })
+    %}
 
 lines -> (line %newline):+ {% (d) => d.flat(2).join("") %}
 

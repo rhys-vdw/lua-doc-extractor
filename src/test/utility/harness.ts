@@ -29,9 +29,9 @@ export function testInput(
       t.doesNotThrow(() => {
         docLexer.reset(text);
         const docTokens = Array.from(docLexer);
-        docTokens.forEach((t) => {
-          console.log(`${t.type}: |${t.text}|`);
-        });
+        // docTokens.forEach((t) => {
+        //   console.log(`${t.type}: |${t.text}|`);
+        // });
       }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
     });
 
