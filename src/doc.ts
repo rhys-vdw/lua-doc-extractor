@@ -4,12 +4,7 @@ import { Comment } from "./comment";
 
 import { Token } from "moo";
 import { formatSource, Position } from "./source";
-import {
-  formatAttribute,
-  formatTokens,
-  joinNonEmpty,
-  toLuaComment,
-} from "./utility";
+import { formatAttribute, joinNonEmpty, toLuaComment } from "./utility";
 import { Result, toResult } from "./result";
 
 export interface Doc {
@@ -37,7 +32,7 @@ export type Attribute = FieldAttribute | DefaultAttribute;
 function parse(comment: Comment): Doc {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   const { text, start, end } = comment;
-  parser.feed(text);
+  parser.feed(text + "\n");
   if (parser.results.length > 1) {
     // console.error(
     //   `Ambiguous parse for comment (result  count: ${parser.results.length}):\n-----\n${text}\n----\n`
@@ -49,7 +44,7 @@ function parse(comment: Comment): Doc {
     // });
   }
   if (parser.results.length === 0) {
-    throw new Error(`No parser output.`);
+    throw new Error(`No parser output for comment:\n----\n${text}\n----\n`);
   }
   return {
     ...parser.results[0],

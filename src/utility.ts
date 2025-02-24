@@ -17,10 +17,6 @@ export function trimFirstSpace(input: string): string {
   return input[0] === " " ? input.substring(1) : input;
 }
 
-function newLine(): Token {
-  return { type: "space", text: "\n", value: "\n" } as any;
-}
-
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */
@@ -31,10 +27,6 @@ export function joinLines(dest: string, src: string) {
     return d;
   }
   return `${d}\n\n${s}`;
-}
-
-export function formatTokens(tokens: readonly Token[]): string {
-  return tokens.map((t) => t.text).join("");
 }
 
 export function trimStart(tokens: readonly Token[]): Token[] {
@@ -58,8 +50,9 @@ export function formatAttribute({
  */
 export function splitFirstWord(
   attribute: Readonly<Attribute>
-): [string, string] | null {
-  const [firstWord, rest] = attribute.description.trimStart().split(" ", 2);
+): [string, string?] | null {
+  // https://stackoverflow.com/a/4607799/317135
+  const [firstWord, rest] = attribute.description.trimStart().split(/\s+(.*)/s);
   if (firstWord == null) {
     logWarning(
       `Invalid attribute; Word expected: ${formatAttribute(attribute)}`
@@ -93,8 +86,9 @@ export function formatField(
   description: string,
   indent: string
 ) {
+  console.log;
   return (
-    toLuaComment(`@type ${type} ${description}`, indent) +
+    toLuaComment(`@type ${type} ${description.trimEnd()}`, indent) +
     `\n${indent}${name} = nil`
   );
 }

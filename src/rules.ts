@@ -3,11 +3,9 @@ import { logError } from "./log";
 import {
   joinLines,
   formatAttribute,
-  formatTokens,
   generateField,
   stripGenericParams,
   splitFirstWord,
-  formatField,
 } from "./utility";
 import { Attribute, Doc, FieldAttribute } from "./doc";
 
@@ -48,7 +46,9 @@ export const functionRule: Rule = (ruleAttr, doc) => {
     .filter((t) => t.type === "param" && t.description.length > 0)
     .map((t) => splitFirstWord(t)?.[0] ?? "");
 
-  doc.description = joinLines(doc.description, description);
+  if (description != null) {
+    doc.description = joinLines(doc.description, description);
+  }
   doc.lua.push(`function ${functionName}(${paramNames.join(", ")}) end`);
 };
 
@@ -69,7 +69,11 @@ export const tableRule: Rule = (ruleAttr, doc) => {
 
   const [tableName, detail] = split;
 
-  doc.description = joinLines(doc.description, detail);
+  console.log({ tableName, detail });
+
+  if (detail != null) {
+    doc.description = joinLines(doc.description, detail);
+  }
   doc.lua.push(formatTable(tableName, formatTableFields(doc.attributes)));
 };
 
@@ -128,7 +132,7 @@ export const classRule: Rule = (ruleAttr, doc): void => {
  * @param attributes Any `@field` attribute will be removed and returned in the table definition.
  */
 function formatTable(tableName: string, body: string): string {
-  return `${tableName} = {${body}}`;
+  return `${tableName.trimEnd()} = {${body}}`;
 }
 
 function formatTableFields(attributes: Attribute[]): string {

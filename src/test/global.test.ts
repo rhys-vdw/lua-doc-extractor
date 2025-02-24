@@ -28,7 +28,9 @@ testInput(
     ---@type Foo
     ---This is my cool deprecated global.
     foo = nil
-  `
+  `,
+  undefined,
+  { only: true }
 );
 
 testInput(

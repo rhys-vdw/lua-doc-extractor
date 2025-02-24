@@ -14,8 +14,12 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    (%field {% id %} | %global {% id %}) %space %word %space %word lines {% ([attr, _s, name, _, type, description]) => {
+    %field %space %word %space %word lines {% ([attr, _s, name, _, type, description]) => {
       console.log(`FIELD name=${name.value} -> type=${type.value} -> desc=${JSON.stringify(description)}`);
+      return ({ type: attr.value, field: { name: name.value, type: type.value }, description })
+    }%}
+  | %global %space %word %space %word lines {% ([attr, _s, name, _, type, description]) => {
+      console.log(`GLOBAL name=${name.value} -> type=${type.value} -> desc=${JSON.stringify(description)}`);
       return ({ type: attr.value, field: { name: name.value, type: type.value }, description })
     }%}
   | %attribute lines {% ([attr, description]) => {

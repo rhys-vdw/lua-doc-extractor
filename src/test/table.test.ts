@@ -20,9 +20,7 @@ testInput(
     \t---@type string This is bar.
     \tbar = nil
     }
-  `,
-  undefined,
-  { only: true }
+  `
 );
 
 testInput(
@@ -57,12 +55,10 @@ testInput(
   dedent`
     ---My table.
     TheTable = {
-    \t---@type integer
-    \t---This is foo.
+    \t---@type integer This is foo.
     \tfoo = nil,
 
-    \t---@type string
-    \t---This is bar.
+    \t---@type string This is bar.
     \t---Bar is good.
     \tbar = nil
     }
