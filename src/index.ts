@@ -1,11 +1,10 @@
 import { getComments } from "./comment";
 import { Doc, formatDoc, isDocEmpty, parseDoc } from "./doc";
 import { header } from "./header";
-import { logWarning } from "./log";
 import { fail, Result, success } from "./result";
-import { functionRule, globalRule, Rule, tableRule } from "./rules";
+import { applyRules } from "./rules";
 import { addTables, mergeTables } from "./tables";
-import { formatAttribute, trimTrailingWhitespace } from "./utility";
+import { trimTrailingWhitespace } from "./utility";
 
 export function addHeader(body: string): string {
   return `${header()}\n\n${body}`;
@@ -39,9 +38,7 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
 }
 
 export function processDocs(docs: Doc[]): Doc[] {
-  const processed = runProcessors(docs, [addTables, mergeTables]);
-  processed.forEach(applyRules);
-  return processed;
+  return runProcessors(docs, [addTables, mergeTables, applyRules]);
 }
 
 export function formatDocs(
@@ -53,34 +50,4 @@ export function formatDocs(
     .map((d) => formatDoc(d, repoUrl));
 
   return trimTrailingWhitespace(members.join("\n\n"));
-}
-
-const ruleHandlers = {
-  global: globalRule,
-  function: functionRule,
-  table: tableRule,
-} as Record<string, Rule | undefined>;
-
-/**
- * Apply custom attribute rules, which may generate a declaration or remove tags
- * from the comment.
- * @return Lua declaration or null.
- */
-function applyRules(doc: Doc): void {
-  // Keep a copy of attributes so we can modify the original.
-  const prevAttrs = [...doc.attributes];
-  prevAttrs.forEach((t) => {
-    const handler = ruleHandlers[t.type];
-    if (handler != null) {
-      handler(t, doc);
-    }
-  });
-
-  if (doc.lua.length > 1) {
-    logWarning(
-      `Multiple generators found:\n - ${prevAttrs
-        .map(formatAttribute)
-        .join("\n - ")}`
-    );
-  }
 }
