@@ -46,3 +46,24 @@ testInput(
     local UniformParam = {}
   `
 );
+
+testInput(
+  "Handles complicated field type.",
+  dedent`
+    /***
+     * @class Widget
+     * @field union Bar | Baz Bar or baz?
+     * @field generic Foo<Bar | Baz> A generic.
+     */
+  `,
+  dedent`
+    ---@class Widget
+    local Widget = {
+    \t---@type Bar | Baz Bar or baz?
+    \tunion = nil,
+
+    \t---@type Foo<Bar | Baz> A generic.
+    \tgeneric = nil
+    }
+  `
+);

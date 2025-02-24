@@ -1,5 +1,3 @@
-import { dropRightWhile, dropWhile } from "lodash";
-import { Token } from "moo";
 import { Attribute, FieldAttribute } from "./attribute";
 import { logWarning } from "./log";
 import { isKeyword } from "./lua";
@@ -9,19 +7,17 @@ export function stripGenericParams(text: string) {
   return index === -1 ? text : text.substring(0, index);
 }
 
-export function trimArray(array: readonly string[]): string[] {
-  const isEmpty = (l: string) => l === "";
-  return dropWhile(dropRightWhile(array, isEmpty), isEmpty);
-}
-
-export function trimFirstSpace(input: string): string {
-  return input[0] === " " ? input.substring(1) : input;
-}
-
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */
 export function joinLines(dest: string, src: string) {
+  if (src == null) {
+    throw new Error(`src is ${src}`);
+  }
+  if (dest == null) {
+    throw new Error(`dest is ${src}`);
+  }
+
   const s = src.trimStart();
   const d = dest.trimEnd();
   if (src.length === 0) {
@@ -30,18 +26,8 @@ export function joinLines(dest: string, src: string) {
   return `${d}\n\n${s}`;
 }
 
-export function trimStart(tokens: readonly Token[]): Token[] {
-  return dropWhile(tokens, (t) => t.text.trim() === "");
-}
-
-export function trimEnd(tokens: readonly Token[]): Token[] {
-  return dropRightWhile(tokens, (t) => t.text.trim() === "");
-}
-
-export function formatAttribute({
-  type,
-  description,
-}: Readonly<Attribute>): string {
+export function formatAttribute(attribute: Readonly<Attribute>): string {
+  const { type, description } = attribute;
   return `@${type}${description}`;
 }
 
@@ -73,19 +59,14 @@ export function generateField(rule: FieldAttribute, indent: string): string {
     console.error(`No field property`, rule);
     return "";
   }
-  var { name, type } = rule.field;
-  return formatField(name, type, rule.description.trimStart(), indent);
+  var { name, description } = rule.field;
+  return formatField(name, description.trimStart(), indent);
 }
 
-export function formatField(
-  name: string,
-  type: string,
-  description: string,
-  indent: string
-) {
+export function formatField(name: string, description: string, indent: string) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
   return (
-    toLuaComment(`@type ${type} ${description.trimEnd()}`, indent) +
+    toLuaComment(`@type ${description.trimEnd()}`, indent) +
     `\n${indent}${fieldName} = nil`
   );
 }

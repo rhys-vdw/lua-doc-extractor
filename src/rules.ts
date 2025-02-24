@@ -1,20 +1,20 @@
-import { pull, remove } from "lodash";
-import { Attribute, FieldAttribute } from "./attribute";
-import { Doc } from "./doc";
+import { pull } from "lodash";
+import { Attribute, FieldAttribute, isAttribute } from "./attribute";
+import { Doc, removeAttributes } from "./doc";
 import { logError } from "./log";
 import {
   formatAttribute,
+  formatField,
   generateField,
   joinLines,
   splitFirstWord,
-  stripGenericParams,
 } from "./utility";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 
 export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
-  if (ruleAttr.type !== "global") {
-    logError(`@global tag failed to parse.`);
+  if (!isAttribute(ruleAttr, "global")) {
+    logError(`Invalid table attribute: ${ruleAttr.type}`);
     return;
   }
 
@@ -25,13 +25,19 @@ export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
     return;
   }
 
-  doc.lua.push(generateField(ruleAttr as FieldAttribute, ""));
+  const { name, description } = ruleAttr.global;
+  doc.lua.push(formatField(name, description.trimStart(), ""));
 };
 
 /**
  * Declare a function.
  */
 export const functionRule: Rule = (ruleAttr, doc) => {
+  if (!isAttribute(ruleAttr, "function")) {
+    logError(`Invalid table attribute: ${ruleAttr.type}`);
+    return;
+  }
+
   pull(doc.attributes, ruleAttr);
 
   const split = splitFirstWord(ruleAttr);
@@ -57,95 +63,33 @@ export const functionRule: Rule = (ruleAttr, doc) => {
  * Declare a global table.
  */
 export const tableRule: Rule = (ruleAttr, doc) => {
-  pull(doc.attributes, ruleAttr);
-
-  const split = splitFirstWord(ruleAttr);
-
-  if (split == null) {
-    logError(
-      `@${ruleAttr.type} tag missing table name: ${ruleAttr.description}`
-    );
+  // Ensure this is a TableAttribute.
+  if (!isAttribute(ruleAttr, "table")) {
+    console.error(`Invalid table attribute: ${ruleAttr.type}`);
     return;
   }
 
-  const [tableName, detail] = split;
+  // Remove the table attribute from the list.
+  pull(doc.attributes, ruleAttr);
 
-  if (detail != null) {
-    doc.description = joinLines(doc.description, detail);
-  }
-  doc.lua.push(formatTable(tableName, formatTableFields(doc.attributes)));
-};
+  // Add the table description to the main doc.
+  doc.description = joinLines(doc.description, ruleAttr.table.description);
 
-/**
- * Ensure a global table is created.
- */
-export const enumRule: Rule = (ruleAttr: Attribute, doc: Doc) => {
-  if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
-    // NOTE: Don't do anything with the remaining text, as it will be retained
-    // on the `@enum` tag.
-    const split = splitFirstWord(ruleAttr);
-
-    if (split == null) {
-      logError(
-        `@${ruleAttr.type} tag missing class name: ${ruleAttr.description}`
-      );
-      return;
-    }
-
-    const [enumName] = split;
-
-    doc.lua.push(formatTable(enumName, formatTableFields(doc.attributes)));
+  // Generate code.
+  const { name, isLocal } = ruleAttr.table;
+  const fieldAttrs = removeAttributes(doc, "field");
+  const fields = formatTableFields(fieldAttrs);
+  if (isLocal) {
+    doc.lua.push(`local ${name} = {${fields}}`);
+  } else {
+    doc.lua.push(`${name} = {${fields}}`);
   }
 };
 
-/**
- * Ensure a table exists for every class definition so that methods can be
- * added to it.
- *
- * If the class needs to be global then it can be combined with an explicit
- * `@table` annotation.
- */
-export const classRule: Rule = (ruleAttr, doc): void => {
-  if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
-    // NOTE: Don't do anything with the remaining text, as it will be retained
-    // on the `@class` tag.
-    const split = splitFirstWord(ruleAttr);
-
-    if (split == null) {
-      logError(
-        `@${ruleAttr.type} tag missing class name: ${ruleAttr.description}`
-      );
-      return;
-    }
-
-    const [className] = split;
-    const tableName = stripGenericParams(className);
-
-    doc.lua.push(
-      `local ${formatTable(tableName, formatTableFields(doc.attributes))}`
-    );
-  }
-};
-
-/**
- * Strips any provided fields and returns the generated table definition.
- * @param tableName The name of the table.
- * @param attributes Any `@field` attribute will be removed and returned in the table definition.
- */
-function formatTable(tableName: string, body: string): string {
-  return `${tableName.trimEnd()} = {${body}}`;
-}
-
-function formatTableFields(attributes: Attribute[]): string {
-  const fields = remove(attributes, (t) => t.type === "field");
-
+function formatTableFields(fields: readonly FieldAttribute[]): string {
   if (fields.length === 0) {
     return "";
   }
 
-  return (
-    "\n" +
-    fields.map((f) => generateField(f as FieldAttribute, "\t")).join(",\n\n") +
-    "\n"
-  );
+  return "\n" + fields.map((f) => generateField(f, "\t")).join(",\n\n") + "\n";
 }
