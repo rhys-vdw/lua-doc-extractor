@@ -93,7 +93,7 @@ export function findAttribute<TType extends string>(
  * @param type The type of attribute to find.
  * @returns True if the document has an attribute of the given type.
  */
-export function hasAttribute(doc: Doc, type: string): boolean {
+export function hasAttribute(doc: Doc, type: Attribute["type"]): boolean {
   return doc.attributes.some((d) => d.type === type);
 }
 
