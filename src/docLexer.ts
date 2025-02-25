@@ -10,6 +10,8 @@ export const docLexer = moo.states({
         fieldAttr: "@field",
         globalAttr: "@global",
         tableAttr: "@table",
+        functionAttr: "@function",
+        paramAttr: "@param",
       }),
       match: /@[^\s]+/,
       value: (x) => x.substring(1),

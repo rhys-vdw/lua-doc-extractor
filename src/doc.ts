@@ -109,3 +109,16 @@ export function removeAttributes<TType extends string>(
 ): Extract<Attribute, { type: TType }>[] {
   return remove(doc.attributes, (d) => d.type === type) as any;
 }
+
+/**
+ * Return all attributes of a given type from a document.
+ * @param doc The document to remove attributes from.
+ * @param type The type of attribute to remove.
+ * @returns The removed attributes.
+ */
+export function filterAttributes<TType extends string>(
+  doc: Doc,
+  type: TType
+): Extract<Attribute, { type: TType }>[] {
+  return doc.attributes.filter((d) => d.type === type) as any;
+}

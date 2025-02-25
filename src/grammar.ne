@@ -15,7 +15,13 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %tableAttr %space %word lines {% ([attr, _s, name, description]) =>
+    %functionAttr %space %word lines {% ([attr, _s, name, description]) =>
+      create("function", description, { name: name.value, description })
+    %}
+  | %paramAttr %space %word lines {% ([attr, _s, name, description]) =>
+      create("param", description, { name: name.value, description })
+    %}
+  | %tableAttr %space %word lines {% ([attr, _s, name, description]) =>
       create("table", description, { name: name.value, isLocal: false, description })
     %}
   | %enumAttr %space %word lines {% ([attr, _s, name, description]) =>
