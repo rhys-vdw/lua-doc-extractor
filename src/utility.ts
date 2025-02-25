@@ -31,24 +31,6 @@ export function formatAttribute(attribute: Readonly<Attribute>): string {
   return `@${type}${description}`;
 }
 
-/**
- * @returns An array containing first word, then the remaining text in
- * subsequent elements.
- */
-export function splitFirstWord(
-  attribute: Readonly<Attribute>
-): [string, string?] | null {
-  // https://stackoverflow.com/a/4607799/317135
-  const [firstWord, rest] = attribute.rawText.trimStart().split(/\s+(.*)/s);
-  if (firstWord == null) {
-    logWarning(
-      `Invalid attribute; Word expected: ${formatAttribute(attribute)}`
-    );
-    return null;
-  }
-  return [firstWord, rest];
-}
-
 export function generateField(rule: FieldAttribute, indent: string): string {
   if (rule.field == null) {
     logWarning(
