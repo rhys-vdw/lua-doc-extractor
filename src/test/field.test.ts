@@ -15,3 +15,23 @@ testInput(
     SomeTable.field = nil
   `
 );
+
+testInput(
+  "Generates standalone field with doc description",
+  dedent`
+    /***
+     * Some description.
+     *
+     * @field foo number More.
+     *
+     * Some more.
+     */
+  `,
+  dedent`
+    ---Some description.
+    ---@type number More.
+    ---
+    ---Some more.
+    foo = nil
+  `
+);
