@@ -26,3 +26,26 @@ testInput(
     function UnitSeismicPing(x, y, z) end
   `
 );
+
+testInput(
+  "Generic function",
+  dedent`
+    /***
+     * Does foo.
+     *
+     * @function SomeTable.Foo
+     *
+     * @generic T : integer
+     * @param x T
+     * @param y integer
+     */
+    `,
+  dedent`
+    ---Does foo.
+    ---
+    ---@generic T : integer
+    ---@param x T
+    ---@param y integer
+    function SomeTable.Foo(x, y) end
+  `
+);
