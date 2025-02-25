@@ -2,7 +2,7 @@ import dedent from "dedent-js";
 import { testInput } from "./utility/harness";
 
 testInput(
-  "Generates enum table.",
+  "Generates enum table",
   dedent`
     /***
      * @enum Numbers
@@ -18,6 +18,23 @@ testInput(
 
     \t---@type 6
     \tSIX = nil
+    }
+  `
+);
+
+testInput(
+  "Supports @enum description",
+  dedent`
+    /***
+     * @enum Numbers These are numbers.
+     * @field FIVE 5
+     */
+  `,
+  dedent`
+    ---@enum Numbers These are numbers.
+    Numbers = {
+    \t---@type 5
+    \tFIVE = nil
     }
   `
 );
