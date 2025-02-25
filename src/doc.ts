@@ -48,7 +48,7 @@ export function parseDoc(comment: Comment): Result<Doc> {
 
 function formatDocComment(doc: Doc, sourceLink: string | null): string {
   const fDesc = doc.description.trimStart();
-  const fAttrs = doc.attributes.map(formatAttribute).join("");
+  const fAttrs = doc.attributes.map(formatAttribute).join("\n");
 
   return toLuaComment(joinNonEmpty([fDesc, sourceLink, fAttrs], "\n\n"));
 }

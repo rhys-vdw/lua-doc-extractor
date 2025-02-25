@@ -106,7 +106,7 @@ function apply(doc: Doc): void {
     const sep = "=".repeat(10);
     const lua = `${sep}\n${doc.lua.join(`\n${sep}\n`)}\n${sep}`;
     logWarning(
-      `Multiple generators found:\nAttributes:${attributes}\nLua:${lua}`
+      `Multiple generators found:\nAttributes:${attributes}\nLua:\n${lua}`
     );
   }
 }
