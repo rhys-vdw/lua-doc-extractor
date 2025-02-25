@@ -7,7 +7,7 @@ import { formatAttribute, joinLines } from "./utility";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 
-export const globalRule: Rule = (ruleAttr: Attribute, doc) => {
+export const globalRule: Rule = (ruleAttr, doc) => {
   if (!isAttribute(ruleAttr, "global")) {
     logError(`Invalid table attribute: ${ruleAttr.type}`);
     return;
