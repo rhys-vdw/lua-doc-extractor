@@ -1,5 +1,5 @@
 import { without } from "lodash";
-import { TableAttribute } from "./attribute";
+import { createAttribute } from "./attribute";
 import { Doc, findAttribute } from "./doc";
 import { joinLines, stripGenericParams } from "./utility";
 
@@ -13,16 +13,15 @@ export function addTables(docs: Doc[]): Doc[] {
     // Classes create a local table.
     const classAttr = findAttribute(doc, "class");
     if (classAttr != null) {
-      const className = classAttr.class.name;
-      const tableAttr: TableAttribute = {
-        type: "table",
-        table: {
+      const className = classAttr.args.name;
+      const tableAttr = createAttribute(
+        "table",
+        {
           name: stripGenericParams(className),
-          isLocal: true,
           description: "",
         },
-        rawText: "",
-      };
+        { isLocal: true }
+      );
       doc.attributes.push(tableAttr);
       return;
     }
@@ -30,12 +29,12 @@ export function addTables(docs: Doc[]): Doc[] {
     // Enums create a global table.
     const enumAttr = findAttribute(doc, "enum");
     if (enumAttr != null) {
-      const enumName = enumAttr.enum.name;
-      const tableAttr: TableAttribute = {
-        type: "table",
-        table: { name: enumName, isLocal: false, description: "" },
-        rawText: "",
-      };
+      const enumName = enumAttr.args.name;
+      const tableAttr = createAttribute(
+        "table",
+        { name: enumName, description: "" },
+        { isLocal: false }
+      );
       doc.attributes.push(tableAttr);
       return;
     }
@@ -55,7 +54,7 @@ export function mergeTables(docs: Doc[]): Doc[] {
     const tableAttr = findAttribute(doc, "table");
 
     if (tableAttr != null) {
-      const { table } = tableAttr;
+      const { args: table } = tableAttr;
       if (byTable.has(table.name)) {
         const prev = byTable.get(table.name)!;
 
