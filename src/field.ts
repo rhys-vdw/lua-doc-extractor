@@ -9,14 +9,6 @@ export function generateField(rule: FieldAttribute, indent: string): string {
   return formatField(name, description.trimStart(), indent);
 }
 
-export function formatField(name: string, description: string, indent: string) {
-  const fieldName = isKeyword(name) ? `["${name}"]` : name;
-  return (
-    toLuaComment(`@type ${description.trimEnd()}`, indent) +
-    `\n${indent}${fieldName} = nil`
-  );
-}
-
 /**
  * Render any fields that are not associated with a table.
  *
@@ -38,10 +30,8 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
   return docs;
 }
 
-/**
- * Render a field attribute.
- */
-function renderField(field: FieldAttribute) {
+/** Render a field attribute. */
+function renderField(field: FieldAttribute): string | null {
   if (field.rawText.length === 0) {
     logError(`@field tag missing type: ${formatAttribute(field)}`);
     return null;
@@ -49,4 +39,12 @@ function renderField(field: FieldAttribute) {
 
   const { name, description } = field.field;
   return formatField(name, description.trimStart(), "");
+}
+
+function formatField(name: string, description: string, indent: string) {
+  const fieldName = isKeyword(name) ? `["${name}"]` : name;
+  return (
+    toLuaComment(`@type ${description.trimEnd()}`, indent) +
+    `\n${indent}${fieldName} = nil`
+  );
 }
