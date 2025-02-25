@@ -16,7 +16,10 @@ export function joinLines(dest: string, src: string) {
 
   const s = src.trimStart();
   const d = dest.trimEnd();
-  if (src.length === 0) {
+  if (d.length === 0) {
+    return s;
+  }
+  if (s.length === 0) {
     return d;
   }
   return `${d}\n\n${s}`;

@@ -38,3 +38,28 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Merges enums",
+  dedent`
+    /***
+     * @enum Numbers
+     * @field FIVE 5
+     */
+
+    /***
+     * @enum Numbers These are numbers.
+     * @field SIX 6
+     */
+  `,
+  dedent`
+    ---@enum Numbers These are numbers.
+    Numbers = {
+    \t---@type 5
+    \tFIVE = nil,
+
+    \t---@type 6
+    \tSIX = nil
+    }
+  `
+);
