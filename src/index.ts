@@ -1,6 +1,6 @@
 import { getComments } from "./comment";
 import { Doc, formatDoc, isDocEmpty, parseDoc } from "./doc";
-import { mergeEnumAttributes } from "./enum";
+import { addTableToEnumFields, mergeEnumAttributes } from "./enum";
 import { renderStandaloneFields } from "./field";
 import { processGlobals } from "./global";
 import { header } from "./header";
@@ -44,6 +44,7 @@ export function processDocs(docs: Doc[]): Doc[] {
   return runProcessors(docs, [
     processGlobals,
     addTables,
+    addTableToEnumFields,
     mergeTables,
     mergeEnumAttributes,
     renderStandaloneFields,

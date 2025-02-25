@@ -71,7 +71,7 @@ export function isAttribute<TType extends string>(
 export function formatAttribute(attribute: Readonly<Attribute>): string {
   const { type, args } = attribute;
   var argValues = Object.values(args);
-  return `@${type}${argValues.map(ensureLeadingWhitespace).join("")}`;
+  return `@${type}${argValues.map(ensureLeadingWhitespace).join("").trimEnd()}`;
 }
 
 function ensureLeadingWhitespace(str: string): string {

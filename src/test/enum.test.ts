@@ -63,3 +63,38 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Merges individual enum fields",
+  dedent`
+    /***
+     * @enum Numbers
+     * @field FIVE 5
+     */
+
+    /***
+     * @field Numbers.SIX 6
+     */
+
+    /***
+     * @field Numbers.SEVEN 7
+     * @field Numbers.EIGHT 8
+     */
+  `,
+  dedent`
+    ---@enum Numbers
+    Numbers = {
+    \t---@type 5
+    \tFIVE = nil,
+
+    \t---@type 6
+    \tSIX = nil,
+
+    \t---@type 7
+    \tSEVEN = nil,
+
+    \t---@type 8
+    \tEIGHT = nil
+    }
+  `
+);
