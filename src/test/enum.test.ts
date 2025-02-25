@@ -140,3 +140,47 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Merges enum fields and retains separate source links.",
+  dedent`
+    /***
+     * These are numbers.
+     * @enum Numbers
+     */
+
+    /***
+     * @field Numbers.SIX 6 Six.
+     */
+
+    /***
+     * @field Numbers.SEVEN 7 Seven.
+     * @field Numbers.EIGHT 8 Eight.
+     */
+  `,
+  dedent`
+    ---These are numbers.
+    ---
+    ---\[<a href="https://foo.com/file.c#L1-L4" target="_blank">source</a>\]
+    ---
+    ---@enum Numbers
+    Numbers = {
+    \t---@type 6 Six.
+    \t---
+    \t---\[<a href="https://foo.com/file.c#L6-L8" target="_blank">source</a>\]
+    \tSIX = nil,
+
+    \t---@type 7 Seven.
+    \t---
+    \t---\[<a href="https://foo.com/file.c#L10-L13" target="_blank">source</a>\]
+    \tSEVEN = nil,
+
+    \t---@type 8 Eight.
+    \t---
+    \t---\[<a href="https://foo.com/file.c#L10-L13" target="_blank">source</a>\]
+    \tEIGHT = nil
+    }
+  `,
+  undefined,
+  { repoUrl: "https://foo.com", path: "file.c" }
+);

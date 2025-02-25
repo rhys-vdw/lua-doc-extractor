@@ -44,10 +44,10 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
 export function processDocs(docs: Doc[], repoUrl: string | null): Doc[] {
   return runProcessors(docs, [
     removeEmptyDocs,
+    appendSourceLinks(repoUrl),
     processGlobals,
     addTables,
     addTableToEnumFields,
-    appendSourceLinks(repoUrl),
     mergeTables,
     mergeEnumAttributes,
     renderStandaloneFields,
