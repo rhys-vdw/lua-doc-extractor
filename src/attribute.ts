@@ -9,7 +9,8 @@ export type Attribute =
   | TableAttribute;
 
 interface BaseAttribute {
-  rawText: string;
+  args: { description: string };
+  options: {};
 }
 
 export interface DefaultAttribute extends BaseAttribute {
@@ -18,49 +19,46 @@ export interface DefaultAttribute extends BaseAttribute {
 
 export interface FunctionAttribute extends BaseAttribute {
   type: "function";
-  function: { name: string; description: string };
+  args: { name: string; description: string };
 }
 
 export interface ParamAttribute extends BaseAttribute {
   type: "param";
-  param: { name: string; description: string };
+  args: { name: string; description: string };
 }
 
 export interface EnumAttribute extends BaseAttribute {
   type: "enum";
-  enum: { name: string };
+  args: { name: string; description: string };
 }
 
 export interface TableAttribute extends BaseAttribute {
   type: "table";
-  table: { name: string; isLocal: boolean; description: string };
+  args: { name: string; description: string };
+  options: { isLocal: boolean };
 }
 
 export interface ClassAttribute extends BaseAttribute {
   type: "class";
-  class: { name: string };
+  args: { name: string; description: string };
 }
 
 export interface GlobalAttribute extends BaseAttribute {
   type: "global";
-  global: { name: string; description: string };
+  args: { name: string; description: string };
 }
 
 export interface FieldAttribute extends BaseAttribute {
   type: "field";
-  field: { name: string; description: string };
+  args: { name: string; description: string };
 }
 
 export function createAttribute<TType extends string>(
   type: TType,
-  description: string = "",
-  data?: any
+  args: Extract<Attribute, { type: TType }>["args"],
+  options: Extract<Attribute, { type: TType }>["options"]
 ): Extract<Attribute, { type: TType }> {
-  const rawText =
-    data != null && typeof data.name === "string"
-      ? ` ${data.name}${description}`
-      : description;
-  return { type, rawText, [type]: data } as any;
+  return { type, args, options } as any;
 }
 
 export function isAttribute<TType extends string>(
@@ -68,4 +66,17 @@ export function isAttribute<TType extends string>(
   name: TType
 ): attr is Extract<Attribute, { type: TType }> {
   return attr.type === name;
+}
+
+export function formatAttribute(attribute: Readonly<Attribute>): string {
+  const { type, args } = attribute;
+  var argValues = Object.values(args);
+  return `@${type}${argValues.map(ensureLeadingWhitespace).join("")}`;
+}
+
+function ensureLeadingWhitespace(str: string): string {
+  if (str === "") {
+    return "";
+  }
+  return /\s/.test(str[0]) ? str : ` ${str}`;
 }

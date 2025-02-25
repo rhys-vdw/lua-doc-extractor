@@ -16,28 +16,28 @@ doc ->
 
 attribute ->
     %functionAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("function", description, { name: name.value, description })
+      create("function", { name: name.value, description }, {})
     %}
   | %paramAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("param", description, { name: name.value, description })
+      create("param", { name: name.value, description }, {})
     %}
   | %tableAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("table", description, { name: name.value, isLocal: false, description })
+      create("table", { name: name.value, description }, { isLocal: false })
     %}
   | %enumAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("enum", description, { name: name.value })
+      create("enum", { name: name.value, description }, {})
     %}
   | %classAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("class", description, { name: name.value })
+      create("class", { name: name.value, description }, {})
     %}
   | %fieldAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("field", description, { name: name.value, description })
+      create("field", { name: name.value, description }, {})
     %}
   | %globalAttr %space %word lines {% ([attr, _s, name, description]) =>
-      create("global", description, { name: name.value, description })
+      create("global", { name: name.value, description }, {})
     %}
   | %attribute lines {% ([attr, description]) =>
-      create(attr.value, description)
+      create(attr.value, { description }, {})
     %}
 
 lines -> (line %newline):+ {% (d) => d.flat(2).join("") %}

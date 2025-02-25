@@ -1,9 +1,14 @@
 import { pull } from "lodash";
-import { Attribute, FieldAttribute, isAttribute } from "./attribute";
+import {
+  Attribute,
+  FieldAttribute,
+  formatAttribute,
+  isAttribute,
+} from "./attribute";
 import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
 import { generateField } from "./field";
 import { logError, logWarning } from "./log";
-import { formatAttribute, joinLines } from "./utility";
+import { joinLines } from "./utility";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 
@@ -18,9 +23,9 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 
   pull(doc.attributes, ruleAttr);
 
-  const { name, description } = ruleAttr.function;
+  const { name, description } = ruleAttr.args;
 
-  const paramNames = filterAttributes(doc, "param").map((t) => t.param.name);
+  const paramNames = filterAttributes(doc, "param").map((t) => t.args.name);
 
   if (description != null) {
     doc.description = joinLines(doc.description, description);
@@ -32,21 +37,24 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 /**
  * Declare a table.
  */
-export const tableRule: Rule = (ruleAttr, doc) => {
+export const tableRule: Rule = (table, doc) => {
   // Ensure this is a TableAttribute.
-  if (!isAttribute(ruleAttr, "table")) {
-    logError(`Invalid table attribute: ${ruleAttr.type}`);
+  if (!isAttribute(table, "table")) {
+    logError(`Invalid table attribute: ${table.type}`);
     return;
   }
 
   // Remove the table attribute from the list.
-  pull(doc.attributes, ruleAttr);
+  pull(doc.attributes, table);
 
   // Add the table description to the main doc.
-  doc.description = joinLines(doc.description, ruleAttr.table.description);
+  doc.description = joinLines(doc.description, table.args.description);
 
   // Generate code.
-  const { name, isLocal } = ruleAttr.table;
+  const {
+    args: { name },
+    options: { isLocal },
+  } = table;
   const fieldAttrs = hasAttribute(doc, "class")
     ? []
     : removeAttributes(doc, "field");

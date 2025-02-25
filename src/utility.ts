@@ -1,5 +1,3 @@
-import { Attribute } from "./attribute";
-
 export function stripGenericParams(text: string) {
   const index = text.indexOf("<");
   return index === -1 ? text : text.substring(0, index);
@@ -22,11 +20,6 @@ export function joinLines(dest: string, src: string) {
     return d;
   }
   return `${d}\n\n${s}`;
-}
-
-export function formatAttribute(attribute: Readonly<Attribute>): string {
-  const { type, rawText: description } = attribute;
-  return `@${type}${description}`;
 }
 
 export function toLuaComment(text: string, indent = ""): string {

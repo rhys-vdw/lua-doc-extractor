@@ -1,11 +1,10 @@
 import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
-import { logError } from "./log";
 import { isKeyword } from "./lua";
-import { formatAttribute, toLuaComment } from "./utility";
+import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  var { name, description } = rule.field;
+  var { name, description } = rule.args;
   return formatField(name, description.trimStart(), indent);
 }
 
@@ -32,12 +31,7 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
 
 /** Render a field attribute. */
 function renderField(field: FieldAttribute): string | null {
-  if (field.rawText.length === 0) {
-    logError(`@field tag missing type: ${formatAttribute(field)}`);
-    return null;
-  }
-
-  const { name, description } = field.field;
+  const { name, description } = field.args;
   return formatField(name, description.trimStart(), "");
 }
 

@@ -3,10 +3,10 @@ import { Comment } from "./comment";
 import grammar from "./grammar.ne";
 
 import { remove } from "lodash";
-import { Attribute } from "./attribute";
+import { Attribute, formatAttribute } from "./attribute";
 import { Result, toResult } from "./result";
 import { formatSource, Position } from "./source";
-import { formatAttribute, joinNonEmpty, toLuaComment } from "./utility";
+import { joinNonEmpty, toLuaComment } from "./utility";
 
 export interface Doc {
   description: string;
