@@ -14,6 +14,78 @@ $ npm install -g lua-doc-extractor
 
 ## Usage
 
+### Example
+
+#### Input
+
+```cpp
+/***
+ * Main API
+ * @table Api
+ * @field Version integer
+ */
+
+/***
+ * The absolute path to the executable.
+ * @global ExecutablePath string
+ */
+
+/***
+ * @enum NameType
+ * @field FirstName 1 First name.
+ * @field LastName 2 Last name.
+ */
+
+/***
+ * @field NameType.FullName 3 Full name, including middle names.
+ */
+
+/***
+ * Get name by ID
+ * @function Api.GetName
+ * @param id integer The integer of the person.
+ * @param nameType NameType Which name to return.
+ * @return string name The full or first name of the person.
+ */
+int SomeClass::GetName(lua_State *L)
+{
+```
+
+#### Output
+
+```lua
+---@meta
+
+---Main API
+Api = {
+	---@type integer
+	Version = nil
+}
+
+---The absolute path to the executable.
+---@type string
+ExectablePath = nil
+
+---@enum NameType
+NameType = {
+	--- First name.
+	FirstName = 1,
+
+	---Last name.
+	LastName = 2,
+
+	---Full name, including middle names.
+	FullName = 3
+}
+
+---Get name by ID
+---
+---@param id integer The integer of the person.
+---@param nameType NameType Which name to return.
+---@return string name The full or first name of the person.
+function Api.GetName(id, nameType) end
+```
+
 ### CLI
 
 Process files:
@@ -34,87 +106,77 @@ To add GitHub source links to the exported library. Provide the `--repo` argumen
 $ lua-doc-extractor **/*.cpp --dest library --repo https://github.com/beyond-all-reason/spring/blob/62ee0b4/
 ```
 
+### Comments
+
+Lua docs in document comment blocks (`/*** <docs> */`) will be parsed.
+
 ### Annotations
 
-Annotate your using [lua language server annotations](https://luals.github.io/wiki/annotations/) in document comment blocks (`/*** <docs> */`).
+All [lua language server annotations](https://luals.github.io/wiki/annotations/) can be used, some with special handling. Some additional annotations are required by lua-doc-extractor.
 
-### Custom tags
+#### `@global`
 
-Custom tags are required to generate Lua meta code.
-
-#### `@global <name> <type>`
-
-Defines a global variable with a given type.
-
-#### `@function <name>`
-
-Outputs the definition of a function.
-
-#### `@table <name>`
-
-Defines a global table. Add fields to the table using `@field name type [description]`.
-
-### Example
-
-```cpp
-/***
- * Main API
- * @table Api
- * @field Version integer
- */
-
-/***
- * The absolute path to the executable.
- * @global ExecutablePath string
- */
-
-/***
- * @enum NameType
- * @field FirstName 1
- * @field LastName 2
- * @field FullName 3
- */
-
-/***
- * Get name by ID
- * @function Api.GetName
- * @param id integer The integer of the person.
- * @param nameType NameType Which name to return.
- * @return string name The full or first name of the person.
- */
-int SomeClass::GetName(lua_State *L)
-{
+```
+@global <name> <type> [description]
 ```
 
-Generates:
+Defines a global variable.
 
-```lua
----@meta
+#### `@field`
 
----Main API
-Api = {
-	---@type integer
-	Version = nil
-}
-
----The absolute path to the executable.
----@type string
-ExectablePath = nil
-
----@enum NameType
-NameType = {
-	FirstName = 1,
-	LastName = 2,
-	FullName = 3
-}
-
----Get name by ID
----
----@param id integer The integer of the person.
----@param nameType NameType Which name to return.
----@return string name The full or first name of the person.
-function Api.GetName(id, nameType) end
 ```
+@field <name> <type> [description]
+```
+
+Add fields to a table (`@table`, `@class` or `@enum`) by including them in the same comment.
+
+```
+
+@field <table>.<name> <type> [description]
+```
+
+You can also add fields to a table defined in a different comment.
+
+#### `@function`
+
+```
+@function <name> [description]
+```
+
+Defines a global function.
+
+```
+@function <table>.<name> [description]
+@function <table>:<name> [description]
+```
+
+Adds a function to a [`@table`](#table) or [`@class`](#class) defined in a different comment.
+
+Should be paired with `@param`, `@return` and `@generic` attributes.
+
+#### `@table`
+
+```
+@table <name>
+```
+
+Defines a global table. Fields can be added with [`@field`](#field).
+
+#### `@enum`
+
+```
+@enum <name>
+```
+
+Defines a global table marked with the `@enum` attribute. Entries can be added with [`@field`](#field).
+
+#### `@class`
+
+```
+@class <name>
+```
+
+Defines a class. Fields can be added with [`@field`](#field), methods can be added with [`@function`](#function).
 
 ## Contributing
 
