@@ -64,7 +64,7 @@ export function addTableToEnumFields(docs: Doc[]): Doc[] {
         createAttribute(
           "table",
           { name: tableName, description: "" },
-          { isLocal: true }
+          { isLocal: false }
         )
       );
     }
