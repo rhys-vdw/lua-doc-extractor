@@ -64,6 +64,8 @@ export function formatDoc(doc: Doc, repoUrl: string | null): string {
   }
 
   return joinNonEmpty([formatDocComment(doc, sourceLink), doc.lua[0]], "\n");
+export function withoutEmptyDocs(docs: Doc[]): Doc[] {
+  return docs.filter((d) => !isDocEmpty(d));
 }
 
 export function isDocEmpty(doc: Doc): boolean {
