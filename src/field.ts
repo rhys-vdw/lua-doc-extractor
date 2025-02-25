@@ -1,19 +1,10 @@
 import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
-import { logError, logWarning } from "./log";
+import { logError } from "./log";
 import { isKeyword } from "./lua";
 import { formatAttribute, toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  if (rule.field == null) {
-    logWarning(
-      `Invalid attribute, field name expected: ${formatAttribute(rule)}`
-    );
-  }
-  if (rule.field == null) {
-    console.error(`No field property`, rule);
-    return "";
-  }
   var { name, description } = rule.field;
   return formatField(name, description.trimStart(), indent);
 }
