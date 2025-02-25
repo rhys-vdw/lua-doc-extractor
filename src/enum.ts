@@ -39,10 +39,24 @@ export function addTableToEnumFields(docs: Doc[]): Doc[] {
       // Remove the table from the field name.
       field.args.name = fieldName;
 
+      // NOTE: This will add unsightly newlines even field description is
+      // "empty" because it will always contain the type of the field.
+      //
+      // To fix this the parser would need to be able to correctly parse the
+      // type itself and separate it from the description.
+      field.args.description = joinLines(
+        field.args.description,
+        doc.description
+      );
+
       // Add to table names.
       acc.add(tableName);
       return acc;
     }, new Set<string>());
+
+    if (tableNames.size > 0) {
+      doc.description = "";
+    }
 
     for (const tableName of tableNames) {
       // Add a table attribute so it can be merged later.

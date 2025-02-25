@@ -98,3 +98,45 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Merges enum fields and handles doc description sensibly",
+  dedent`
+    /***
+     * These are numbers.
+     * @enum Numbers
+     */
+
+    /***
+     * This is six.
+     * @field Numbers.SIX 6
+     */
+
+    /***
+     * These are seven and eight.
+     * @field Numbers.SEVEN 7 Seven.
+     * @field Numbers.EIGHT 8 Eight.
+     */
+  `,
+  dedent`
+    ---These are numbers.
+    ---
+    ---@enum Numbers
+    Numbers = {
+    \t---@type 6
+    \t---
+    \t---This is six.
+    \tSIX = nil,
+
+    \t---@type 7 Seven.
+    \t---
+    \t---These are seven and eight.
+    \tSEVEN = nil,
+
+    \t---@type 8 Eight.
+    \t---
+    \t---These are seven and eight.
+    \tEIGHT = nil
+    }
+  `
+);
