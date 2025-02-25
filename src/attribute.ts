@@ -3,7 +3,9 @@ export type Attribute =
   | DefaultAttribute
   | EnumAttribute
   | FieldAttribute
+  | FunctionAttribute
   | GlobalAttribute
+  | ParamAttribute
   | TableAttribute;
 
 interface BaseAttribute {
@@ -12,6 +14,16 @@ interface BaseAttribute {
 
 export interface DefaultAttribute extends BaseAttribute {
   type: Exclude<string, "class" | "enum" | "field" | "global" | "table">;
+}
+
+export interface FunctionAttribute extends BaseAttribute {
+  type: "function";
+  function: { name: string; description: string };
+}
+
+export interface ParamAttribute extends BaseAttribute {
+  type: "param";
+  param: { name: string; description: string };
 }
 
 export interface EnumAttribute extends BaseAttribute {

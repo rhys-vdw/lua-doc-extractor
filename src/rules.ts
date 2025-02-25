@@ -1,13 +1,12 @@
 import { pull } from "lodash";
 import { Attribute, FieldAttribute, isAttribute } from "./attribute";
-import { Doc, hasAttribute, removeAttributes } from "./doc";
+import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
 import { logError, logWarning } from "./log";
 import {
   formatAttribute,
   formatField,
   generateField,
   joinLines,
-  splitFirstWord,
 } from "./utility";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
@@ -40,23 +39,15 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 
   pull(doc.attributes, ruleAttr);
 
-  const split = splitFirstWord(ruleAttr);
+  const { name, description } = ruleAttr.function;
 
-  if (split == null) {
-    logError(`@function tag missing function name: ${ruleAttr}`);
-    return;
-  }
-
-  const [functionName, description] = split;
-
-  const paramNames = doc.attributes
-    .filter((t) => t.type === "param" && t.rawText.length > 0)
-    .map((t) => splitFirstWord(t)?.[0] ?? "");
+  const paramNames = filterAttributes(doc, "param").map((t) => t.param.name);
 
   if (description != null) {
     doc.description = joinLines(doc.description, description);
   }
-  doc.lua.push(`function ${functionName}(${paramNames.join(", ")}) end`);
+
+  doc.lua.push(`function ${name}(${paramNames.join(", ")}) end`);
 };
 
 /**
