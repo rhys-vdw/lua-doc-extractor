@@ -1,28 +1,11 @@
 import { pull } from "lodash";
 import { Attribute, FieldAttribute, isAttribute } from "./attribute";
 import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
-import { formatField, generateField } from "./field";
+import { generateField } from "./field";
 import { logError, logWarning } from "./log";
 import { formatAttribute, joinLines } from "./utility";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
-
-export const globalRule: Rule = (ruleAttr, doc) => {
-  if (!isAttribute(ruleAttr, "global")) {
-    logError(`Invalid table attribute: ${ruleAttr.type}`);
-    return;
-  }
-
-  pull(doc.attributes, ruleAttr);
-
-  if (ruleAttr.rawText.length === 0) {
-    logError(`@global tag missing type: ${formatAttribute(ruleAttr)}`);
-    return;
-  }
-
-  const { name, description } = ruleAttr.global;
-  doc.lua.push(formatField(name, description.trimStart(), ""));
-};
 
 /**
  * Declare a function.
@@ -89,7 +72,6 @@ export function applyRules(docs: Doc[]): Doc[] {
 }
 
 const ruleHandlers = {
-  global: globalRule,
   function: functionRule,
   table: tableRule,
 } as Record<string, Rule | undefined>;

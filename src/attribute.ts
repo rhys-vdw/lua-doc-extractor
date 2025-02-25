@@ -53,12 +53,13 @@ export interface FieldAttribute extends BaseAttribute {
 
 export function createAttribute<TType extends string>(
   type: TType,
-  rawText: string = "",
+  description: string = "",
   data?: any
 ): Extract<Attribute, { type: TType }> {
-  if (data != null && typeof data.name === "string") {
-    rawText = ` ${data.name}${rawText}`;
-  }
+  const rawText =
+    data != null && typeof data.name === "string"
+      ? ` ${data.name}${description}`
+      : description;
   return { type, rawText, [type]: data } as any;
 }
 
