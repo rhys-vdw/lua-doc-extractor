@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
+import chalk from "chalk";
 import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
-import { addHeader, formatDocs, getDocs, processDocs } from ".";
-import { readFile, mkdir, writeFile } from "fs/promises";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
+import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
-import chalk from "chalk";
 
 interface Options {
   src: string[];
@@ -115,9 +115,7 @@ async function runAsync() {
     )
   ).flat();
 
-  processDocs(docs);
-
-  const formattedDocs = formatDocs(docs, repo ?? null);
+  const formattedDocs = formatDocs(processDocs(docs, repo ?? null));
   await writeFile(join(dest, "library.lua"), addHeader(formattedDocs));
 
   if (errors.length > 0) {

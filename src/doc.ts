@@ -5,7 +5,7 @@ import grammar from "./grammar.ne";
 import { remove } from "lodash";
 import { Attribute, formatAttribute } from "./attribute";
 import { Result, toResult } from "./result";
-import { formatSource, Position } from "./source";
+import { Position } from "./source";
 import { joinNonEmpty, toLuaComment } from "./utility";
 
 export interface Doc {
@@ -46,24 +46,15 @@ export function parseDoc(comment: Comment): Result<Doc> {
   return toResult(() => parse(comment));
 }
 
-function formatDocComment(doc: Doc, sourceLink: string | null): string {
+function formatDocComment(doc: Doc): string {
   const fDesc = doc.description.trimStart();
   const fAttrs = doc.attributes.map(formatAttribute).join("\n");
 
-  return toLuaComment(joinNonEmpty([fDesc, sourceLink, fAttrs], "\n\n"));
+  return toLuaComment(joinNonEmpty([fDesc, fAttrs], "\n\n"));
 }
 
-export function formatDoc(doc: Doc, repoUrl: string | null): string {
-  let sourceLink = null;
-  if (repoUrl && doc.path) {
-    sourceLink = `${formatSource(repoUrl, {
-      path: doc.path,
-      start: doc.start,
-      end: doc.end,
-    })}`;
-  }
-
-  return joinNonEmpty([formatDocComment(doc, sourceLink), doc.lua[0]], "\n");
+export function formatDoc(doc: Doc): string {
+  return joinNonEmpty([formatDocComment(doc), doc.lua[0]], "\n");
 }
 
 export function removeEmptyDocs(docs: Doc[]): Doc[] {
