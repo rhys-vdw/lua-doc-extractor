@@ -1,5 +1,5 @@
 import { getComments } from "./comment";
-import { Doc, formatDoc, isDocEmpty, parseDoc } from "./doc";
+import { Doc, formatDoc, parseDoc, removeEmptyDocs } from "./doc";
 import { addTableToEnumFields, mergeEnumAttributes } from "./enum";
 import { renderStandaloneFields } from "./field";
 import { processGlobals } from "./global";
@@ -42,6 +42,7 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
 
 export function processDocs(docs: Doc[]): Doc[] {
   return runProcessors(docs, [
+    removeEmptyDocs,
     processGlobals,
     addTables,
     addTableToEnumFields,
@@ -56,9 +57,6 @@ export function formatDocs(
   docs: Readonly<Doc[]>,
   repoUrl: string | null
 ): string {
-  const members = docs
-    .filter((e) => !isDocEmpty(e))
-    .map((d) => formatDoc(d, repoUrl));
-
+  const members = docs.map((d) => formatDoc(d, repoUrl));
   return trimTrailingWhitespace(members.join("\n\n"));
 }
