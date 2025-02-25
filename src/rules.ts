@@ -1,117 +1,112 @@
-import { pull, remove } from "lodash";
-import { logError } from "./log";
+import { pull } from "lodash";
 import {
-  joinLines,
+  Attribute,
+  FieldAttribute,
   formatAttribute,
-  formatTokens,
-  generateField,
-  isClass,
-  splitFirstWord,
-  stripGenericParams,
-} from "./utility";
-import { Attribute, Doc } from "./doc";
+  isAttribute,
+} from "./attribute";
+import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
+import { generateField } from "./field";
+import { logError, logWarning } from "./log";
+import { joinLines } from "./utility";
 
-export type Rule = (ruleAttr: Attribute, doc: Doc) => string | null;
-
-export function globalRule(ruleAttr: Attribute, comment: Doc) {
-  pull(comment.attributes, ruleAttr);
-
-  if (ruleAttr.description.length === 0) {
-    logError(`@global tag missing type: ${formatAttribute(ruleAttr)}`);
-    return null;
-  }
-  return generateField(ruleAttr, "");
-}
+export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
 
 /**
  * Declare a function.
  */
-export function functionRule(ruleAttr: Attribute, doc: Doc) {
+export const functionRule: Rule = (ruleAttr, doc) => {
+  if (!isAttribute(ruleAttr, "function")) {
+    logError(`Invalid table attribute: ${ruleAttr.type}`);
+    return;
+  }
+
   pull(doc.attributes, ruleAttr);
 
-  const [functionName, ...description] = splitFirstWord(ruleAttr);
+  const { name, description } = ruleAttr.args;
 
-  if (functionName == null) {
-    logError(`@function tag missing function name: ${ruleAttr}`);
-    return null;
+  const paramNames = filterAttributes(doc, "param").map((t) => t.args.name);
+
+  if (description != null) {
+    doc.description = joinLines(doc.description, description);
   }
 
-  const paramNames = doc.attributes
-    .filter((t) => t.type === "param" && t.description.length > 0)
-    .map((t) => splitFirstWord(t)[0]?.text ?? "");
-
-  doc.description = joinLines(doc.description, description);
-
-  return (
-    functionName && `function ${functionName}(${paramNames.join(", ")}) end`
-  );
-}
+  doc.lua.push(`function ${name}(${paramNames.join(", ")}) end`);
+};
 
 /**
- * Declare a global table.
+ * Declare a table.
  */
-export function tableRule(ruleAttr: Attribute, doc: Doc): string | null {
-  pull(doc.attributes, ruleAttr);
+export const tableRule: Rule = (table, doc) => {
+  // Ensure this is a TableAttribute.
+  if (!isAttribute(table, "table")) {
+    logError(`Invalid table attribute: ${table.type}`);
+    return;
+  }
 
-  const [tableName, ...detail] = splitFirstWord(ruleAttr);
+  // Remove the table attribute from the list.
+  pull(doc.attributes, table);
 
-  if (tableName == null) {
-    logError(
-      `@${ruleAttr.type} tag missing table name: ${formatTokens(
-        ruleAttr.description
-      )}`
+  // Add the table description to the main doc.
+  doc.description = joinLines(doc.description, table.args.description);
+
+  // Generate code.
+  const {
+    args: { name },
+    options: { isLocal },
+  } = table;
+  const fieldAttrs = hasAttribute(doc, "class")
+    ? []
+    : removeAttributes(doc, "field");
+  const fields = formatTableFields(fieldAttrs);
+  if (isLocal) {
+    doc.lua.push(`local ${name} = {${fields}}`);
+  } else {
+    doc.lua.push(`${name} = {${fields}}`);
+  }
+};
+
+function formatTableFields(fields: readonly FieldAttribute[]): string {
+  if (fields.length === 0) {
+    return "";
+  }
+
+  return "\n" + fields.map((f) => generateField(f, "\t")).join(",\n\n") + "\n";
+}
+
+export function applyRules(docs: Doc[]): Doc[] {
+  docs.forEach(apply);
+  return docs;
+}
+
+const ruleHandlers = {
+  function: functionRule,
+  table: tableRule,
+} as Record<string, Rule | undefined>;
+
+/**
+ * Apply custom attribute rules, which may generate a declaration or remove tags
+ * from the comment.
+ * @return Lua declaration or null.
+ */
+function apply(doc: Doc): void {
+  // Keep a copy of attributes so we can modify the original.
+  const prevAttrs = [...doc.attributes];
+  prevAttrs.forEach((t) => {
+    const handler = ruleHandlers[t.type];
+    if (handler != null) {
+      handler(t, doc);
+    }
+  });
+
+  if (doc.lua.length > 1) {
+    const attributes = prevAttrs
+      .map((a, i) => `${i + 1}. ${formatAttribute(a)}`)
+      .join("\n");
+    const sep = "=".repeat(10);
+    const lua = `${sep}\n${doc.lua.join(`\n${sep}\n`)}\n${sep}`;
+    logWarning(
+      `Multiple generators found:\nAttributes:${attributes}\nLua:\n${lua}`
     );
-    return null;
   }
-
-  doc.description = joinLines(doc.description, detail);
-  let body = "";
-  if (!isClass(doc)) {
-    const fields = remove(doc.attributes, (t) => t.type === "field");
-    body =
-      fields.length === 0
-        ? ""
-        : "\n" + fields.map((f) => generateField(f, "\t")).join(",\n\n") + "\n";
-  }
-  return `${tableName} = {${body}}`;
-}
-
-/**
- * Ensure a global table is created.
- */
-export function enumRule(
-  { description }: Attribute,
-  comment: Doc
-): string | null {
-  if (comment.attributes.findIndex((t) => t.type === "table") === -1) {
-    return tableRule({ type: "table", description }, comment);
-  }
-  return null;
-}
-
-/**
- * Ensure a table exists for every class definition so that methods can be
- * added to it.
- *
- * If the class needs to be global then it can be combined with an explicit
- * `@table` annotation.
- */
-export function classRule(ruleAttr: Attribute, doc: Doc) {
-  if (doc.attributes.findIndex((t) => t.type === "table") === -1) {
-    // NOTE: Don't do anything with the remaining text, as it will be retained
-    // on the `@class` tag.
-    const [classToken] = splitFirstWord(ruleAttr);
-    const tableName = stripGenericParams(classToken.text);
-    return (
-      "local " +
-      tableRule(
-        {
-          type: "table",
-          description: [{ ...classToken, text: tableName, value: tableName }],
-        },
-        doc
-      )
-    );
-  }
-  return null;
 }

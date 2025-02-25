@@ -74,3 +74,13 @@ testInput(
     ---@param message string \`\`"\`<PLAYER#>\`"\`\` where \`#\` is a player ID.
   `
 );
+
+testInput(
+  "Ignores empty comments",
+  dedent`
+    /***
+     *
+     */
+  `,
+  ""
+);

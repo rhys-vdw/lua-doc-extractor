@@ -1,4 +1,6 @@
 import { join } from "path";
+import { Doc } from "./doc";
+import { joinLines } from "./utility";
 
 export interface Position {
   line: number;
@@ -29,3 +31,24 @@ export function sourceToUrl(
   url.pathname = join(url.pathname, path);
   return `${url}#L${start.line}-L${end.line}`;
 }
+
+export const appendSourceLinks =
+  (repoUrl: string | null) =>
+  (docs: Doc[]): Doc[] => {
+    if (repoUrl == null) {
+      return docs;
+    }
+    docs.forEach((doc) => {
+      if (doc.path) {
+        const sourceLink = `${formatSource(repoUrl, {
+          path: doc.path,
+          start: doc.start,
+          end: doc.end,
+        })}`;
+
+        doc.description = joinLines(doc.description, sourceLink);
+      }
+    });
+
+    return docs;
+  };

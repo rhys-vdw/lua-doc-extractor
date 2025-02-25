@@ -66,3 +66,25 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Correctly wraps keywords.",
+  dedent`
+  /***
+   * Cool table.
+   * @field value integer The value.
+   * @field repeat boolean Should this repeat?
+   * @table CoolTable
+   */
+  `,
+  dedent`
+    ---Cool table.
+    CoolTable = {
+    \t---@type integer The value.
+    \tvalue = nil,
+
+    \t---@type boolean Should this repeat?
+    \t["repeat"] = nil
+    }
+  `
+);
