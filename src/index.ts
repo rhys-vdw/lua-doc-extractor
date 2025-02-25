@@ -1,5 +1,6 @@
 import { getComments } from "./comment";
 import { Doc, formatDoc, isDocEmpty, parseDoc } from "./doc";
+import { renderStandaloneFields } from "./field";
 import { header } from "./header";
 import { fail, Result, success } from "./result";
 import { applyRules } from "./rules";
@@ -38,7 +39,12 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
 }
 
 export function processDocs(docs: Doc[]): Doc[] {
-  return runProcessors(docs, [addTables, mergeTables, applyRules]);
+  return runProcessors(docs, [
+    addTables,
+    mergeTables,
+    renderStandaloneFields,
+    applyRules,
+  ]);
 }
 
 export function formatDocs(
