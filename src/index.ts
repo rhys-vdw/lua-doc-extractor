@@ -6,6 +6,7 @@ import { processGlobals } from "./global";
 import { header } from "./header";
 import { fail, Result, success } from "./result";
 import { applyRules } from "./rules";
+import { appendSourceLinks } from "./source";
 import { addTables, mergeTables } from "./tables";
 import { trimTrailingWhitespace } from "./utility";
 
@@ -40,12 +41,13 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
   return processors.reduce((acc, processor) => processor(acc), docs);
 }
 
-export function processDocs(docs: Doc[]): Doc[] {
+export function processDocs(docs: Doc[], repoUrl: string | null): Doc[] {
   return runProcessors(docs, [
     removeEmptyDocs,
     processGlobals,
     addTables,
     addTableToEnumFields,
+    appendSourceLinks(repoUrl),
     mergeTables,
     mergeEnumAttributes,
     renderStandaloneFields,
@@ -53,10 +55,7 @@ export function processDocs(docs: Doc[]): Doc[] {
   ]);
 }
 
-export function formatDocs(
-  docs: Readonly<Doc[]>,
-  repoUrl: string | null
-): string {
-  const members = docs.map((d) => formatDoc(d, repoUrl));
-  return trimTrailingWhitespace(members.join("\n\n"));
+export function formatDocs(docs: Readonly<Doc[]>): string {
+  const members = docs.map(formatDoc).join("\n\n");
+  return trimTrailingWhitespace(members);
 }
