@@ -21,39 +21,39 @@ testInput(
   `
 );
 
-// testMembers(
-//   "Preserves indentation in param description",
-//   dedent`
-//     /***
-//      * @param options string? concatenated string of option characters.
-//      *
-//      *   - horizontal alignment:
-//      *     - 'c' = center
-//      *     - 'r' = right
-//      *   - vertical alignment:
-//      *     - 'a' = ascender
-//      *     - 't' = top
-//      *     - 'v' = vertical center
-//      *     - 'x' = baseline
-//      *     - 'b' = bottom
-//      *     - 'd' = descender
-//      */
-//   `,
-//   dedent`
-//     ---@param options string? concatenated string of option characters.
-//     ---
-//     ---  - horizontal alignment:
-//     ---    - 'c' = center
-//     ---    - 'r' = right
-//     ---  - vertical alignment:
-//     ---    - 'a' = ascender
-//     ---    - 't' = top
-//     ---    - 'v' = vertical center
-//     ---    - 'x' = baseline
-//     ---    - 'b' = bottom
-//     ---    - 'd' = descender
-//   `
-// );
+testInput(
+  "Preserves indentation in param description",
+  dedent`
+    /***
+     * @param options string? concatenated string of option characters.
+     *
+     *   - horizontal alignment:
+     *     - 'c' = center
+     *     - 'r' = right
+     *   - vertical alignment:
+     *     - 'a' = ascender
+     *     - 't' = top
+     *     - 'v' = vertical center
+     *     - 'x' = baseline
+     *     - 'b' = bottom
+     *     - 'd' = descender
+     */
+  `,
+  dedent`
+    ---@param options string? concatenated string of option characters.
+    ---
+    ---  - horizontal alignment:
+    ---    - 'c' = center
+    ---    - 'r' = right
+    ---  - vertical alignment:
+    ---    - 'a' = ascender
+    ---    - 't' = top
+    ---    - 'v' = vertical center
+    ---    - 'x' = baseline
+    ---    - 'b' = bottom
+    ---    - 'd' = descender
+  `
+);
 
 testInput(
   "Preserves indentation in code block",
