@@ -40,22 +40,6 @@ attribute ->
       create(attr.value, { description }, {})
     %}
 
-lines -> (line %newline):+ {% (d) => d.flat(2).join("") %}
+lines -> (line %newline):+ {% d => d[0].flat().join("") %}
 
-line -> (
-  code {% id %}
-  | %word {% id %}
-  | %space {% id %}
-):* {% d => d.flat(2).join("") %}
-
-code ->
-    %codeBlockStart %code %codeBlockEnd
-  | %inlineCodeStart %code %inlineCodeEnd
-
-# There has to be a better way.
-text -> (
-  code {% id %}
-  | %word {% id %}
-  | %space {% id %}
-  | %newline {% id %}
-):* {% d => d.flat(2) %}
+line -> (%word | %space):* {% d => d.flat().join("") %}

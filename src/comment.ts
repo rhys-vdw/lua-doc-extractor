@@ -1,5 +1,5 @@
 import dedent from "dedent-js";
-import moo, { Rules } from "moo";
+import moo from "moo";
 import { Result, toResult } from "./result";
 import { Position } from "./source";
 
@@ -9,26 +9,17 @@ export interface Comment {
   text: string;
 }
 
-function makeState(rules: Readonly<Rules>): Rules {
-  return {
-    ...rules,
-    newline: { match: "\n", lineBreaks: true },
-    word: /[^\s]+/,
-    // Matches all whitespace except linefeeds.
-    // https://stackoverflow.com/a/3469155/317135
-    space: /[^\S\r\n]+/,
-  };
-}
-
 /** Extracts C-style block comments from input. */
 const commentLexer = moo.states({
-  code: makeState({
+  code: {
     commentStart: { match: /\/\*{3,}(?!\/)/, push: "comment" },
-  }),
-  comment: makeState({
+    text: moo.fallback,
+  },
+  comment: {
     indent: /^\s+\*(?!\/)/,
     commentEnd: { match: /\*+\//, pop: 1 },
-  }),
+    text: moo.fallback,
+  },
 });
 
 function trimParagraph(s: string): string {
