@@ -129,7 +129,6 @@ Defines a global variable.
 Add fields to a table (`@table`, `@class` or `@enum`) by including them in the same comment.
 
 ```
-
 @field <table>.<name> <type> [description]
 ```
 
