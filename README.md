@@ -6,9 +6,7 @@ Extracts lua documentation from C-style comments.
 
 ## Install
 
-### From GitHub
-
-```
+```sh
 $ npm install -g lua-doc-extractor
 ```
 
