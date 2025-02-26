@@ -1,7 +1,7 @@
-import moo, { Rules } from "moo";
-import { Position } from "./source";
 import dedent from "dedent-js";
+import moo, { Rules } from "moo";
 import { Result, toResult } from "./result";
+import { Position } from "./source";
 
 export interface Comment {
   start: Position;
@@ -23,17 +23,11 @@ function makeState(rules: Readonly<Rules>): Rules {
 /** Extracts C-style block comments from input. */
 const commentLexer = moo.states({
   code: makeState({
-    blockCommentStart: { match: /\/\*{3,}(?!\/)/, push: "blockComment" },
-    lineCommentStart: { match: /^\s*\/{3,}/, push: "lineComment" },
+    commentStart: { match: /\/\*{3,}(?!\/)/, push: "comment" },
   }),
-  blockComment: makeState({
+  comment: makeState({
     indent: /^\s+\*(?!\/)/,
-    blockCommentEnd: { match: /\*+\//, pop: 1 },
-  }),
-  lineComment: makeState({
-    indent: /^\s*\/{3}/,
-    // TODO: Exit line comment when they are the final line of the file.
-    lineCommentEnd: { match: /\n\s*(?!\/{3})/, lineBreaks: true, pop: 1 },
+    commentEnd: { match: /\*+\//, pop: 1 },
   }),
 });
 
@@ -52,7 +46,7 @@ function getCommentsUnsafe(s: string): Comment[] {
   commentLexer.reset(s);
   for (const entry of commentLexer) {
     // Check for end of comment.
-    if (entry.type === "blockCommentEnd" || entry.type === "lineCommentEnd") {
+    if (entry.type === "commentEnd") {
       if (current === null) {
         console.error(
           `Encountered '${entry.type}' when not in a comment block: ${entry.line}:${entry.col}`
@@ -80,10 +74,7 @@ function getCommentsUnsafe(s: string): Comment[] {
     }
 
     // Start a new comment.
-    if (
-      entry.type === "blockCommentStart" ||
-      entry.type === "lineCommentStart"
-    ) {
+    if (entry.type === "commentStart") {
       if (current !== null) {
         console.error(
           `Encountered "${entry.text}" when in a comment block: ${entry.line}:${entry.col}`
