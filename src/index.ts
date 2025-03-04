@@ -10,8 +10,8 @@ import { appendSourceLinks } from "./source";
 import { addTables, mergeTables } from "./tables";
 import { trimTrailingWhitespace } from "./utility";
 
-export function addHeader(body: string): string {
-  return `${header()}\n\n${body}`;
+export function addHeader(body: string, sources: string[]): string {
+  return `${header(sources)}\n\n${body}`;
 }
 
 export function getDocs(
