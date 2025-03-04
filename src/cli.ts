@@ -53,7 +53,7 @@ const options = commandLineArgs(optionList) as Options;
 function printUsage() {
   const examples = [
     "$ lua-doc-extractor file_a.cpp file_b.cpp",
-    "$ lua-doc-extractor ---src src/**/*.cpp --dest output/lib.lua",
+    "$ lua-doc-extractor ---src src/*.cpp --dest output/lib.lua",
     "$ lua-doc-extractor *.cpp --repo https://github.com/user/proj/blob/12345c/",
   ];
   console.log(
