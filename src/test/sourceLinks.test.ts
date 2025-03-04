@@ -1,6 +1,6 @@
+import dedent from "dedent-js";
 import test from "tape";
 import { formatSource } from "../source";
-import dedent from "dedent-js";
 import { testInput } from "./utility/harness";
 
 test("formatSource", (t) => {
