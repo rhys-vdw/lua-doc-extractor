@@ -68,6 +68,9 @@ const optionList = [
 const options = commandLineArgs(optionList) as Options;
 
 function printUsage() {
+  const usageNote = dedent`
+    {bold.white Note:} Always run this command from the root of your project ensure correct paths in output headers and repo links.
+  `;
   const examples = [
     "$ lua-doc-extractor file_a.cpp file_b.cpp",
     "$ lua-doc-extractor ---src src/*.cpp --dest output/lib.lua",
@@ -76,14 +79,14 @@ function printUsage() {
   console.log(
     commandLineUsage([
       {
-        header: `${project.name} ${project.version}`,
+        header: `{white ${project.name} ${project.version}}`,
         content: project.description,
       },
       {
-        header: "Usage",
-        content: examples.join("\n\n"),
+        header: "{white Usage}",
+        content: [usageNote, ...examples].join("\n\n"),
       },
-      { header: "Options", optionList },
+      { header: "{white Options}", optionList },
     ])
   );
 }
