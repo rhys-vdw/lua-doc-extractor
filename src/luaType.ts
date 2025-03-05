@@ -77,30 +77,31 @@ export interface LuaFunctionType {
   readonly returnType: LuaType;
 }
 
-function format(luaType: LuaType): string {
+export function formatType(luaType: LuaType): string {
+  const f = formatType;
+  const t = luaType;
+
   console.log("about to format type", luaType);
-  switch (luaType.kind) {
+  switch (t.kind) {
     case LuaTypeKind.Literal:
-      return luaType.value;
+      return t.value;
     case LuaTypeKind.Named:
-      return luaType.generics.length === 0
-        ? luaType.name
-        : `${luaType.name}<${luaType.generics.map(format).join(", ")}>`;
+      return t.generics.length === 0
+        ? t.name
+        : `${t.name}<${t.generics.map(f).join(", ")}>`;
     case LuaTypeKind.Array:
-      return `${format(luaType.arrayType)}[]`;
+      return `${f(t.arrayType)}[]`;
     case LuaTypeKind.Union:
-      return `(${luaType.types.map(format).join("|")})`;
+      return `(${t.types.map(f).join("|")})`;
     case LuaTypeKind.Dictionary:
-      return `{ [${format(luaType.keyType)}]: ${format(luaType.valueType)} }`;
+      return `{ [${f(t.keyType)}]: ${f(t.valueType)} }`;
     case LuaTypeKind.Function:
-      return `fun(${luaType.parameters
-        .map(([name, type]) => `${name}: ${format(type)}`)
-        .join(", ")}): ${format(luaType.returnType)}`;
+      return `fun(${t.parameters
+        .map(([name, type]) => `${name}: ${f(type)}`)
+        .join(", ")}): ${f(t.returnType)}`;
     case LuaTypeKind.Tuple:
-      return `[${luaType.elementTypes.map(format).join(", ")}]`;
+      return `[${t.elementTypes.map(f).join(", ")}]`;
     default:
-      throw new Error(`Unknown Lua type kind: ${(luaType as any).kind}`);
+      throw new Error(`Unknown Lua type kind: ${(t as any).kind}`);
   }
 }
-
-export const formatType = format;
