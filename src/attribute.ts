@@ -50,7 +50,7 @@ export interface GlobalAttribute extends BaseAttribute {
 
 export interface FieldAttribute extends BaseAttribute {
   type: "field";
-  args: { name: string; description: string };
+  args: { name: string; value?: string; description: string };
 }
 
 export function createAttribute<TType extends string>(

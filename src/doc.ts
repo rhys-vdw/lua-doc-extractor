@@ -23,14 +23,14 @@ function parse(comment: Comment): Doc {
   // Force final newline.
   parser.feed(text + "\n");
   if (parser.results.length > 1) {
-    // console.error(
-    //   `Ambiguous parse for comment (result  count: ${parser.results.length}):\n-----\n${text}\n----\n`
-    // );
-    // parser.results.forEach((r, i) => {
-    //   console.log(`\n-----\nPARSE ${i}\n----`);
-    //   console.log(require("util").inspect(r, { depth: Infinity }));
-    //   console.log(`\n-----\nEND PARSE ${i}\n----`);
-    // });
+    console.error(
+      `Ambiguous parse for comment (result  count: ${parser.results.length}):\n-----\n${text}\n----\n`
+    );
+    parser.results.forEach((r, i) => {
+      console.log(`\n-----\nPARSE ${i}\n----`);
+      console.log(require("util").inspect(r, { depth: Infinity }));
+      console.log(`\n-----\nEND PARSE ${i}\n----`);
+    });
   }
   if (parser.results.length === 0) {
     throw new Error(`No parser output for comment:\n----\n${text}\n----\n`);

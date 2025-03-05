@@ -83,11 +83,9 @@ testInput(
     ---
     ---@enum Foo First.
     Foo = {
-    \t---@type 5
-    \tFIVE = nil,
+    \tFIVE = 5,
 
-    \t---@type 6
-    \tSIX = nil
+    \tSIX = 6
     }
   `
 );

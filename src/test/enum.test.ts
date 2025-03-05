@@ -13,11 +13,9 @@ testInput(
   dedent`
     ---@enum Numbers
     Numbers = {
-    \t---@type 5
-    \tFIVE = nil,
+    \tFIVE = 5,
 
-    \t---@type 6
-    \tSIX = nil
+    \tSIX = 6
     }
   `
 );
@@ -33,8 +31,7 @@ testInput(
   dedent`
     ---@enum Numbers These are numbers.
     Numbers = {
-    \t---@type 5
-    \tFIVE = nil
+    \tFIVE = 5
     }
   `
 );
@@ -55,11 +52,9 @@ testInput(
   dedent`
     ---@enum Numbers These are numbers.
     Numbers = {
-    \t---@type 5
-    \tFIVE = nil,
+    \tFIVE = 5,
 
-    \t---@type 6
-    \tSIX = nil
+    \tSIX = 6
     }
   `
 );
@@ -84,17 +79,13 @@ testInput(
   dedent`
     ---@enum Numbers
     Numbers = {
-    \t---@type 5
-    \tFIVE = nil,
+    \tFIVE = 5,
 
-    \t---@type 6
-    \tSIX = nil,
+    \tSIX = 6,
 
-    \t---@type 7
-    \tSEVEN = nil,
+    \tSEVEN = 7,
 
-    \t---@type 8
-    \tEIGHT = nil
+    \tEIGHT = 8
     }
   `
 );
@@ -123,20 +114,18 @@ testInput(
     ---
     ---@enum Numbers
     Numbers = {
-    \t---@type 6
-    \t---
     \t---This is six.
-    \tSIX = nil,
+    \tSIX = 6,
 
-    \t---@type 7 Seven.
+    \t---Seven.
     \t---
     \t---These are seven and eight.
-    \tSEVEN = nil,
+    \tSEVEN = 7,
 
-    \t---@type 8 Eight.
+    \t---Eight.
     \t---
     \t---These are seven and eight.
-    \tEIGHT = nil
+    \tEIGHT = 8
     }
   `
 );
@@ -165,22 +154,22 @@ testInput(
     ---
     ---@enum Numbers
     Numbers = {
-    \t---@type 6 Six.
+    \t---Six.
     \t---
     \t---\[<a href="https://foo.com/file.c#L6-L8" target="_blank">source</a>\]
-    \tSIX = nil,
+    \tSIX = 6,
 
-    \t---@type 7 Seven.
+    \t---Seven.
     \t---
     \t---\[<a href="https://foo.com/file.c#L10-L13" target="_blank">source</a>\]
-    \tSEVEN = nil,
+    \tSEVEN = 7,
 
-    \t---@type 8 Eight.
+    \t---Eight.
     \t---
     \t---\[<a href="https://foo.com/file.c#L10-L13" target="_blank">source</a>\]
-    \tEIGHT = nil
+    \tEIGHT = 8
     }
   `,
   undefined,
-  { repoUrl: "https://foo.com", path: "file.c" }
+  { repoUrl: "https://foo.com", path: "file.c", only: true }
 );
