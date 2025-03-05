@@ -4,8 +4,8 @@ import { isKeyword } from "./lua";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  var { name, description } = rule.args;
-  return formatField(name, description.trimStart(), indent);
+  var { name, value, description } = rule.args;
+  return formatField(name, value, description.trimStart(), indent);
 }
 
 /**
@@ -31,12 +31,22 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
 
 /** Render a field attribute. */
 function renderField(field: FieldAttribute): string | null {
-  const { name, description } = field.args;
-  return formatField(name, description.trimStart(), "");
+  const { name, value, description } = field.args;
+  return formatField(name, value, description.trimStart(), "");
 }
 
-function formatField(name: string, description: string, indent: string) {
+function formatField(
+  name: string,
+  value: string | undefined,
+  description: string,
+  indent: string
+) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
+  if (value !== undefined) {
+    const d = description.trim();
+    const lua = `${indent}${fieldName} = ${value}`;
+    return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;
+  }
   return (
     toLuaComment(`@type ${description.trimEnd()}`, indent) +
     `\n${indent}${fieldName} = nil`

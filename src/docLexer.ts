@@ -19,6 +19,7 @@ export const docLexer = moo.states({
     newline: { match: /\r?\n/, lineBreaks: true },
     // Matches all whitespace except linefeeds.
     // https://stackoverflow.com/a/3469155/317135
+    literal: /[0-9]+|"[^"]*?"]/,
     space: /[^\S\r\n]+/,
     word: moo.fallback,
   },
