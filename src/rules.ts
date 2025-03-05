@@ -17,7 +17,7 @@ export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
  */
 export const functionRule: Rule = (ruleAttr, doc) => {
   if (!isAttribute(ruleAttr, "function")) {
-    logError(`Invalid table attribute: ${ruleAttr.type}`);
+    logError(`Invalid table attribute: ${ruleAttr.attributeType}`);
     return;
   }
 
@@ -40,7 +40,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 export const tableRule: Rule = (table, doc) => {
   // Ensure this is a TableAttribute.
   if (!isAttribute(table, "table")) {
-    logError(`Invalid table attribute: ${table.type}`);
+    logError(`Invalid table attribute: ${table.attributeType}`);
     return;
   }
 
@@ -93,7 +93,7 @@ function apply(doc: Doc): void {
   // Keep a copy of attributes so we can modify the original.
   const prevAttrs = [...doc.attributes];
   prevAttrs.forEach((t) => {
-    const handler = ruleHandlers[t.type];
+    const handler = ruleHandlers[t.attributeType];
     if (handler != null) {
       handler(t, doc);
     }

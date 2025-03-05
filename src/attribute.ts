@@ -1,3 +1,5 @@
+import { LuaType } from "./luaType";
+
 export type Attribute =
   | ClassAttribute
   | DefaultAttribute
@@ -9,74 +11,73 @@ export type Attribute =
   | TableAttribute;
 
 interface BaseAttribute {
+  attributeType: string;
   args: { description: string; [key: string]: string };
   options: {};
 }
 
-export interface Type {
-  name: string;
-  isLiteral: boolean;
-}
-
 export interface DefaultAttribute extends BaseAttribute {
-  type: Exclude<string, "class" | "enum" | "field" | "global" | "table">;
+  attributeType: Exclude<
+    string,
+    "class" | "enum" | "field" | "global" | "table"
+  >;
 }
 
 export interface FunctionAttribute extends BaseAttribute {
-  type: "function";
+  attributeType: "function";
   args: { name: string; description: string };
 }
 
 export interface ParamAttribute extends BaseAttribute {
-  type: "param";
+  attributeType: "param";
   args: { name: string; description: string };
 }
 
 export interface EnumAttribute extends BaseAttribute {
-  type: "enum";
+  attributeType: "enum";
   args: { name: string; description: string };
 }
 
 export interface TableAttribute extends BaseAttribute {
-  type: "table";
+  attributeType: "table";
   args: { name: string; description: string };
   options: { isLocal: boolean };
 }
 
 export interface ClassAttribute extends BaseAttribute {
-  type: "class";
+  attributeType: "class";
   args: { name: string; description: string };
 }
 
-export interface GlobalAttribute extends Omit<FieldAttribute, "type"> {
-  type: "global";
+export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
+  attributeType: "global";
 }
 
 export interface FieldAttribute extends BaseAttribute {
-  type: "field";
+  attributeType: "field";
   args: { name: string; typeName: string; description: string };
-  options: { type: Type };
+  options: { type: LuaType };
 }
 
 export function createAttribute<TType extends string>(
   type: TType,
-  args: Extract<Attribute, { type: TType }>["args"],
-  options: Extract<Attribute, { type: TType }>["options"]
-): Extract<Attribute, { type: TType }> {
-  return { type, args, options } as any;
+  args: Extract<Attribute, { attributeType: TType }>["args"],
+  options: Extract<Attribute, { attributeType: TType }>["options"]
+): Extract<Attribute, { attributeType: TType }> {
+  return { attributeType: type, args, options } as Attribute as any;
 }
 
 export function isAttribute<TType extends string>(
   attr: Attribute,
   name: TType
-): attr is Extract<Attribute, { type: TType }> {
-  return attr.type === name;
+): attr is Extract<Attribute, { attributeType: TType }> {
+  return attr.attributeType === name;
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  const { type, args } = attribute;
+  const { attributeType, args } = attribute;
   var argValues = Object.values(args);
-  return `@${type}${argValues
+  return `@${attributeType}${argValues
     .map(String) // TODO:
     .map(ensureLeadingWhitespace)
     .join("")

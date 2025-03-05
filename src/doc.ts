@@ -85,8 +85,8 @@ function isDocEmpty(doc: Doc): boolean {
 export function findAttribute<TType extends string>(
   doc: Doc,
   type: TType
-): Extract<Attribute, { type: TType }> | null {
-  return doc.attributes.find((d) => d.type === type) ?? (null as any);
+): Extract<Attribute, { attributeType: TType }> | null {
+  return doc.attributes.find((d) => d.attributeType === type) ?? (null as any);
 }
 
 /**
@@ -95,8 +95,11 @@ export function findAttribute<TType extends string>(
  * @param type The type of attribute to find.
  * @returns True if the document has an attribute of the given type.
  */
-export function hasAttribute(doc: Doc, type: Attribute["type"]): boolean {
-  return doc.attributes.some((d) => d.type === type);
+export function hasAttribute(
+  doc: Doc,
+  type: Attribute["attributeType"]
+): boolean {
+  return doc.attributes.some((d) => d.attributeType === type);
 }
 
 /**
@@ -108,8 +111,8 @@ export function hasAttribute(doc: Doc, type: Attribute["type"]): boolean {
 export function removeAttributes<TType extends string>(
   doc: Doc,
   type: TType
-): Extract<Attribute, { type: TType }>[] {
-  return remove(doc.attributes, (d) => d.type === type) as any;
+): Extract<Attribute, { attributeType: TType }>[] {
+  return remove(doc.attributes, (d) => d.attributeType === type) as any;
 }
 
 /**
@@ -121,6 +124,6 @@ export function removeAttributes<TType extends string>(
 export function filterAttributes<TType extends string>(
   doc: Doc,
   type: TType
-): Extract<Attribute, { type: TType }>[] {
-  return doc.attributes.filter((d) => d.type === type) as any;
+): Extract<Attribute, { attributeType: TType }>[] {
+  return doc.attributes.filter((d) => d.attributeType === type) as any;
 }

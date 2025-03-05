@@ -1,6 +1,7 @@
-import { FieldAttribute, Type } from "./attribute";
+import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
 import { isKeyword } from "./lua";
+import { LuaType } from "./luaType";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
@@ -39,7 +40,7 @@ function renderField(field: FieldAttribute): string {
 
 function formatField(
   name: string,
-  type: Type,
+  type: LuaType,
   description: string,
   indent: string
 ) {
