@@ -9,7 +9,7 @@ export type LuaType =
 
 export const enum LuaTypeKind {
   Literal = "literal",
-  Type = "type",
+  Named = "named",
   Array = "array",
   Union = "union",
   Tuple = "tuple",
@@ -30,7 +30,7 @@ export interface LuaLiteralType {
  * such as `table`, `string` etc.
  */
 export interface LuaNamedType {
-  readonly kind: LuaTypeKind.Type;
+  readonly kind: LuaTypeKind.Named;
   readonly name: string;
   readonly generics: LuaType[];
 }
@@ -77,27 +77,30 @@ export interface LuaFunctionType {
   readonly returnType: LuaType;
 }
 
-export function formatType(luaType: LuaType): string {
+function format(luaType: LuaType): string {
+  console.log("about to format type", luaType);
   switch (luaType.kind) {
     case LuaTypeKind.Literal:
       return luaType.value;
-    case LuaTypeKind.Type:
+    case LuaTypeKind.Named:
       return luaType.generics.length === 0
         ? luaType.name
-        : `${luaType.name}<${luaType.generics.map(formatType).join(", ")}>`;
+        : `${luaType.name}<${luaType.generics.map(format).join(", ")}>`;
     case LuaTypeKind.Array:
-      return `${formatType(luaType.arrayType)}[]`;
+      return `${format(luaType.arrayType)}[]`;
     case LuaTypeKind.Union:
-      return `(${luaType.types.map(formatType).join("|")})`;
+      return `(${luaType.types.map(format).join("|")})`;
     case LuaTypeKind.Dictionary:
-      return `{ [${formatType(luaType.keyType)}]: ${formatType(
-        luaType.valueType
-      )} }`;
+      return `{ [${format(luaType.keyType)}]: ${format(luaType.valueType)} }`;
     case LuaTypeKind.Function:
       return `fun(${luaType.parameters
-        .map(([name, type]) => `${name}: ${formatType(type)}`)
-        .join(", ")}): ${formatType(luaType.returnType)}`;
+        .map(([name, type]) => `${name}: ${format(type)}`)
+        .join(", ")}): ${format(luaType.returnType)}`;
     case LuaTypeKind.Tuple:
-      return `[${luaType.elementTypes.map(formatType).join(", ")}]`;
+      return `[${luaType.elementTypes.map(format).join(", ")}]`;
+    default:
+      throw new Error(`Unknown Lua type kind: ${(luaType as any).kind}`);
   }
 }
+
+export const formatType = format;

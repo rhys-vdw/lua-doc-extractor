@@ -1,7 +1,7 @@
 import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
 import { isKeyword } from "./lua";
-import { LuaType, LuaTypeKind } from "./luaType";
+import { formatType, LuaType, LuaTypeKind } from "./luaType";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
@@ -51,15 +51,10 @@ function formatField(
     return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;
   }
 
-  // TODO
-  if (type.kind !== LuaTypeKind.Type) {
-    throw new Error(`Unsupported type kind: ${type.kind}`);
-  }
-
   // NOTE: Since complex types are not properly parsed, the description must be
   // inlined as it will include some of the actual type.
   return (
-    toLuaComment(`@type ${type.name} ${description.trim()}`, indent) +
+    toLuaComment(`@type ${formatType(type)} ${description.trim()}`, indent) +
     `\n${indent}${fieldName} = nil`
   );
 }

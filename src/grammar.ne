@@ -51,8 +51,22 @@ lines -> (line %newline):+ {% d => d[0].flat().join("") %}
 line -> (%word | __ | %literal):* {% d => d.flat().join("") %}
 
 type ->
-    %word    {% ([d]) => ({ kind: "type", name: d.value, generics: [] }) %}
-  | %literal {% ([d]) => ({ kind: "literal", value: d.value }) %}
+    literal {% id %}
+  | namedType {% id %}
+
+literal -> %literal {% ([d]) =>
+  ({ kind: "literal", value: d.value })
+%}
+
+namedType -> %word generics:? {% ([name,, g, ]) =>
+  ({ kind: "named", name: name.value, generics: g ?? [] })
+%}
+
+generics -> "<" typelist ">" {% ([, types, ]) => types %}
+
+typeList ->
+    type
+  | type _ %comma _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
 
 _ -> %space:? {% ([d]) => d.value %}
 __ -> %space {% ([d]) => d.value %}
