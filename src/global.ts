@@ -5,8 +5,8 @@ export function processGlobals(docs: Doc[]): Doc[] {
   docs.forEach((doc) => {
     const globals = removeAttributes(doc, "global");
     const fields = globals.map(
-      ({ args: { name, description } }): FieldAttribute =>
-        createAttribute("field", { name, description }, {})
+      ({ args: { name, type, description } }): FieldAttribute =>
+        createAttribute("field", { name, type, description }, {})
     );
     doc.attributes.push(...fields);
   });

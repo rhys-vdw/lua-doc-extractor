@@ -1,11 +1,11 @@
-import { FieldAttribute } from "./attribute";
+import { FieldAttribute, Type } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
-import { isKeyword } from "./lua";
-import { toLuaComment } from "./utility";
+import { isKeyword, nil } from "./lua";
+import { joinLines, toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  var { name, value, description } = rule.args;
-  return formatField(name, value, description.trimStart(), indent);
+  var { name, type, description } = rule.args;
+  return formatField(name, type, description.trimStart(), indent);
 }
 
 /**
@@ -31,24 +31,26 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
 
 /** Render a field attribute. */
 function renderField(field: FieldAttribute): string | null {
-  const { name, value, description } = field.args;
-  return formatField(name, value, description.trimStart(), "");
+  const { name, type, description } = field.args;
+  return formatField(name, type, description, "");
 }
 
 function formatField(
   name: string,
-  value: string | undefined,
+  type: Type,
   description: string,
   indent: string
 ) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
-  if (value !== undefined) {
-    const d = description.trim();
-    const lua = `${indent}${fieldName} = ${value}`;
+  const value = type.isLiteral ? type.name : nil;
+  let lines = description.trimEnd();
+  if (!type.isLiteral) {
+    lines = joinLines(lines, `@type ${type.name}`);
+  }
+  if (type.isLiteral) {
+    const d = description.trimEnd();
+    const lua = `${indent}${fieldName} = ${type.name}`;
     return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;
   }
-  return (
-    toLuaComment(`@type ${description.trimEnd()}`, indent) +
-    `\n${indent}${fieldName} = nil`
-  );
+  return toLuaComment(lines, indent) + `\n${indent}${fieldName} = ${value}`;
 }

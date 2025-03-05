@@ -3,8 +3,14 @@
 @preprocessor typescript
 
 @{%
+
 import { docLexer } from "./docLexer";
 import { createAttribute as create } from "./attribute";
+
+function log<T>(d: T): T {
+  console.log(`'${d}'`);
+  return d;
+}
 
 %}
 
@@ -15,29 +21,26 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %functionAttr %space %word lines {% ([attr,, name, description]) =>
+    %functionAttr __ %word lines {% ([attr,, name, description]) =>
       create("function", { name: name.value, description }, {})
     %}
-  | %paramAttr %space %word lines {% ([attr,, name, description]) =>
+  | %paramAttr __ %word lines {% ([attr,, name, description]) =>
       create("param", { name: name.value, description }, {})
     %}
-  | %tableAttr %space %word lines {% ([attr,, name, description]) =>
+  | %tableAttr __ %word lines {% ([attr,, name, description]) =>
       create("table", { name: name.value, description }, { isLocal: false })
     %}
-  | %enumAttr %space %word lines {% ([attr,, name, description]) =>
+  | %enumAttr __ %word lines {% ([attr,, name, description]) =>
       create("enum", { name: name.value, description }, {})
     %}
-  | %classAttr %space %word lines {% ([attr,, name, description]) =>
+  | %classAttr __ %word lines {% ([attr,, name, description]) =>
       create("class", { name: name.value, description }, {})
     %}
-  | %fieldAttr %space %word %space %literal (%space %word):? lines {% ([attr,, name,, value, notLiteral, description]) =>
-      create("field", { name: name.value, value, description: (notLiteral || []).join('') + description }, {})
+  | %fieldAttr __ %word __ type lines {% ([attr,, name,, type, description]) =>
+      create("field", { name: name.value, type, description }, {})
     %}
-  | %fieldAttr %space %word lines {% ([attr,, name, description]) =>
-      create("field", { name: name.value, description }, {})
-    %}
-  | %globalAttr %space %word lines {% ([attr,, name, description]) =>
-      create("global", { name: name.value, description }, {})
+  | %globalAttr __ %word __ type lines {% ([attr,, name,, type, description]) =>
+      create("global", { name: name.value, type, description }, {})
     %}
   | %attribute lines {% ([attr, description]) =>
       create(attr.value, { description }, {})
@@ -45,4 +48,11 @@ attribute ->
 
 lines -> (line %newline):+ {% d => d[0].flat().join("") %}
 
-line -> (%word | %space | %literal):* {% d => d.flat().join("") %}
+line -> (%word | __ | %literal):* {% d => d.flat().join("") %}
+
+type ->
+    %word    {% ([d]) => ({ name: d.value, isLiteral: false }) %}
+  | %literal {% ([d]) => ({ name: d.value, isLiteral: true }) %}
+
+_ -> %space:? {% ([d]) => d.value %}
+__ -> %space {% ([d]) => d.value %}

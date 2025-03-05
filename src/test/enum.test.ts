@@ -171,5 +171,5 @@ testInput(
     }
   `,
   undefined,
-  { repoUrl: "https://foo.com", path: "file.c", only: true }
+  { repoUrl: "https://foo.com", path: "file.c" }
 );

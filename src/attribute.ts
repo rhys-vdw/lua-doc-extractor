@@ -13,6 +13,11 @@ interface BaseAttribute {
   options: {};
 }
 
+export interface Type {
+  name: string;
+  isLiteral: boolean;
+}
+
 export interface DefaultAttribute extends BaseAttribute {
   type: Exclude<string, "class" | "enum" | "field" | "global" | "table">;
 }
@@ -45,12 +50,12 @@ export interface ClassAttribute extends BaseAttribute {
 
 export interface GlobalAttribute extends BaseAttribute {
   type: "global";
-  args: { name: string; description: string };
+  args: { name: string; type: Type; description: string };
 }
 
 export interface FieldAttribute extends BaseAttribute {
   type: "field";
-  args: { name: string; value?: string; description: string };
+  args: { name: string; type: Type; description: string };
 }
 
 export function createAttribute<TType extends string>(
@@ -71,7 +76,11 @@ export function isAttribute<TType extends string>(
 export function formatAttribute(attribute: Readonly<Attribute>): string {
   const { type, args } = attribute;
   var argValues = Object.values(args);
-  return `@${type}${argValues.map(ensureLeadingWhitespace).join("").trimEnd()}`;
+  return `@${type}${argValues
+    .map(String) // TODO:
+    .map(ensureLeadingWhitespace)
+    .join("")
+    .trimEnd()}`;
 }
 
 function ensureLeadingWhitespace(str: string): string {
