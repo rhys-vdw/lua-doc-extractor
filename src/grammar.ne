@@ -7,8 +7,8 @@
 import { docLexer } from "./docLexer";
 import { createAttribute as create } from "./attribute";
 
-function log<T>(d: T): T {
-  console.log(`'${d}'`);
+function log<T>(d: T, ...rest: any[]): T {
+  console.log(d, ...rest);
   return d;
 }
 
@@ -21,26 +21,26 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %functionAttr __ %word lines {% ([attr,, name, description]) =>
-      create("function", { name: name.value, description }, {})
+    %functionAttr __ identifier lines {% ([attr,, name, description]) =>
+      create("function", { name, description }, {})
     %}
-  | %paramAttr __ %word lines {% ([attr,, name, description]) =>
-      create("param", { name: name.value, description }, {})
+  | %paramAttr __ identifier lines {% ([attr,, name, description]) =>
+      create("param", { name, description }, {})
     %}
-  | %tableAttr __ %word lines {% ([attr,, name, description]) =>
-      create("table", { name: name.value, description }, { isLocal: false })
+  | %tableAttr __ identifier lines {% ([attr,, name, description]) =>
+      create("table", { name, description }, { isLocal: false })
     %}
-  | %enumAttr __ %word lines {% ([attr,, name, description]) =>
-      create("enum", { name: name.value, description }, {})
+  | %enumAttr __ identifier lines {% ([attr,, name, description]) =>
+      create("enum", { name, description }, {})
     %}
-  | %classAttr __ %word lines {% ([attr,, name, description]) =>
-      create("class", { name: name.value, description }, {})
+  | %classAttr __ identifier lines {% ([attr,, name, description]) =>
+      create("class", { name, description }, {})
     %}
-  | %fieldAttr __ %word __ type lines {% ([attr,, name,, type, description]) =>
-      create("field", { name: name.value, typeName: type.name, description }, { type })
+  | %fieldAttr __ identifier __ type lines {% ([attr,, name,, type, description]) =>
+      create("field", { name, typeName: type.name, description }, { type })
     %}
-  | %globalAttr __ %word __ type lines {% ([attr,, name,, type, description]) =>
-      create("global", { name: name.value, typeName: type.name, description }, { type })
+  | %globalAttr __ identifier __ type lines {% ([attr,, name,, type, description]) =>
+      create("global", { name, typeName: type.name, description }, { type })
     %}
   | %attribute lines {% ([attr, description]) =>
       create(attr.value, { description }, {})
@@ -48,25 +48,37 @@ attribute ->
 
 lines -> (line %newline):+ {% d => d[0].flat().join("") %}
 
-line -> (%word | __ | %literal):* {% d => d.flat().join("") %}
+line -> (%word | __ | %literal | identifier | %syntax):* {% d => d.flat().join("") %}
 
 type ->
     literal {% id %}
+  | unionType {% id %}
   | namedType {% id %}
+  | type "?" {% ([t]) => ({ ...t, optional: true }) %}
 
 literal -> %literal {% ([d]) =>
   ({ kind: "literal", value: d.value })
 %}
 
-namedType -> %word generics:? {% ([name,, g, ]) =>
-  ({ kind: "named", name: name.value, generics: g ?? [] })
+namedType -> identifier generics:? {% ([name,, g, ]) =>
+  ({ kind: "named", name: name, generics: g ?? [] })
 %}
 
-generics -> "<" typelist ">" {% ([, types, ]) => types %}
+identifier -> %identifier {% ([d]) => d.value %}
+
+generics -> "<" typeList ">" {% ([, types, ]) => types %}
+
+unionType ->
+    type _ ("|" _ type):+ {% ([t,, ts]) => ({
+      kind: "union",
+      types: [t, ...ts.flatMap((e: any) => e[2])],
+      parens: false
+    }) %}
+  | "(" unionType ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
 
 typeList ->
     type
-  | type _ %comma _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
+  | type _ "," _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
 
-_ -> %space:? {% ([d]) => d.value %}
+_ -> %space:? {% ([d]) => d?.value %}
 __ -> %space {% ([d]) => d.value %}

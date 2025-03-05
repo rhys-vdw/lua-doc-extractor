@@ -40,7 +40,9 @@ testInput(
   `,
   dedent`
     ---This is the description.
-    ---@type (integer | table<string, boolean> | Foo)?
+    ---@type (integer|table<string, boolean>|Foo)?
     foo = nil
-  `
+  `,
+  undefined,
+  { only: true }
 );
