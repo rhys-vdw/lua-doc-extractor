@@ -9,9 +9,7 @@ testInput(
      */
   `,
   dedent`
-    ---This is my cool global.
-    ---
-    ---@type Foo
+    ---@type Foo This is my cool global.
     foo = nil
   `
 );
@@ -27,10 +25,7 @@ testInput(
   `,
   dedent`
     ---@deprecated
-    ---
-    ---This is my cool deprecated global.
-    ---
-    ---@type Foo
+    ---@type Foo This is my cool deprecated global.
     foo = nil
   `
 );
