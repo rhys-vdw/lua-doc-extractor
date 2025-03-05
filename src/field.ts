@@ -1,7 +1,7 @@
 import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
 import { isKeyword } from "./lua";
-import { formatType, LuaType, LuaTypeKind } from "./luaType";
+import { formatType, LuaType } from "./luaType";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
@@ -45,7 +45,7 @@ function formatField(
   indent: string
 ) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
-  if (type.kind === LuaTypeKind.Literal) {
+  if (type.kind === "literal") {
     const d = description.trimEnd();
     const lua = `${indent}${fieldName} = ${type.value}`;
     return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;

@@ -5,7 +5,8 @@
 @{%
 
 import { docLexer } from "./docLexer";
-import { createAttribute as create } from "./attribute";
+import { createAttribute as attr } from "./attribute";
+import { createType as type, unionTypes as union } from "./luaType";
 
 function log<T>(d: T, ...rest: any[]): T {
   console.log(d, ...rest);
@@ -21,29 +22,29 @@ doc ->
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
 
 attribute ->
-    %functionAttr __ identifier lines {% ([attr,, name, description]) =>
-      create("function", { name, description }, {})
+    %functionAttr __ identifier lines {% ([,, name, description]) =>
+      attr("function", { name, description }, {})
     %}
-  | %paramAttr __ identifier lines {% ([attr,, name, description]) =>
-      create("param", { name, description }, {})
+  | %paramAttr __ identifier lines {% ([,, name, description]) =>
+      attr("param", { name, description }, {})
     %}
-  | %tableAttr __ identifier lines {% ([attr,, name, description]) =>
-      create("table", { name, description }, { isLocal: false })
+  | %tableAttr __ identifier lines {% ([,, name, description]) =>
+      attr("table", { name, description }, { isLocal: false })
     %}
-  | %enumAttr __ identifier lines {% ([attr,, name, description]) =>
-      create("enum", { name, description }, {})
+  | %enumAttr __ identifier lines {% ([,, name, description]) =>
+      attr("enum", { name, description }, {})
     %}
-  | %classAttr __ identifier lines {% ([attr,, name, description]) =>
-      create("class", { name, description }, {})
+  | %classAttr __ identifier lines {% ([,, name, description]) =>
+      attr("class", { name, description }, {})
     %}
-  | %fieldAttr __ identifier __ type lines {% ([attr,, name,, type, description]) =>
-      create("field", { name, typeName: type.name, description }, { type })
+  | %fieldAttr __ identifier __ type lines {% ([,, name,, type, description]) =>
+      attr("field", { name, typeName: type.name, description }, { type })
     %}
-  | %globalAttr __ identifier __ type lines {% ([attr,, name,, type, description]) =>
-      create("global", { name, typeName: type.name, description }, { type })
+  | %globalAttr __ identifier __ type lines {% ([,, name,, type, description]) =>
+      attr("global", { name, typeName: type.name, description }, { type })
     %}
-  | %attribute lines {% ([attr, description]) =>
-      create(attr.value, { description }, {})
+  | %attribute lines {% ([a, description]) =>
+      attr(a.value, { description }, {})
     %}
 
 lines -> (line %newline):+ {% d => d[0].flat().join("") %}
@@ -57,11 +58,11 @@ type ->
   | type "?" {% ([t]) => ({ ...t, optional: true }) %}
 
 literal -> %literal {% ([d]) =>
-  ({ kind: "literal", value: d.value })
+  type("literal", { value: d.value })
 %}
 
 namedType -> identifier generics:? {% ([name,, g, ]) =>
-  ({ kind: "named", name: name, generics: g ?? [] })
+  type("named", { name: name, generics: g ?? [] })
 %}
 
 identifier -> %identifier {% ([d]) => d.value %}
@@ -69,11 +70,7 @@ identifier -> %identifier {% ([d]) => d.value %}
 generics -> "<" typeList ">" {% ([, types, ]) => types %}
 
 unionType ->
-    type _ ("|" _ type):+ {% ([t,, ts]) => ({
-      kind: "union",
-      types: [t, ...ts.flatMap((e: any) => e[2])],
-      parens: false
-    }) %}
+    type _ "|" _ type {% (ts) => union(ts[0], ts.at(-1)) %}
   | "(" unionType ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
 
 typeList ->

@@ -7,15 +7,12 @@ export type LuaType =
   | LuaDictionaryType
   | LuaFunctionType;
 
-export const enum LuaTypeKind {
-  Literal = "literal",
-  Named = "named",
-  Array = "array",
-  Union = "union",
-  Tuple = "tuple",
-  Dictionary = "dictionary",
-  Function = "function",
-}
+type LuaTypeByKind<TKind extends LuaTypeKind> = Extract<
+  LuaType,
+  { kind: TKind }
+>;
+
+export type LuaTypeKind = Pick<LuaType, "kind">["kind"];
 
 interface BaseLuaType {
   readonly kind: LuaTypeKind;
@@ -26,7 +23,7 @@ interface BaseLuaType {
  * A literal number, string, boolean or nil.
  */
 export interface LuaLiteralType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Literal;
+  readonly kind: "literal";
   readonly value: string;
 }
 
@@ -35,7 +32,7 @@ export interface LuaLiteralType extends BaseLuaType {
  * such as `table`, `string` etc.
  */
 export interface LuaNamedType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Named;
+  readonly kind: "named";
   readonly name: string;
   readonly generics: LuaType[];
 }
@@ -44,7 +41,7 @@ export interface LuaNamedType extends BaseLuaType {
  * Union of multiple types.
  */
 export interface LuaUnionType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Union;
+  readonly kind: "union";
   readonly types: LuaType[];
   readonly parens?: boolean;
 }
@@ -53,7 +50,7 @@ export interface LuaUnionType extends BaseLuaType {
  * Array type.
  */
 export interface LuaArrayType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Array;
+  readonly kind: "array";
   readonly arrayType: LuaType;
 }
 
@@ -61,7 +58,7 @@ export interface LuaArrayType extends BaseLuaType {
  * Tuple type.
  */
 export interface LuaTupleType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Tuple;
+  readonly kind: "tuple";
   readonly elementTypes: readonly LuaType[];
 }
 
@@ -69,7 +66,7 @@ export interface LuaTupleType extends BaseLuaType {
  * Table with a specific key and value type.
  */
 export interface LuaDictionaryType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Dictionary;
+  readonly kind: "dictionary";
   readonly keyType: LuaType;
   readonly valueType: LuaType;
 }
@@ -78,7 +75,7 @@ export interface LuaDictionaryType extends BaseLuaType {
  * Function type.
  */
 export interface LuaFunctionType extends BaseLuaType {
-  readonly kind: LuaTypeKind.Function;
+  readonly kind: "function";
   readonly parameters: readonly [string, LuaType][];
   readonly returnType: LuaType;
 }
@@ -94,26 +91,43 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
 
   console.log("about to format type", t);
   switch (t.kind) {
-    case LuaTypeKind.Literal:
+    case "literal":
       return t.value;
-    case LuaTypeKind.Named:
+    case "named":
       return t.generics.length === 0
         ? t.name
         : `${t.name}<${t.generics.map(f).join(", ")}>`;
-    case LuaTypeKind.Array:
+    case "array":
       return `${f(t.arrayType)}[]`;
-    case LuaTypeKind.Union:
+    case "union":
       const u = t.types.map(f).join("|");
       return t.parens ? `(${u})` : u;
-    case LuaTypeKind.Dictionary:
+    case "dictionary":
       return `{ [${f(t.keyType)}]: ${f(t.valueType)} }`;
-    case LuaTypeKind.Function:
+    case "function":
       return `fun(${t.parameters
         .map(([name, type]) => `${name}: ${f(type)}`)
         .join(", ")}): ${f(t.returnType)}`;
-    case LuaTypeKind.Tuple:
+    case "tuple":
       return `[${t.elementTypes.map(f).join(", ")}]`;
     default:
       throw new Error(`Unknown Lua type kind: ${(t as LuaType).kind}`);
   }
+}
+
+export function unionTypes(type: LuaType, ...types: LuaType[]): LuaType {
+  console.log("about to union types", type, types);
+  if (types.length === 0) {
+    return type;
+  }
+  return type.kind === "union" && !type.parens
+    ? { ...type, types: [...type.types, ...types] }
+    : { kind: "union", types: [type, ...types] };
+}
+
+export function createType<TKind extends LuaTypeKind>(
+  kind: TKind,
+  fields: Omit<LuaTypeByKind<TKind>, "kind">
+): LuaTypeByKind<TKind> {
+  return { kind, ...fields } as LuaTypeByKind<TKind>;
 }
