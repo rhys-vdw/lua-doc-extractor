@@ -1,7 +1,7 @@
 import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
 import { isKeyword } from "./lua";
-import { LuaType } from "./luaType";
+import { LuaType, LuaTypeKind } from "./luaType";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
@@ -45,10 +45,15 @@ function formatField(
   indent: string
 ) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
-  if (type.isLiteral) {
+  if (type.kind === LuaTypeKind.Literal) {
     const d = description.trimEnd();
-    const lua = `${indent}${fieldName} = ${type.name}`;
+    const lua = `${indent}${fieldName} = ${type.value}`;
     return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;
+  }
+
+  // TODO
+  if (type.kind !== LuaTypeKind.Type) {
+    throw new Error(`Unsupported type kind: ${type.kind}`);
   }
 
   // NOTE: Since complex types are not properly parsed, the description must be

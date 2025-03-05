@@ -51,8 +51,8 @@ lines -> (line %newline):+ {% d => d[0].flat().join("") %}
 line -> (%word | __ | %literal):* {% d => d.flat().join("") %}
 
 type ->
-    %word    {% ([d]) => ({ name: d.value, isLiteral: false }) %}
-  | %literal {% ([d]) => ({ name: d.value, isLiteral: true }) %}
+    %word    {% ([d]) => ({ kind: "type", name: d.value, generics: [] }) %}
+  | %literal {% ([d]) => ({ kind: "literal", value: d.value }) %}
 
 _ -> %space:? {% ([d]) => d.value %}
 __ -> %space {% ([d]) => d.value %}
