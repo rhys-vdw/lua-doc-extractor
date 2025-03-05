@@ -37,10 +37,10 @@ attribute ->
       create("class", { name: name.value, description }, {})
     %}
   | %fieldAttr __ %word __ type lines {% ([attr,, name,, type, description]) =>
-      create("field", { name: name.value, type, description }, {})
+      create("field", { name: name.value, typeName: type.name, description }, { type })
     %}
   | %globalAttr __ %word __ type lines {% ([attr,, name,, type, description]) =>
-      create("global", { name: name.value, type, description }, {})
+      create("global", { name: name.value, typeName: type.name, description }, { type })
     %}
   | %attribute lines {% ([attr, description]) =>
       create(attr.value, { description }, {})

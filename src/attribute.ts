@@ -9,7 +9,7 @@ export type Attribute =
   | TableAttribute;
 
 interface BaseAttribute {
-  args: { description: string };
+  args: { description: string; [key: string]: string };
   options: {};
 }
 
@@ -48,14 +48,14 @@ export interface ClassAttribute extends BaseAttribute {
   args: { name: string; description: string };
 }
 
-export interface GlobalAttribute extends BaseAttribute {
+export interface GlobalAttribute extends Omit<FieldAttribute, "type"> {
   type: "global";
-  args: { name: string; type: Type; description: string };
 }
 
 export interface FieldAttribute extends BaseAttribute {
   type: "field";
-  args: { name: string; type: Type; description: string };
+  args: { name: string; typeName: string; description: string };
+  options: { type: Type };
 }
 
 export function createAttribute<TType extends string>(
