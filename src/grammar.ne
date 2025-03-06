@@ -17,9 +17,13 @@ function log<T>(d: T, ...rest: any[]): T {
 
 @lexer docLexer
 
+# -- Document --
+
 doc ->
     lines attribute:* {% ([description = "", attributes]) => ({ description, attributes, lua: [] })%}
   | attribute:* {% ([attributes]) => ({ description: "", attributes, lua: [] }) %}
+
+# -- Attribute --
 
 attribute ->
     %functionAttr __ identifier lines {% ([,, name, description]) =>
@@ -47,9 +51,13 @@ attribute ->
       attr(a.value, { description }, {})
     %}
 
+# -- Text --
+
 lines -> (line %newline):+ {% d => d[0].flat().join("") %}
 
 line -> (%word | __ | %literal | identifier | %syntax):* {% d => d.flat().join("") %}
+
+# -- Type ---
 
 type ->
     literal {% id %}
@@ -76,6 +84,8 @@ unionType ->
 typeList ->
     type
   | type _ "," _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
+
+# -- Whitespace --
 
 _ -> %space:? {% ([d]) => d?.value %}
 __ -> %space {% ([d]) => d.value %}
