@@ -53,25 +53,25 @@ line -> (%word | __ | %literal | identifier | %syntax):* {% d => d.flat().join("
 
 type ->
     literal {% id %}
-  | unionType {% id %}
   | namedType {% id %}
+  | unionType {% id %}
   | type "?" {% ([t]) => ({ ...t, optional: true }) %}
+  | "(" type ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
 
 literal -> %literal {% ([d]) =>
   type("literal", { value: d.value })
 %}
 
-namedType -> identifier generics:? {% ([name,, g, ]) =>
+namedType -> identifier generics:? {% ([name, g, ]) =>
   type("named", { name: name, generics: g ?? [] })
 %}
 
 identifier -> %identifier {% ([d]) => d.value %}
 
-generics -> "<" typeList ">" {% ([, types, ]) => types %}
+generics -> "<" typeList ">" {% ([, types, ]) => log(types, "types") %}
 
 unionType ->
     type _ "|" _ type {% (ts) => union(ts[0], ts.at(-1)) %}
-  | "(" unionType ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
 
 typeList ->
     type
