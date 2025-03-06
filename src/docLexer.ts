@@ -16,7 +16,7 @@ export const docLexer = moo.states({
       match: /@[^\s]+/,
       value: (x) => x.substring(1),
     },
-    syntax: { match: [..."()[]{}<>:|?"] },
+    syntax: { match: [..."()[]{}<>:|?."] },
     newline: { match: /\r?\n/, lineBreaks: true },
     // Matches all whitespace except linefeeds.
     // https://stackoverflow.com/a/3469155/317135

@@ -26,6 +26,7 @@ export interface DefaultAttribute extends BaseAttribute {
 export interface FunctionAttribute extends BaseAttribute {
   attributeType: "function";
   args: { name: string; description: string };
+  options: { tables: string[] };
 }
 
 export interface ParamAttribute extends BaseAttribute {

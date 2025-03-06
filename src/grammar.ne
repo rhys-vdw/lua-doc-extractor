@@ -26,9 +26,7 @@ doc ->
 # -- Attribute --
 
 attribute ->
-    %functionAttr __ identifier lines {% ([,, name, description]) =>
-      attr("function", { name, description }, {})
-    %}
+    functionAttr {% id %}
   | %paramAttr __ identifier lines {% ([,, name, description]) =>
       attr("param", { name, description }, {})
     %}
@@ -50,6 +48,17 @@ attribute ->
   | %attribute lines {% ([a, description]) =>
       attr(a.value, { description }, {})
     %}
+
+functionAttr -> %functionAttr __ (identifier "."):* identifier description {%
+  ([,, ts = [], name,, description]) => {
+    const tables = ts.map(([t, _]) => t);
+    return attr("function", { name: [...tables, name].join("."), description }, { tables });
+  }
+%}
+
+description ->
+    _ %newline {% () => "" %}
+  | __ lines {% ([, d]) => d %}
 
 # -- Text --
 
