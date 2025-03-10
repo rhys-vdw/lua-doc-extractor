@@ -1,6 +1,5 @@
 import dedent from "dedent-js";
-import test from "tape";
-import { getComments, Comment } from "../comment";
+import { Comment } from "../comment";
 import { testInput, TestInputOptions } from "./utility/harness";
 
 function testGetComments(
