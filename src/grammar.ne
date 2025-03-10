@@ -8,8 +8,10 @@ import { docLexer } from "./docLexer";
 import { createAttribute as attr } from "./attribute";
 import { createType as type, unionTypes as union } from "./luaType";
 
-function log<T>(d: T, ...rest: any[]): T {
-  console.log(d, ...rest);
+function log<T>(d: T, name?: string): T {
+  console.log("--------- start:" + name);
+  console.log(d);
+  console.log("--------- end:" + name);
   return d;
 }
 
@@ -57,14 +59,14 @@ functionAttr -> %functionAttr __ (identifier "."):* identifier description {%
 %}
 
 description ->
-    _ %newline {% () => "" %}
-  | __ lines {% ([, d]) => d %}
+    __ lines {% ([, d]) => d %}
+  | %newline lines {% ([, d]) => d %}
 
 # -- Text --
 
-lines -> (line %newline):+ {% d => d[0].flat().join("") %}
+lines -> line:+ {% d => d[0].flat().join("") %}
 
-line -> (%word | __ | %literal | identifier | %syntax):* {% d => d.flat().join("") %}
+line -> (%word | __ | %literal | identifier | %syntax):* %newline {% ([l, nl]) => [l.flat().join(""), nl].join("") %}
 
 # -- Type ---
 
