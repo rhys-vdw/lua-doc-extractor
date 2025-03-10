@@ -50,7 +50,7 @@ attribute ->
     %}
 
 functionAttr -> %functionAttr __ (identifier "."):* identifier description {%
-  ([,, ts = [], name,, description]) => {
+  ([,, ts = [], name, description]) => {
     const tables = ts.map(([t, _]) => t);
     return attr("function", { name: [...tables, name].join("."), description }, { tables });
   }
