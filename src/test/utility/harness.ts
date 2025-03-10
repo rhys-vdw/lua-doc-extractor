@@ -1,3 +1,6 @@
+import { mkdirSync, writeFileSync } from "fs";
+import { kebabCase } from "lodash";
+import path, { dirname } from "path";
 import test from "tape";
 import { formatDocs, getDocs, processDocs } from "../..";
 import { Comment, getComments } from "../../comment";
@@ -8,6 +11,12 @@ export interface TestInputOptions {
   repoUrl?: string;
   only?: boolean;
   path?: string;
+}
+
+function writeJson(json: {}, name: string) {
+  const dest = path.join(__dirname, "..", "output", `${name}.json`);
+  mkdirSync(dirname(dest), { recursive: true });
+  writeFileSync(dest, JSON.stringify(json, null, 2));
 }
 
 export function testInput(
@@ -40,6 +49,11 @@ export function testInput(
       comments.forEach(({ text }) => {
         const results = parseDoc(text);
         t.equal(results.length, 1, "parseDoc has exactly one result");
+        if (results.length > 1) {
+          results.forEach((r, i) => {
+            writeJson(r, `${kebabCase(name)}.${i}`);
+          });
+        }
       });
     }
 
