@@ -1,12 +1,22 @@
+import { mkdirSync, writeFileSync } from "fs";
+import { kebabCase } from "lodash";
+import path, { dirname } from "path";
 import test from "tape";
 import { formatDocs, getDocs, processDocs } from "../..";
 import { Comment, getComments } from "../../comment";
+import { parseDoc } from "../../doc";
 import { docLexer } from "../../docLexer";
 
 export interface TestInputOptions {
   repoUrl?: string;
   only?: boolean;
   path?: string;
+}
+
+function writeJson(json: {}, name: string) {
+  const dest = path.join(__dirname, "..", "output", `${name}.json`);
+  mkdirSync(dirname(dest), { recursive: true });
+  writeFileSync(dest, JSON.stringify(json, null, 2));
 }
 
 export function testInput(
@@ -25,15 +35,27 @@ export function testInput(
       t.deepEqual(comments, expectedComments, "getComments has correct output");
     }
 
-    comments?.forEach(({ text }) => {
-      t.doesNotThrow(() => {
-        docLexer.reset(text);
-        const docTokens = Array.from(docLexer);
-        // docTokens.forEach((t) => {
-        //   console.log(`${t.type}: |${t.text}|`);
-        // });
-      }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
-    });
+    if (comments != null) {
+      comments.forEach(({ text }) => {
+        t.doesNotThrow(() => {
+          docLexer.reset(text);
+          // const docTokens = Array.from(docLexer);
+          // docTokens.forEach((t) => {
+          //   console.log(`${t.type}: |${t.text}|`);
+          // });
+        }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
+      });
+
+      comments.forEach(({ text }) => {
+        const results = parseDoc(text);
+        t.equal(results.length, 1, "parseDoc has exactly one result");
+        if (results.length > 1) {
+          results.forEach((r, i) => {
+            writeJson(r, `${kebabCase(name)}.${i}`);
+          });
+        }
+      });
+    }
 
     const [docResult, err] = getDocs(input, path);
 
@@ -51,13 +73,13 @@ export function testInput(
 
       if (expected !== undefined) {
         t.isEqual(actual, expected, "formatDocs has correct output");
-      }
 
-      if (only) {
-        console.log(">>>EXPECTED>>>");
-        console.log(expected);
-        console.log("<<<ACTUAL<<<");
-        console.log(actual);
+        if (only) {
+          console.log(">>>EXPECTED>>>");
+          console.log(expected);
+          console.log("<<<ACTUAL<<<");
+          console.log(actual);
+        }
       }
     }
 

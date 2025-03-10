@@ -8,6 +8,12 @@ import { Result, toResult } from "./result";
 import { Position } from "./source";
 import { joinNonEmpty, toLuaComment } from "./utility";
 
+export interface ParseDocResult {
+  description: string;
+  attributes: Attribute[];
+  path?: string;
+}
+
 export interface Doc {
   description: string;
   attributes: Attribute[];
@@ -17,33 +23,34 @@ export interface Doc {
   lua: string[];
 }
 
-function parse(comment: Comment): Doc {
+export function parseDoc(input: string): ParseDocResult[] {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-  const { text, start, end } = comment;
   // Force final newline.
-  parser.feed(text + "\n");
-  if (parser.results.length > 1) {
-    // console.error(
-    //   `Ambiguous parse for comment (result  count: ${parser.results.length}):\n-----\n${text}\n----\n`
-    // );
-    // parser.results.forEach((r, i) => {
-    //   console.log(`\n-----\nPARSE ${i}\n----`);
-    //   console.log(require("util").inspect(r, { depth: Infinity }));
-    //   console.log(`\n-----\nEND PARSE ${i}\n----`);
-    // });
+  parser.feed(input + "\n");
+  return parser.results;
+}
+
+function unsafeParse(comment: Comment): Doc {
+  const { text, start, end } = comment;
+  const rawDocs = parseDoc(text);
+  if (rawDocs.length > 1) {
+    console.warn(
+      `Ambiguous parse for comment (result count: ${rawDocs.length}):\n-----\n${text}\n----\n`
+    );
   }
-  if (parser.results.length === 0) {
+  if (rawDocs.length === 0) {
     throw new Error(`No parser output for comment:\n----\n${text}\n----\n`);
   }
   return {
-    ...parser.results[0],
+    ...rawDocs[0],
     start,
     end,
+    lua: [],
   };
 }
 
-export function parseDoc(comment: Comment): Result<Doc> {
-  return toResult(() => parse(comment));
+export function getDoc(comment: Comment): Result<Doc> {
+  return toResult(() => unsafeParse(comment));
 }
 
 function formatDocComment(doc: Doc): string {
