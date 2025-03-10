@@ -1,5 +1,5 @@
 import { getComments } from "./comment";
-import { Doc, formatDoc, parseDoc, removeEmptyDocs } from "./doc";
+import { Doc, formatDoc, getDoc, removeEmptyDocs } from "./doc";
 import { addTableToEnumFields, mergeEnumAttributes } from "./enum";
 import { renderStandaloneFields } from "./field";
 import { processGlobals } from "./global";
@@ -24,7 +24,7 @@ export function getDocs(
   }
   const docs = [] as Doc[];
   const docErrors = [] as Error[];
-  comments.map(parseDoc).forEach(([doc, error]) => {
+  comments.map(getDoc).forEach(([doc, error]) => {
     if (error != null) {
       docErrors.push(error);
     } else {
