@@ -33,16 +33,11 @@ export function parseDoc(input: string): ParseDocResult[] {
 function unsafeParse(comment: Comment): Doc {
   const { text, start, end } = comment;
   const rawDocs = parseDoc(text);
-  // if (rawDocs.length > 1) {
-  //   console.error(
-  //     `Ambiguous parse for comment (result  count: ${rawDocs.length}):\n-----\n${text}\n----\n`
-  //   );
-  //   rawDocs.forEach((r, i) => {
-  //     console.log(`\n-----\nPARSE ${i}\n----`);
-  //     console.log(require("util").inspect(r, { depth: Infinity }));
-  //     console.log(`\n-----\nEND PARSE ${i}\n----`);
-  //   });
-  // }
+  if (rawDocs.length > 1) {
+    console.warn(
+      `Ambiguous parse for comment (result count: ${rawDocs.length}):\n-----\n${text}\n----\n`
+    );
+  }
   if (rawDocs.length === 0) {
     throw new Error(`No parser output for comment:\n----\n${text}\n----\n`);
   }
