@@ -66,32 +66,31 @@ export function isAttribute<TType extends string>(
   return attr.attributeType === name;
 }
 
-function format(attr: string, rest: string) {
-  return `@${attr}${ensureLeadingWhitespace(rest.trimEnd())}`;
+function format(attr: string, ...rest: string[]) {
+  return `@${attr}${rest
+    .map((e) => ensureLeadingWhitespace(e.trimEnd()))
+    .join("")}`;
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
   const known = attribute as KnownAttribute;
-  if (known.attributeType === "function" || known.attributeType == "table") {
-    console.log(
-      `Attempting to format internal attribute type '${known.attributeType}'`
-    );
-    return "";
-  }
   switch (known.attributeType) {
+    case "global":
+    case "function":
+    case "table":
+      console.log(
+        `Attempting to format internal attribute type '${known.attributeType}'`
+      );
+      return "";
     case "param":
     case "enum":
     case "class": {
       const { name, description } = known.args;
-      return format(known.attributeType, `${name} ${description}`);
+      return format(known.attributeType, name, description);
     }
-    case "field":
-    case "global": {
+    case "field": {
       const { name, type, description } = known.args;
-      return format(
-        known.attributeType,
-        `${name}: ${formatType(type)} ${description}`
-      );
+      return format(known.attributeType, name, formatType(type), description);
     }
   }
   // @ts-ignore
