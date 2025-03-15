@@ -77,7 +77,7 @@ export interface LuaDictionaryType extends BaseLuaType {
 export interface LuaFunctionType extends BaseLuaType {
   readonly kind: "function";
   readonly parameters: readonly [string, LuaType][];
-  readonly returnType: LuaType;
+  readonly returnType: LuaType | null;
 }
 
 export function formatType(luaType: LuaType): string {
@@ -105,9 +105,12 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
     case "dictionary":
       return `{ [${f(t.keyType)}]: ${f(t.valueType)} }`;
     case "function":
-      return `fun(${t.parameters
+      const ps = t.parameters
         .map(([name, type]) => `${name}: ${f(type)}`)
-        .join(", ")}): ${f(t.returnType)}`;
+        .join(", ");
+      return t.returnType === null
+        ? `fun(${ps})`
+        : `fun(${ps}): ${f(t.returnType)}`;
     case "tuple":
       return `[${t.elementTypes.map(f).join(", ")}]`;
     default:

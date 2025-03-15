@@ -81,6 +81,7 @@ anyWord -> (anyWordButPipe | %pipe) {% id %}
 singleType ->
     literal {% id %}
   | namedType {% id %}
+  | functionType {% id %}
   | singleType "?" {% ([t]) => ({ ...t, optional: true }) %}
   | "(" unionType ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
 
@@ -103,6 +104,20 @@ unionType ->
 typeList ->
     unionType
   | unionType _ "," _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
+
+# NOTE: I'm not sure how LLS/emmy support this, but there is ambiguity in this:
+
+#  fun(): number|string
+#
+# i.e. is it `(fun(): number)|string or fun(): (number|string)`?
+#
+# Defining the return type as singleType eliminates the ambiguity, but still
+# parses the input and outputs it for LLS to interpret as it wishes.
+functionType ->
+  "fun" "(" (_ identifier _ ":" _ unionType _):* ")" (_ ":" _ singleType):? {% ([,, ps,, r]) => {
+    const parameters = ps.map(([, p,,,, t,]: any) => ([p, t]));
+    return type("function", { parameters, returnType: r?.at(-1) })
+  }%}
 
 # -- Whitespace --
 

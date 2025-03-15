@@ -47,6 +47,7 @@ const types = [
   "{ [string]: integer }",
   "{ [(string|table<string, string>?)]: integer }",
   "fun(x: integer): string",
+  "fun(integer: string): (string|number?)",
   "fun(integer: string): string|number?",
 ];
 
