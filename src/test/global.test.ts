@@ -47,13 +47,12 @@ const types = [
   "integer|string",
   "{ [string]: integer }",
   "{ [(string|table<string, string>?)]: integer }",
-  "fun(x: integer): string",
-  "fun(integer: string): (string|number?)",
-  "fun(integer: string): string|number?",
   "fun()",
   "fun(x: integer, z: string): string",
   "fun(integer: string): (string|number?)",
   "fun(y: string): string|number?",
+  "[number, integer]",
+  "[table<string>?|integer, nil, true]",
 ];
 
 types.forEach((type) => {

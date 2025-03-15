@@ -60,7 +60,7 @@ export interface LuaArrayType extends BaseLuaType {
  */
 export interface LuaTupleType extends BaseLuaType {
   readonly kind: "tuple";
-  readonly elementTypes: readonly LuaType[];
+  readonly types: readonly LuaType[];
 }
 
 /**
@@ -121,7 +121,7 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
         ? `fun(${ps})`
         : `fun(${ps}): ${f(t.returnType)}`;
     case "tuple":
-      return `[${t.elementTypes.map(f).join(", ")}]`;
+      return `[${t.types.map(f).join(", ")}]`;
   }
   throw new Error(`Unknown Lua type kind: ${(t as LuaType).kind}`);
 }

@@ -83,6 +83,7 @@ singleType ->
   | namedType {% id %}
   | dictionaryType {% id %}
   | tableType {% id %}
+  | tupleType {% id %}
   | functionType {% id %}
   | singleType "?" {% ([t]) => ({ ...t, optional: true }) %}
   | "(" unionType ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
@@ -114,6 +115,9 @@ dictionaryType ->
 
 tableType -> "{" _ (parameters _):? "}" {% (ds) => type("table", { fields: ds[2]?.at(0) ?? [] }) %}
 
+tupleType -> "[" _ typeList _ "]" {%
+    (ts) => type("tuple", { types: ts[2] })
+  %}
 
 # NOTE: I'm not sure how LLS/emmy support this, but there is ambiguity in this:
 
