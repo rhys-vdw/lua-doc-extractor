@@ -1,8 +1,8 @@
 import { FieldAttribute } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
-import { isKeyword } from "./lua";
+import { isKeyword, nil } from "./lua";
 import { formatType, LuaType } from "./luaType";
-import { toLuaComment } from "./utility";
+import { joinLines, toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
   var { tables, name, type, description } = rule.args;
@@ -45,16 +45,16 @@ function formatField(
 ) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
   const qualifiedName = [...tables, fieldName].join(".");
+
+  let comment = description.trim();
+  let value: string;
   if (type.kind === "literal") {
-    const d = description.trimEnd();
-    const lua = `${indent}${qualifiedName} = ${type.value}`;
-    return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;
+    value = type.value;
+  } else {
+    value = nil;
+    comment = joinLines(comment, `@type ${formatType(type)}`);
   }
 
-  // NOTE: Since complex types are not properly parsed, the description must be
-  // inlined as it will include some of the actual type.
-  return (
-    toLuaComment(`@type ${formatType(type)} ${description.trim()}`, indent) +
-    `\n${indent}${qualifiedName} = nil`
-  );
+  const lua = `${indent}${qualifiedName} = ${value}`;
+  return comment === "" ? lua : toLuaComment(comment, indent) + "\n" + lua;
 }
