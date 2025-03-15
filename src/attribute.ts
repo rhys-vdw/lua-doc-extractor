@@ -16,11 +16,20 @@ interface BaseAttribute {
   args: { description: string };
 }
 
+export interface Table {
+  name: string;
+  sep: "." | ":";
+}
+
 export interface DefaultAttribute extends BaseAttribute {}
 
 export interface FunctionAttribute extends BaseAttribute {
   attributeType: "function";
-  args: { tables: string[]; name: string; description: string };
+  args: {
+    tables: Table[];
+    name: string;
+    description: string;
+  };
 }
 
 export interface ParamAttribute extends BaseAttribute {
@@ -49,7 +58,7 @@ export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
 
 export interface FieldAttribute extends BaseAttribute {
   attributeType: "field";
-  args: { tables: string[]; name: string; type: LuaType; description: string };
+  args: { tables: Table[]; name: string; type: LuaType; description: string };
 }
 
 export function createAttribute<TType extends string>(

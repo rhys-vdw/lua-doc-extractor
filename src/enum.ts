@@ -30,7 +30,7 @@ export function addTableToEnumFields(docs: Doc[]): Doc[] {
         return acc;
       }
 
-      const tableName = tables[0];
+      const tableName = tables[0].name;
 
       if (!enumNames.has(tableName)) {
         return acc;

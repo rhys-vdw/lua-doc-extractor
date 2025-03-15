@@ -49,3 +49,21 @@ testInput(
     function SomeTable.Foo(x, y) end
   `
 );
+
+testInput(
+  "Method",
+  dedent`
+    /***
+     * Does foo.
+     *
+     * @function SomeTable:Foo
+     * @param x integer
+     */
+    `,
+  dedent`
+    ---Does foo.
+    ---
+    ---@param x integer
+    function SomeTable:Foo(x) end
+  `
+);

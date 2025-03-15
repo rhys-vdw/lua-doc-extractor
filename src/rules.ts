@@ -6,7 +6,7 @@ import {
   isAttribute,
 } from "./attribute";
 import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
-import { generateField } from "./field";
+import { formatFieldName, generateField } from "./field";
 import { logError, logWarning } from "./log";
 import { joinLines } from "./utility";
 
@@ -31,8 +31,8 @@ export const functionRule: Rule = (ruleAttr, doc) => {
     doc.description = joinLines(doc.description, description);
   }
 
-  const qualifiedName = [...tables, name].join(".");
-  doc.lua.push(`function ${qualifiedName}(${paramNames.join(", ")}) end`);
+  const fieldName = formatFieldName(tables, name);
+  doc.lua.push(`function ${fieldName}(${paramNames.join(", ")}) end`);
 };
 
 /**

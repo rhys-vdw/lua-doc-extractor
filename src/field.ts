@@ -1,4 +1,4 @@
-import { FieldAttribute } from "./attribute";
+import { FieldAttribute, Table } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
 import { isKeyword, nil } from "./lua";
 import { formatType, LuaType } from "./luaType";
@@ -36,15 +36,19 @@ function renderField(field: FieldAttribute): string {
   return formatField(tables, name, type, description, "");
 }
 
+export function formatFieldName(tables: Table[], name: string): string {
+  return tables.map(({ name, sep }) => `${name}${sep}`).join("") + name;
+}
+
 function formatField(
-  tables: string[],
+  tables: Table[],
   name: string,
   type: LuaType,
   description: string,
   indent: string
 ) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
-  const qualifiedName = [...tables, fieldName].join(".");
+  const qualifiedName = formatFieldName(tables, fieldName);
 
   let comment = description.trim();
   let value: string;
