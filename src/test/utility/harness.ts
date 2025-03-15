@@ -4,7 +4,7 @@ import path, { dirname } from "path";
 import test from "tape";
 import { formatDocs, getDocs, processDocs } from "../..";
 import { Comment, getComments } from "../../comment";
-import { parseDoc } from "../../doc";
+import { parseDoc, ParseDocResult } from "../../doc";
 import { docLexer } from "../../docLexer";
 
 export interface TestInputOptions {
@@ -46,12 +46,17 @@ export function testInput(
         }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
       });
 
-      comments.forEach(({ text }) => {
-        const results = parseDoc(text);
+      comments.forEach(({ text }, i) => {
+        let results: ParseDocResult[] = [];
+        try {
+          results = parseDoc(text);
+        } catch (e) {
+          t.error(e, `parseDoc succeeds for comment ${i}`);
+        }
         t.equal(results.length, 1, "parseDoc has exactly one result");
         if (results.length > 1) {
-          results.forEach((r, i) => {
-            writeJson(r, `${kebabCase(name)}.${i}`);
+          results.forEach((r, j) => {
+            writeJson(r, `${kebabCase(name)}.comment.${i}.parse.${j}`);
           });
         }
       });
@@ -74,7 +79,7 @@ export function testInput(
       if (expected !== undefined) {
         t.isEqual(actual, expected, "formatDocs has correct output");
 
-        if (only) {
+        if (only && actual !== expected) {
           console.log(">>>EXPECTED>>>");
           console.log(expected);
           console.log("<<<ACTUAL<<<");
