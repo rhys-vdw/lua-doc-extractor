@@ -81,6 +81,7 @@ anyWord -> (anyWordButPipe | %pipe) {% id %}
 singleType ->
     literal {% id %}
   | namedType {% id %}
+  | arrayType {% id %}
   | dictionaryType {% id %}
   | tableType {% id %}
   | tupleType {% id %}
@@ -107,6 +108,11 @@ unionType ->
 typeList ->
     unionType
   | unionType _ "," _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
+
+arrayType ->
+    singleType "[" _ "]" {%
+      (ds) => type("array", { arrayType: ds[0] })
+    %}
 
 dictionaryType ->
     "{" _ "[" _ unionType _ "]" _ ":" _ unionType _ "}" {%
