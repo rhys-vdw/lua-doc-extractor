@@ -98,7 +98,6 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
   const f = formatType;
   const t = luaType;
 
-  console.log("about to format type", t);
   switch (t.kind) {
     case "literal":
       return t.value;
@@ -131,7 +130,6 @@ function params(ps: readonly [string, LuaType][]): string {
 }
 
 export function unionTypes(type: LuaType, ...types: LuaType[]): LuaType {
-  // console.log("about to union types", type, types);
   if (types.length === 0) {
     return type;
   }
