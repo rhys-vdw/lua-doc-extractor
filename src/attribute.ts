@@ -49,7 +49,7 @@ export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
 
 export interface FieldAttribute extends BaseAttribute {
   attributeType: "field";
-  args: { tables: []; name: string; type: LuaType; description: string };
+  args: { tables: string[]; name: string; type: LuaType; description: string };
 }
 
 export function createAttribute<TType extends string>(

@@ -18,32 +18,28 @@ export function addTableToEnumFields(docs: Doc[]): Doc[] {
   docs.forEach((doc) => {
     const fields = filterAttributes(doc, "field");
     const tableNames = fields.reduce((acc, field) => {
-      const tokens = field.args.name.split(".");
+      const { tables } = field.args;
 
       // This field has no table.
-      if (tokens.length === 1) {
+      if (tables.length === 0) {
         return acc;
       }
 
       // This field has too many tables.
-      if (tokens.length > 2) {
+      if (tables.length > 1) {
         return acc;
       }
 
-      const [tableName, fieldName] = tokens;
+      const tableName = tables[0];
 
       if (!enumNames.has(tableName)) {
         return acc;
       }
 
-      // Remove the table from the field name.
-      field.args.name = fieldName;
+      // Remove the tables.
+      field.args.tables = [];
 
-      // NOTE: This will add unsightly newlines even field description is
-      // "empty" because it will always contain the type of the field.
-      //
-      // To fix this the parser would need to be able to correctly parse the
-      // type itself and separate it from the description.
+      // Marge the leading description into the field.
       field.args.description = joinLines(
         field.args.description,
         doc.description
