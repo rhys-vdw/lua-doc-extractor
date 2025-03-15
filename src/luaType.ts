@@ -5,6 +5,7 @@ export type LuaType =
   | LuaUnionType
   | LuaTupleType
   | LuaDictionaryType
+  | LuaTableType
   | LuaFunctionType;
 
 type LuaTypeByKind<TKind extends LuaTypeKind> = Extract<
@@ -72,6 +73,14 @@ export interface LuaDictionaryType extends BaseLuaType {
 }
 
 /**
+ * Table with named and typed keys.
+ */
+export interface LuaTableType extends BaseLuaType {
+  readonly kind: "table";
+  readonly fields: readonly [string, LuaType][];
+}
+
+/**
  * Function type.
  */
 export interface LuaFunctionType extends BaseLuaType {
@@ -89,7 +98,7 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
   const f = formatType;
   const t = luaType;
 
-  // console.log("about to format type", t);
+  console.log("about to format type", t);
   switch (t.kind) {
     case "literal":
       return t.value;
@@ -104,18 +113,21 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
       return t.parens ? `(${u})` : u;
     case "dictionary":
       return `{ [${f(t.keyType)}]: ${f(t.valueType)} }`;
+    case "table":
+      return t.fields.length === 0 ? "{}" : `{ ${params(t.fields)} }`;
     case "function":
-      const ps = t.parameters
-        .map(([name, type]) => `${name}: ${f(type)}`)
-        .join(", ");
+      const ps = params(t.parameters);
       return t.returnType === null
         ? `fun(${ps})`
         : `fun(${ps}): ${f(t.returnType)}`;
     case "tuple":
       return `[${t.elementTypes.map(f).join(", ")}]`;
-    default:
-      throw new Error(`Unknown Lua type kind: ${(t as LuaType).kind}`);
   }
+  throw new Error(`Unknown Lua type kind: ${(t as LuaType).kind}`);
+}
+
+function params(ps: readonly [string, LuaType][]): string {
+  return ps.map(([name, type]) => `${name}: ${formatType(type)}`).join(", ");
 }
 
 export function unionTypes(type: LuaType, ...types: LuaType[]): LuaType {

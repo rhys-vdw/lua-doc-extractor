@@ -40,6 +40,7 @@ const types = [
   "(string?|number)?",
   "table<string, boolean>",
   "(integer|table<string, boolean>|Foo)?",
+  "{}",
   "{ x: integer, y: integer }",
   "{ x: number?, y: A|B }",
   "A|B",
@@ -50,6 +51,9 @@ const types = [
   "fun(integer: string): (string|number?)",
   "fun(integer: string): string|number?",
   "fun()",
+  "fun(x: integer, z: string): string",
+  "fun(integer: string): (string|number?)",
+  "fun(y: string): string|number?",
 ];
 
 types.forEach((type) => {
