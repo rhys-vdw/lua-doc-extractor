@@ -78,7 +78,7 @@ export function formatAttribute(attribute: Readonly<Attribute>): string {
     case "global":
     case "function":
     case "table":
-      console.log(
+      console.error(
         `Attempting to format internal attribute type '${known.attributeType}'`
       );
       return "";
