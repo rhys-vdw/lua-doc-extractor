@@ -63,14 +63,14 @@ types.forEach((type) => {
     `Generates global with type ${type}`,
     dedent`
     /***
-     * @field Foo.bar ${type} The description.
+     * @global Foo ${type} The description.
      */
     `,
     dedent`
       ---The description.
       ---
       ---@type ${type}
-      Foo.bar = nil
+      Foo = nil
     `
   );
 });
