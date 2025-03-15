@@ -95,7 +95,7 @@ namedType -> identifier generics:? {% ([name, g, ]) =>
 
 identifier -> %identifier {% ([d]) => d.value %}
 
-generics -> "<" typeList ">" {% ([, types, ]) => log(types, "types") %}
+generics -> "<" typeList ">" {% ([, types, ]) => types %}
 
 unionType ->
     singleType {% id %}
