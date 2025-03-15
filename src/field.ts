@@ -5,8 +5,8 @@ import { formatType, LuaType } from "./luaType";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  var { name, type, description } = rule.args;
-  return formatField(name, type, description.trimStart(), indent);
+  var { tables, name, type, description } = rule.args;
+  return formatField(tables, name, type, description.trimStart(), indent);
 }
 
 /**
@@ -32,20 +32,22 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
 
 /** Render a field attribute. */
 function renderField(field: FieldAttribute): string {
-  const { name, type, description } = field.args;
-  return formatField(name, type, description, "");
+  const { tables, name, type, description } = field.args;
+  return formatField(tables, name, type, description, "");
 }
 
 function formatField(
+  tables: string[],
   name: string,
   type: LuaType,
   description: string,
   indent: string
 ) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
+  const qualifiedName = [...tables, fieldName].join(".");
   if (type.kind === "literal") {
     const d = description.trimEnd();
-    const lua = `${indent}${fieldName} = ${type.value}`;
+    const lua = `${indent}${qualifiedName} = ${type.value}`;
     return d === "" ? lua : toLuaComment(d, indent) + "\n" + lua;
   }
 
@@ -53,6 +55,6 @@ function formatField(
   // inlined as it will include some of the actual type.
   return (
     toLuaComment(`@type ${formatType(type)} ${description.trim()}`, indent) +
-    `\n${indent}${fieldName} = nil`
+    `\n${indent}${qualifiedName} = nil`
   );
 }

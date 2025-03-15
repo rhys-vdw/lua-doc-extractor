@@ -1,8 +1,3 @@
-export function stripGenericParams(text: string) {
-  const index = text.indexOf("<");
-  return index === -1 ? text : text.substring(0, index);
-}
-
 /**
  * Adds additional description lines, leaving a blank line between paragraphs.
  */

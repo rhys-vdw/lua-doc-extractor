@@ -1,7 +1,7 @@
 import { without } from "lodash";
 import { createAttribute } from "./attribute";
 import { Doc, findAttribute } from "./doc";
-import { joinLines, stripGenericParams } from "./utility";
+import { joinLines } from "./utility";
 
 export function addTables(docs: Doc[]): Doc[] {
   docs.forEach((doc) => {
@@ -13,10 +13,10 @@ export function addTables(docs: Doc[]): Doc[] {
     // Classes create a local table.
     const classAttr = findAttribute(doc, "class");
     if (classAttr != null) {
-      const className = classAttr.args.name;
+      const name = classAttr.args.type.name;
       const tableAttr = createAttribute("table", {
         isLocal: true,
-        name: stripGenericParams(className),
+        name,
         description: "",
       });
       doc.attributes.push(tableAttr);

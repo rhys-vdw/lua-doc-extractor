@@ -1,4 +1,4 @@
-import { formatType, LuaType } from "./luaType";
+import { formatType, LuaNamedType, LuaType } from "./luaType";
 
 export type Attribute = KnownAttribute | DefaultAttribute;
 
@@ -40,7 +40,7 @@ export interface TableAttribute extends BaseAttribute {
 
 export interface ClassAttribute extends BaseAttribute {
   attributeType: "class";
-  args: { name: string; description: string };
+  args: { type: LuaNamedType; description: string };
 }
 
 export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
@@ -83,17 +83,20 @@ export function formatAttribute(attribute: Readonly<Attribute>): string {
       );
       return "";
     case "param":
-    case "enum":
-    case "class": {
+    case "enum": {
       const { name, description } = known.args;
       return format(known.attributeType, name, description);
+    }
+    case "class": {
+      const { type, description } = known.args;
+      return format(known.attributeType, formatType(type), description);
     }
     case "field": {
       const { name, type, description } = known.args;
       return format(known.attributeType, name, formatType(type), description);
     }
   }
-  // @ts-ignore
+  // @ts-ignore: Unreachable code error due to false exhaustive switch.
   return format(attribute.attributeType, attribute.args.description);
 }
 

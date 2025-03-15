@@ -37,8 +37,8 @@ attribute ->
   | %enumAttr __ identifier lines {% ([,, name, description]) =>
       attr("enum", { name, description })
     %}
-  | %classAttr __ identifier description {% ([,, name, description]) =>
-      attr("class", { name, description })
+  | %classAttr __ namedType description {% ([,, type, description]) =>
+      attr("class", { type, description })
     %}
   | fieldAttr {% id %}
   | %attribute lines {% ([a, description]) =>
