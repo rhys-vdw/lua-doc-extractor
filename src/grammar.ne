@@ -40,15 +40,17 @@ attribute ->
   | %classAttr __ identifier description {% ([,, name, description]) =>
       attr("class", { name, description }, {})
     %}
-  | %fieldAttr __ identifier __ unionType unionDesc {% ([,, name,, type, description]) =>
-      attr("field", { name, typeName: type.name, description }, { type })
-    %}
-  | %globalAttr __ identifier __ unionType unionDesc {% ([,, name,, type, description]) =>
-      attr("global", { name, typeName: type.name, description }, { type })
-    %}
+  | fieldAttr {% id %}
   | %attribute lines {% ([a, description]) =>
       attr(a.value, { description }, {})
     %}
+
+fieldAttr -> (%fieldAttr|%globalAttr) __ (identifier "."):* identifier __ unionType unionDesc {%
+  ([[a],, ts = [], name,, type, description]) => {
+    const tables = ts.map(([t, _]: any) => t);
+    return attr(a.value, { name: [...tables, name].join("."), typeName: type.name, description }, { tables, type });
+  }
+%}
 
 functionAttr -> %functionAttr __ (identifier "."):* identifier description {%
   ([,, ts = [], name, description]) => {

@@ -50,8 +50,8 @@ testInput(
   `,
   dedent`
     ---@class Widget
-    ---@field union Bar | Baz Bar or baz?
-    ---@field generic Foo<Bar | Baz> A generic.
+    ---@field union Bar|Baz Bar or baz?
+    ---@field generic Foo<Bar|Baz> A generic.
     local Widget = {}
   `
 );

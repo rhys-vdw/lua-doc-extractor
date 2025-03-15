@@ -1,4 +1,4 @@
-import { LuaType } from "./luaType";
+import { formatType, LuaType } from "./luaType";
 
 export type Attribute =
   | ClassAttribute
@@ -57,7 +57,7 @@ export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
 export interface FieldAttribute extends BaseAttribute {
   attributeType: "field";
   args: { name: string; typeName: string; description: string };
-  options: { type: LuaType };
+  options: { type: LuaType; tables: string[] };
 }
 
 export function createAttribute<TType extends string>(
@@ -76,10 +76,14 @@ export function isAttribute<TType extends string>(
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  const { attributeType, args } = attribute;
-  var argValues = Object.values(args);
-  return `@${attributeType}${argValues
-    .map(String) // TODO:
+  const { attributeType, args, options } = attribute;
+  var argEntries = Object.entries(args);
+  return `@${attributeType}${argEntries
+    .map(([key, value]) =>
+      key === "typeName"
+        ? formatType((options as any).type as any)
+        : String(value)
+    ) // TODO:
     .map(ensureLeadingWhitespace)
     .join("")
     .trimEnd()}`;
