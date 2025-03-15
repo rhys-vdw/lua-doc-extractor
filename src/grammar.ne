@@ -81,6 +81,7 @@ anyWord -> (anyWordButPipe | %pipe) {% id %}
 singleType ->
     literal {% id %}
   | namedType {% id %}
+  | dictionaryType {% id %}
   | functionType {% id %}
   | singleType "?" {% ([t]) => ({ ...t, optional: true }) %}
   | "(" unionType ")" {% ([, t, ]) => ({ ...t, parens: true }) %}
@@ -104,6 +105,12 @@ unionType ->
 typeList ->
     unionType
   | unionType _ "," _ typeList {% (ts) => [ts[0], ...ts.at(-1)] %}
+
+dictionaryType ->
+    "{" _ "[" _ unionType _ "]" _ ":" _ unionType _ "}" {%
+      (ds) => type("dictionary", { keyType: ds.at(4), valueType: ds.at(-3) })
+    %}
+
 
 # NOTE: I'm not sure how LLS/emmy support this, but there is ambiguity in this:
 
