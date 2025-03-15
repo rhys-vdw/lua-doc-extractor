@@ -61,11 +61,11 @@ export function addTableToEnumFields(docs: Doc[]): Doc[] {
     for (const tableName of tableNames) {
       // Add a table attribute so it can be merged later.
       doc.attributes.push(
-        createAttribute(
-          "table",
-          { name: tableName, description: "" },
-          { isLocal: false }
-        )
+        createAttribute("table", {
+          isLocal: false,
+          name: tableName,
+          description: "",
+        })
       );
     }
   });

@@ -14,14 +14,11 @@ export function addTables(docs: Doc[]): Doc[] {
     const classAttr = findAttribute(doc, "class");
     if (classAttr != null) {
       const className = classAttr.args.name;
-      const tableAttr = createAttribute(
-        "table",
-        {
-          name: stripGenericParams(className),
-          description: "",
-        },
-        { isLocal: true }
-      );
+      const tableAttr = createAttribute("table", {
+        isLocal: true,
+        name: stripGenericParams(className),
+        description: "",
+      });
       doc.attributes.push(tableAttr);
       return;
     }
@@ -30,11 +27,11 @@ export function addTables(docs: Doc[]): Doc[] {
     const enumAttr = findAttribute(doc, "enum");
     if (enumAttr != null) {
       const enumName = enumAttr.args.name;
-      const tableAttr = createAttribute(
-        "table",
-        { name: enumName, description: "" },
-        { isLocal: false }
-      );
+      const tableAttr = createAttribute("table", {
+        isLocal: false,
+        name: enumName,
+        description: "",
+      });
       doc.attributes.push(tableAttr);
       return;
     }

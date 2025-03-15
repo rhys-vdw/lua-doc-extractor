@@ -29,33 +29,33 @@ doc ->
 attribute ->
     functionAttr {% id %}
   | %paramAttr __ identifier lines {% ([,, name, description]) =>
-      attr("param", { name, description }, {})
+      attr("param", { name, description })
     %}
   | %tableAttr __ identifier lines {% ([,, name, description]) =>
-      attr("table", { name, description }, { isLocal: false })
+      attr("table", { isLocal: false, name, description })
     %}
   | %enumAttr __ identifier lines {% ([,, name, description]) =>
-      attr("enum", { name, description }, {})
+      attr("enum", { name, description })
     %}
   | %classAttr __ identifier description {% ([,, name, description]) =>
-      attr("class", { name, description }, {})
+      attr("class", { name, description })
     %}
   | fieldAttr {% id %}
   | %attribute lines {% ([a, description]) =>
-      attr(a.value, { description }, {})
+      attr(a.value, { description })
     %}
 
 fieldAttr -> (%fieldAttr|%globalAttr) __ (identifier "."):* identifier __ unionType unionDesc {%
   ([[a],, ts = [], name,, type, description]) => {
     const tables = ts.map(([t, _]: any) => t);
-    return attr(a.value, { name: [...tables, name].join("."), typeName: type.name, description }, { tables, type });
+    return attr(a.value, { tables, name, type, description });
   }
 %}
 
 functionAttr -> %functionAttr __ (identifier "."):* identifier description {%
   ([,, ts = [], name, description]) => {
     const tables = ts.map(([t, _]: any) => t);
-    return attr("function", { name: [...tables, name].join("."), description }, { tables });
+    return attr("function", { tables, name, description });
   }
 %}
 

@@ -1,8 +1,9 @@
 import { formatType, LuaType } from "./luaType";
 
-export type Attribute =
+export type Attribute = KnownAttribute | DefaultAttribute;
+
+export type KnownAttribute =
   | ClassAttribute
-  | DefaultAttribute
   | EnumAttribute
   | FieldAttribute
   | FunctionAttribute
@@ -12,21 +13,14 @@ export type Attribute =
 
 interface BaseAttribute {
   attributeType: string;
-  args: { description: string; [key: string]: string };
-  options: {};
+  args: { description: string };
 }
 
-export interface DefaultAttribute extends BaseAttribute {
-  attributeType: Exclude<
-    string,
-    "class" | "enum" | "field" | "global" | "table"
-  >;
-}
+export interface DefaultAttribute extends BaseAttribute {}
 
 export interface FunctionAttribute extends BaseAttribute {
   attributeType: "function";
-  args: { name: string; description: string };
-  options: { tables: string[] };
+  args: { tables: string[]; name: string; description: string };
 }
 
 export interface ParamAttribute extends BaseAttribute {
@@ -41,8 +35,7 @@ export interface EnumAttribute extends BaseAttribute {
 
 export interface TableAttribute extends BaseAttribute {
   attributeType: "table";
-  args: { name: string; description: string };
-  options: { isLocal: boolean };
+  args: { isLocal: boolean; name: string; description: string };
 }
 
 export interface ClassAttribute extends BaseAttribute {
@@ -56,16 +49,14 @@ export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
 
 export interface FieldAttribute extends BaseAttribute {
   attributeType: "field";
-  args: { name: string; typeName: string; description: string };
-  options: { type: LuaType; tables: string[] };
+  args: { tables: []; name: string; type: LuaType; description: string };
 }
 
 export function createAttribute<TType extends string>(
   type: TType,
-  args: Extract<Attribute, { attributeType: TType }>["args"],
-  options: Extract<Attribute, { attributeType: TType }>["options"]
+  args: Extract<Attribute, { attributeType: TType }>["args"]
 ): Extract<Attribute, { attributeType: TType }> {
-  return { attributeType: type, args, options } as Attribute as any;
+  return { attributeType: type, args } as Attribute as any;
 }
 
 export function isAttribute<TType extends string>(
@@ -75,18 +66,36 @@ export function isAttribute<TType extends string>(
   return attr.attributeType === name;
 }
 
+function format(attr: string, rest: string) {
+  return `@${attr}${ensureLeadingWhitespace(rest.trimEnd())}`;
+}
+
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  const { attributeType, args, options } = attribute;
-  var argEntries = Object.entries(args);
-  return `@${attributeType}${argEntries
-    .map(([key, value]) =>
-      key === "typeName"
-        ? formatType((options as any).type as any)
-        : String(value)
-    ) // TODO:
-    .map(ensureLeadingWhitespace)
-    .join("")
-    .trimEnd()}`;
+  const known = attribute as KnownAttribute;
+  if (known.attributeType === "function" || known.attributeType == "table") {
+    console.log(
+      `Attempting to format internal attribute type '${known.attributeType}'`
+    );
+    return "";
+  }
+  switch (known.attributeType) {
+    case "param":
+    case "enum":
+    case "class": {
+      const { name, description } = known.args;
+      return format(known.attributeType, `${name} ${description}`);
+    }
+    case "field":
+    case "global": {
+      const { name, type, description } = known.args;
+      return format(
+        known.attributeType,
+        `${name}: ${formatType(type)} ${description}`
+      );
+    }
+  }
+  // @ts-ignore
+  return format(attribute.attributeType, attribute.args.description);
 }
 
 function ensureLeadingWhitespace(str: string): string {

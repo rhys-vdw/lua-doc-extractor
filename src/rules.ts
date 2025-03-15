@@ -23,7 +23,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 
   pull(doc.attributes, ruleAttr);
 
-  const { name, description } = ruleAttr.args;
+  const { tables, name, description } = ruleAttr.args;
 
   const paramNames = filterAttributes(doc, "param").map((t) => t.args.name);
 
@@ -31,7 +31,8 @@ export const functionRule: Rule = (ruleAttr, doc) => {
     doc.description = joinLines(doc.description, description);
   }
 
-  doc.lua.push(`function ${name}(${paramNames.join(", ")}) end`);
+  const qualifiedName = [...tables, name].join(".");
+  doc.lua.push(`function ${qualifiedName}(${paramNames.join(", ")}) end`);
 };
 
 /**
@@ -51,10 +52,7 @@ export const tableRule: Rule = (table, doc) => {
   doc.description = joinLines(doc.description, table.args.description);
 
   // Generate code.
-  const {
-    args: { name },
-    options: { isLocal },
-  } = table;
+  const { isLocal, name } = table.args;
   const fieldAttrs = hasAttribute(doc, "class")
     ? []
     : removeAttributes(doc, "field");

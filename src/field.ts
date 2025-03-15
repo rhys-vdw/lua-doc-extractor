@@ -5,8 +5,7 @@ import { formatType, LuaType } from "./luaType";
 import { toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  var { name, description } = rule.args;
-  var { type } = rule.options;
+  var { name, type, description } = rule.args;
   return formatField(name, type, description.trimStart(), indent);
 }
 
@@ -33,8 +32,7 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
 
 /** Render a field attribute. */
 function renderField(field: FieldAttribute): string {
-  const { name, description } = field.args;
-  const { type } = field.options;
+  const { name, type, description } = field.args;
   return formatField(name, type, description, "");
 }
 
