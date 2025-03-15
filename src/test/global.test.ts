@@ -49,6 +49,7 @@ const types = [
   "fun(x: integer): string",
   "fun(integer: string): (string|number?)",
   "fun(integer: string): string|number?",
+  "fun()",
 ];
 
 types.forEach((type) => {

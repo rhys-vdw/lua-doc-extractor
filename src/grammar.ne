@@ -121,10 +121,17 @@ dictionaryType ->
 # Defining the return type as singleType eliminates the ambiguity, but still
 # parses the input and outputs it for LLS to interpret as it wishes.
 functionType ->
-  "fun" "(" (_ identifier _ ":" _ unionType _):* ")" (_ ":" _ singleType):? {% ([,, ps,, r]) => {
-    const parameters = ps.map(([, p,,,, t,]: any) => ([p, t]));
-    return type("function", { parameters, returnType: r?.at(-1) })
+  "fun" "(" parameters:? ")" (_ ":" _ singleType):? {% ([,, p,, r]) => {
+    return type("function", { parameters: p ?? [], returnType: r?.at(-1) ?? null })
   }%}
+
+parameters ->
+    parameter
+  | parameter _ "," _ parameters {% (ts) => [ts[0], ...ts.at(-1)] %}
+
+
+parameter ->
+  identifier _ ":" _ unionType {% (ds) => [ds[0], ds.at(-1)] %}
 
 # -- Whitespace --
 
