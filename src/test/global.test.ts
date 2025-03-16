@@ -9,7 +9,9 @@ testInput(
      */
   `,
   dedent`
-    ---@type Foo This is my cool global.
+    ---This is my cool global.
+    ---
+    ---@type Foo
     foo = nil
   `
 );
@@ -25,23 +27,50 @@ testInput(
   `,
   dedent`
     ---@deprecated
-    ---@type Foo
     ---This is my cool deprecated global.
+    ---
+    ---@type Foo
     foo = nil
   `
 );
 
-testInput(
-  "Generates global with complex type",
-  dedent`
+const types = [
+  "integer",
+  "string?",
+  "(string?|number)?",
+  "table<string, boolean>",
+  "(integer|table<string, boolean>|Foo)?",
+  "{}",
+  "{ x: integer, y: integer }",
+  "{ x: number?, y: A|B }",
+  "A|B",
+  "integer|string",
+  "{ [string]: integer }",
+  "{ [(string|table<string, string>?)]: integer }",
+  "fun()",
+  "fun(x: integer, z: string): string",
+  "fun(integer: string): (string|number?)",
+  "fun(y: string): string|number?",
+  "[number, integer]",
+  "[table<string>?|integer, nil, true]",
+  "integer[]",
+  "string?[]",
+  "(string?|number)[]",
+];
+
+types.forEach((type) => {
+  testInput(
+    `Generates global with type ${type}`,
+    dedent`
     /***
-     * This is the description.
-     * @global foo (integer | table<string, boolean> | Foo)?
+     * @global Foo ${type} The description.
      */
-  `,
-  dedent`
-    ---This is the description.
-    ---@type (integer | table<string, boolean> | Foo)?
-    foo = nil
-  `
-);
+    `,
+    dedent`
+      ---The description.
+      ---
+      ---@type ${type}
+      Foo = nil
+    `
+  );
+});

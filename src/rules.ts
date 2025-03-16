@@ -6,7 +6,7 @@ import {
   isAttribute,
 } from "./attribute";
 import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
-import { generateField } from "./field";
+import { formatFieldName, generateField } from "./field";
 import { logError, logWarning } from "./log";
 import { joinLines } from "./utility";
 
@@ -17,13 +17,13 @@ export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
  */
 export const functionRule: Rule = (ruleAttr, doc) => {
   if (!isAttribute(ruleAttr, "function")) {
-    logError(`Invalid table attribute: ${ruleAttr.type}`);
+    logError(`Invalid table attribute: ${ruleAttr.attributeType}`);
     return;
   }
 
   pull(doc.attributes, ruleAttr);
 
-  const { name, description } = ruleAttr.args;
+  const { tables, name, description } = ruleAttr.args;
 
   const paramNames = filterAttributes(doc, "param").map((t) => t.args.name);
 
@@ -31,7 +31,8 @@ export const functionRule: Rule = (ruleAttr, doc) => {
     doc.description = joinLines(doc.description, description);
   }
 
-  doc.lua.push(`function ${name}(${paramNames.join(", ")}) end`);
+  const fieldName = formatFieldName(tables, name);
+  doc.lua.push(`function ${fieldName}(${paramNames.join(", ")}) end`);
 };
 
 /**
@@ -40,7 +41,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 export const tableRule: Rule = (table, doc) => {
   // Ensure this is a TableAttribute.
   if (!isAttribute(table, "table")) {
-    logError(`Invalid table attribute: ${table.type}`);
+    logError(`Invalid table attribute: ${table.attributeType}`);
     return;
   }
 
@@ -51,10 +52,7 @@ export const tableRule: Rule = (table, doc) => {
   doc.description = joinLines(doc.description, table.args.description);
 
   // Generate code.
-  const {
-    args: { name },
-    options: { isLocal },
-  } = table;
+  const { isLocal, name } = table.args;
   const fieldAttrs = hasAttribute(doc, "class")
     ? []
     : removeAttributes(doc, "field");
@@ -93,7 +91,7 @@ function apply(doc: Doc): void {
   // Keep a copy of attributes so we can modify the original.
   const prevAttrs = [...doc.attributes];
   prevAttrs.forEach((t) => {
-    const handler = ruleHandlers[t.type];
+    const handler = ruleHandlers[t.attributeType];
     if (handler != null) {
       handler(t, doc);
     }

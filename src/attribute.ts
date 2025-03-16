@@ -1,6 +1,9 @@
-export type Attribute =
+import { formatType, LuaNamedType, LuaType } from "./luaType";
+
+export type Attribute = KnownAttribute | DefaultAttribute;
+
+export type KnownAttribute =
   | ClassAttribute
-  | DefaultAttribute
   | EnumAttribute
   | FieldAttribute
   | FunctionAttribute
@@ -9,69 +12,101 @@ export type Attribute =
   | TableAttribute;
 
 interface BaseAttribute {
+  attributeType: string;
   args: { description: string };
-  options: {};
 }
 
-export interface DefaultAttribute extends BaseAttribute {
-  type: Exclude<string, "class" | "enum" | "field" | "global" | "table">;
+export interface Table {
+  name: string;
+  sep: "." | ":";
 }
+
+export interface DefaultAttribute extends BaseAttribute {}
 
 export interface FunctionAttribute extends BaseAttribute {
-  type: "function";
-  args: { name: string; description: string };
+  attributeType: "function";
+  args: {
+    tables: Table[];
+    name: string;
+    description: string;
+  };
 }
 
 export interface ParamAttribute extends BaseAttribute {
-  type: "param";
+  attributeType: "param";
   args: { name: string; description: string };
 }
 
 export interface EnumAttribute extends BaseAttribute {
-  type: "enum";
+  attributeType: "enum";
   args: { name: string; description: string };
 }
 
 export interface TableAttribute extends BaseAttribute {
-  type: "table";
-  args: { name: string; description: string };
-  options: { isLocal: boolean };
+  attributeType: "table";
+  args: { isLocal: boolean; name: string; description: string };
 }
 
 export interface ClassAttribute extends BaseAttribute {
-  type: "class";
-  args: { name: string; description: string };
+  attributeType: "class";
+  args: { type: LuaNamedType; description: string };
 }
 
-export interface GlobalAttribute extends BaseAttribute {
-  type: "global";
-  args: { name: string; description: string };
+export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
+  attributeType: "global";
 }
 
 export interface FieldAttribute extends BaseAttribute {
-  type: "field";
-  args: { name: string; description: string };
+  attributeType: "field";
+  args: { tables: Table[]; name: string; type: LuaType; description: string };
 }
 
 export function createAttribute<TType extends string>(
   type: TType,
-  args: Extract<Attribute, { type: TType }>["args"],
-  options: Extract<Attribute, { type: TType }>["options"]
-): Extract<Attribute, { type: TType }> {
-  return { type, args, options } as any;
+  args: Extract<Attribute, { attributeType: TType }>["args"]
+): Extract<Attribute, { attributeType: TType }> {
+  return { attributeType: type, args } as Attribute as any;
 }
 
 export function isAttribute<TType extends string>(
   attr: Attribute,
   name: TType
-): attr is Extract<Attribute, { type: TType }> {
-  return attr.type === name;
+): attr is Extract<Attribute, { attributeType: TType }> {
+  return attr.attributeType === name;
+}
+
+function format(attr: string, ...rest: string[]) {
+  return `@${attr}${rest
+    .map((e) => ensureLeadingWhitespace(e.trimEnd()))
+    .join("")}`;
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  const { type, args } = attribute;
-  var argValues = Object.values(args);
-  return `@${type}${argValues.map(ensureLeadingWhitespace).join("").trimEnd()}`;
+  const known = attribute as KnownAttribute;
+  switch (known.attributeType) {
+    case "global":
+    case "function":
+    case "table":
+      console.error(
+        `Attempting to format internal attribute type '${known.attributeType}'`
+      );
+      return "";
+    case "param":
+    case "enum": {
+      const { name, description } = known.args;
+      return format(known.attributeType, name, description);
+    }
+    case "class": {
+      const { type, description } = known.args;
+      return format(known.attributeType, formatType(type), description);
+    }
+    case "field": {
+      const { name, type, description } = known.args;
+      return format(known.attributeType, name, formatType(type), description);
+    }
+  }
+  // @ts-ignore: Unreachable code error due to false exhaustive switch.
+  return format(attribute.attributeType, attribute.args.description);
 }
 
 function ensureLeadingWhitespace(str: string): string {

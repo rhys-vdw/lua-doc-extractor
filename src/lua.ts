@@ -25,3 +25,5 @@ const keywords = [
 export function isKeyword(word: string): boolean {
   return keywords.includes(word);
 }
+
+export const nil = "nil";

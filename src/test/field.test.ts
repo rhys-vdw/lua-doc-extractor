@@ -27,11 +27,14 @@ testInput(
      * Some more.
      */
   `,
+  // TODO: Should be whitespace here.
   dedent`
     ---Some description.
-    ---@type number More.
+    ---More.
     ---
     ---Some more.
+    ---
+    ---@type number
     foo = nil
   `
 );

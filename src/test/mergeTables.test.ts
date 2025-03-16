@@ -21,10 +21,14 @@ testInput(
     ---
     ---Additional.
     Foo = {
-    \t---@type integer This is foo.
+    \t---This is foo.
+    \t---
+    \t---@type integer
     \tfoo = nil,
 
-    \t---@type string This is bar.
+    \t---This is bar.
+    \t---
+    \t---@type string
     \tbar = nil
     }
   `
@@ -83,11 +87,9 @@ testInput(
     ---
     ---@enum Foo First.
     Foo = {
-    \t---@type 5
-    \tFIVE = nil,
+    \tFIVE = 5,
 
-    \t---@type 6
-    \tSIX = nil
+    \tSIX = 6
     }
   `
 );

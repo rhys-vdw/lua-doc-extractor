@@ -1,11 +1,12 @@
-import { FieldAttribute } from "./attribute";
+import { FieldAttribute, Table } from "./attribute";
 import { Doc, hasAttribute, removeAttributes } from "./doc";
-import { isKeyword } from "./lua";
-import { toLuaComment } from "./utility";
+import { isKeyword, nil } from "./lua";
+import { formatType, LuaType } from "./luaType";
+import { joinLines, toLuaComment } from "./utility";
 
 export function generateField(rule: FieldAttribute, indent: string): string {
-  var { name, description } = rule.args;
-  return formatField(name, description.trimStart(), indent);
+  var { tables, name, type, description } = rule.args;
+  return formatField(tables, name, type, description.trimStart(), indent);
 }
 
 /**
@@ -30,15 +31,34 @@ export function renderStandaloneFields(docs: Doc[]): Doc[] {
 }
 
 /** Render a field attribute. */
-function renderField(field: FieldAttribute): string | null {
-  const { name, description } = field.args;
-  return formatField(name, description.trimStart(), "");
+function renderField(field: FieldAttribute): string {
+  const { tables, name, type, description } = field.args;
+  return formatField(tables, name, type, description, "");
 }
 
-function formatField(name: string, description: string, indent: string) {
+export function formatFieldName(tables: Table[], name: string): string {
+  return tables.map(({ name, sep }) => `${name}${sep}`).join("") + name;
+}
+
+function formatField(
+  tables: Table[],
+  name: string,
+  type: LuaType,
+  description: string,
+  indent: string
+) {
   const fieldName = isKeyword(name) ? `["${name}"]` : name;
-  return (
-    toLuaComment(`@type ${description.trimEnd()}`, indent) +
-    `\n${indent}${fieldName} = nil`
-  );
+  const qualifiedName = formatFieldName(tables, fieldName);
+
+  let comment = description.trim();
+  let value: string;
+  if (type.kind === "literal") {
+    value = type.value;
+  } else {
+    value = nil;
+    comment = joinLines(comment, `@type ${formatType(type)}`);
+  }
+
+  const lua = `${indent}${qualifiedName} = ${value}`;
+  return comment === "" ? lua : toLuaComment(comment, indent) + "\n" + lua;
 }

@@ -14,10 +14,14 @@ testInput(
   dedent`
     ---My table.
     TheTable = {
-    \t---@type integer This is foo.
+    \t---This is foo.
+    \t---
+    \t---@type integer
     \tfoo = nil,
 
-    \t---@type string This is bar.
+    \t---This is bar.
+    \t---
+    \t---@type string
     \tbar = nil
     }
   `
@@ -55,13 +59,15 @@ testInput(
   dedent`
     ---My table.
     TheTable = {
-    \t---@type integer
     \t---This is foo.
+    \t---
+    \t---@type integer
     \tfoo = nil,
 
-    \t---@type string
     \t---This is bar.
     \t---Bar is good.
+    \t---
+    \t---@type string
     \tbar = nil
     }
   `
@@ -80,10 +86,14 @@ testInput(
   dedent`
     ---Cool table.
     CoolTable = {
-    \t---@type integer The value.
+    \t---The value.
+    \t---
+    \t---@type integer
     \tvalue = nil,
 
-    \t---@type boolean Should this repeat?
+    \t---Should this repeat?
+    \t---
+    \t---@type boolean
     \t["repeat"] = nil
     }
   `
