@@ -87,3 +87,17 @@ testInput(
     function variadic(name, ...) end
   `
 );
+
+testInput(
+  "Variadic function return",
+  dedent`
+    /***
+     * @function returner
+     * @return ... integer
+     */
+    `,
+  dedent`
+    ---@return ... integer
+    function returner() end
+  `
+);
