@@ -67,7 +67,7 @@ fieldIdentifier -> (identifier ("."|":")):* identifier {%
     }
   %}
 
-indexKey -> "[" %literal "]" {% (ds) => ds.join('') %}
+indexKey -> "[" _ %literal _ "]" {% (ds) => ds.join('') %}
 
 description ->
     __ lines {% ([, d]) => d %}

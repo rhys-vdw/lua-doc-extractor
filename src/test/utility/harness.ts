@@ -11,6 +11,7 @@ export interface TestInputOptions {
   repoUrl?: string;
   only?: boolean;
   path?: string;
+  outputLex?: boolean;
 }
 
 function writeJson(json: {}, name: string) {
@@ -24,7 +25,7 @@ export function testInput(
   input: string,
   expected?: string,
   expectedComments?: readonly Comment[],
-  { only, repoUrl, path = "PATH" }: TestInputOptions = {}
+  { only, repoUrl, path = "PATH", outputLex }: TestInputOptions = {}
 ) {
   const testFn = only ? test.only : test;
   testFn(name, (t) => {
@@ -36,13 +37,13 @@ export function testInput(
     }
 
     if (comments != null) {
-      comments.forEach(({ text }) => {
+      comments.forEach(({ text }, i) => {
         t.doesNotThrow(() => {
           docLexer.reset(text);
-          // const docTokens = Array.from(docLexer);
-          // docTokens.forEach((t) => {
-          //   console.log(`${t.type}: |${t.text}|`);
-          // });
+          if (outputLex) {
+            const docTokens = Array.from(docLexer);
+            writeJson(docTokens, `${kebabCase(name)}.comment.${i}.lex`);
+          }
         }, `Successfully lexes comment: '${text.substring(0, 20)}...'`);
       });
 

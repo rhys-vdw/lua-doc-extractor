@@ -106,3 +106,21 @@ testInput(
     local ControlPoint = {}
   `
 );
+
+testInput(
+  "Class with index-style string fields",
+  dedent`
+    /***
+     * @class Example
+     *
+     * @field ["hello"] "world" World.
+     * @field ["foo"] integer A number.
+     */
+  `,
+  dedent`
+    ---@class Example
+    ---@field ["hello"] "world" World.
+    ---@field ["foo"] integer A number.
+    local Example = {}
+  `
+);
