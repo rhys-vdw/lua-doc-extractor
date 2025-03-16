@@ -70,8 +70,8 @@ export function testInput(
       const [docs, docErrors] = docResult;
       t.equal(docErrors.length, 0, "docErrors is empty");
       docErrors.forEach((e, i) => {
-        t.true(e instanceof Error, `docError: ${i} is an error`);
-        t.error(e, `docError: ${i}`);
+        t.true(e instanceof Error, `docErrors[${i}] is an error`);
+        t.error(e, `docErrors[${i}]`);
       });
 
       const actual = formatDocs(processDocs(docs, repoUrl || null));
