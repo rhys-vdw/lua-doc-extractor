@@ -173,3 +173,28 @@ testInput(
   undefined,
   { repoUrl: "https://foo.com", path: "file.c" }
 );
+
+testInput(
+  "Handles negative literals",
+  dedent`
+    /***
+     * @enum Foo
+     * @field Z 0
+     * @field A -1
+     */
+
+    /***
+     * @field Foo.B -2
+     */
+  `,
+  dedent`
+    ---@enum Foo
+    Foo = {
+    \tZ = 0,
+
+    \tA = -1,
+
+    \tB = -2
+    }
+  `
+);
