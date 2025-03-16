@@ -79,3 +79,30 @@ testInput(
     function widget.Foo(b) end
   `
 );
+
+testInput(
+  "Class with index-style numeric fields",
+  dedent`
+    /***
+     * @class ControlPoint
+     *
+     * NURBS control point.
+     *
+     * @field [1] number x
+     * @field [2] number y
+     * @field [3] number z
+     * @field [4] number weight
+     */
+  `,
+  // NOTE: Removing blank lines is undesirable, but makes no functional
+  // difference.
+  dedent`
+    ---@class ControlPoint
+    ---NURBS control point.
+    ---@field [1] number x
+    ---@field [2] number y
+    ---@field [3] number z
+    ---@field [4] number weight
+    local ControlPoint = {}
+  `
+);

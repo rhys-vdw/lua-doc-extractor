@@ -45,16 +45,19 @@ attribute ->
       attr(a.value, { description })
     %}
 
-fieldAttr -> (%fieldAttr|%globalAttr) __ fieldIdentifier __ unionType unionDesc {%
-  ([[a],, field,, type, description]) => {
-    return attr(a.value, { ...field, type, description });
-  }
-%}
+fieldAttr ->
+    (%fieldAttr|%globalAttr) __ fieldIdentifier __ unionType unionDesc {%
+      ([[a],, field,, type, description]) =>
+        attr(a.value, { ...field, type, description })
+    %}
+  | %fieldAttr __ indexKey __ unionType unionDesc {%
+      ([,, name,, type, description]) =>
+        attr("field", { tables:[], name, type, description })
+    %}
 
 functionAttr -> %functionAttr __ fieldIdentifier description {%
-  ([,, field, description]) => {
-    return attr("function", { ...field, description });
-  }
+  ([,, field, description]) =>
+    attr("function", { ...field, description })
 %}
 
 fieldIdentifier -> (identifier ("."|":")):* identifier {%
@@ -63,6 +66,8 @@ fieldIdentifier -> (identifier ("."|":")):* identifier {%
       return ({ tables, name })
     }
   %}
+
+indexKey -> "[" %literal "]" {% (ds) => ds.join('') %}
 
 description ->
     __ lines {% ([, d]) => d %}
