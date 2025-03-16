@@ -67,3 +67,23 @@ testInput(
     function SomeTable:Foo(x) end
   `
 );
+
+testInput(
+  "Variadic function param",
+  dedent`
+    /***
+     * Does foo.
+     *
+     * @function variadic
+     * @param name string
+     * @param ... integer
+     */
+    `,
+  dedent`
+    ---Does foo.
+    ---
+    ---@param name string
+    ---@param ... integer
+    function variadic(name, ...) end
+  `
+);

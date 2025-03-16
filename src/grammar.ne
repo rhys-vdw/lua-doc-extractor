@@ -28,7 +28,7 @@ doc ->
 
 attribute ->
     functionAttr {% id %}
-  | %paramAttr __ identifier lines {% ([,, name, description]) =>
+  | %paramAttr __ paramName lines {% ([,, name, description]) =>
       attr("param", { name, description })
     %}
   | %tableAttr __ identifier lines {% ([,, name, description]) =>
@@ -68,6 +68,10 @@ fieldIdentifier -> (identifier ("."|":")):* identifier {%
   %}
 
 indexKey -> "[" _ %literal _ "]" {% (ds) => ds.join('') %}
+
+paramName ->
+    identifier {% id %}
+  | "." "." "." {% () => "..." %}
 
 description ->
     __ lines {% ([, d]) => d %}
