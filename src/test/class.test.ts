@@ -40,6 +40,27 @@ testInput(
 );
 
 testInput(
+  "Handles class with multiple base classes and trailing description",
+  dedent`
+    /***
+     * Here's a description...
+     *
+     * @class Foo : Bar, Baz, table<string, number>, (A|B) A bit more...
+     *
+     * Another line!
+     */
+  `,
+  dedent`
+    ---Here's a description...
+    ---
+    ---@class Foo : Bar, Baz, table<string, number>, (A|B) A bit more...
+    ---
+    ---Another line!
+    local Foo = {}
+  `
+);
+
+testInput(
   "Handles complicated field type",
   dedent`
     /***
