@@ -52,15 +52,16 @@ export const tableRule: Rule = (table, doc) => {
   doc.description = joinLines(doc.description, table.args.description);
 
   // Generate code.
-  const { isLocal, name } = table.args;
+  const { isLocal, tables, name } = table.args;
   const fieldAttrs = hasAttribute(doc, "class")
     ? []
     : removeAttributes(doc, "field");
   const fields = formatTableFields(fieldAttrs);
+  const qualifiedName = formatFieldName(tables, name);
   if (isLocal) {
-    doc.lua.push(`local ${name} = {${fields}}`);
+    doc.lua.push(`local ${qualifiedName} = {${fields}}`);
   } else {
-    doc.lua.push(`${name} = {${fields}}`);
+    doc.lua.push(`${qualifiedName} = {${fields}}`);
   }
 };
 

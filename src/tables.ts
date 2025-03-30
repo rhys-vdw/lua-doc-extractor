@@ -16,6 +16,7 @@ export function addTables(docs: Doc[]): Doc[] {
       const name = classAttr.args.type.name;
       const tableAttr = createAttribute("table", {
         isLocal: true,
+        tables: [],
         name,
         description: "",
       });
@@ -29,6 +30,7 @@ export function addTables(docs: Doc[]): Doc[] {
       const enumName = enumAttr.args.name;
       const tableAttr = createAttribute("table", {
         isLocal: false,
+        tables: [],
         name: enumName,
         description: "",
       });
