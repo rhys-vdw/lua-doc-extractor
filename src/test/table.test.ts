@@ -98,3 +98,13 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Supports nested table",
+  dedent`
+  /*** @table Spring.MoveCtrl */
+  `,
+  dedent`
+    Spring.MoveCtrl = {}
+  `
+);

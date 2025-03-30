@@ -31,8 +31,8 @@ attribute ->
   | %paramAttr __ paramName lines {% ([,, name, description]) =>
       attr("param", { name, description })
     %}
-  | %tableAttr __ identifier lines {% ([,, name, description]) =>
-      attr("table", { isLocal: false, name, description })
+  | %tableAttr __ fieldIdentifier description {% ([,, field, description]) =>
+      attr("table", { isLocal: false, ...field, description })
     %}
   | %enumAttr __ identifier lines {% ([,, name, description]) =>
       attr("enum", { name, description })

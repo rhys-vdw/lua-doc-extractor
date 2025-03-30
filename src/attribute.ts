@@ -44,7 +44,12 @@ export interface EnumAttribute extends BaseAttribute {
 
 export interface TableAttribute extends BaseAttribute {
   attributeType: "table";
-  args: { isLocal: boolean; name: string; description: string };
+  args: {
+    isLocal: boolean;
+    tables: Table[];
+    name: string;
+    description: string;
+  };
 }
 
 export interface ClassAttribute extends BaseAttribute {
