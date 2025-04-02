@@ -9,11 +9,13 @@ import { basename, dirname, extname, join } from "path";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
 import { Doc } from "./doc";
+import { toResultAsync } from "./result";
 
 interface Options {
   src: string[];
   dest: string;
   help: boolean;
+  error?: boolean;
   repo?: string;
   file?: string;
 }
@@ -58,6 +60,12 @@ const optionList = [
       `,
   },
   {
+    name: "error",
+    type: Boolean,
+    description:
+      "{white (Default: false)} Return error code 1 if any errors or warnings are encountered.\n",
+  },
+  {
     name: "help",
     alias: "h",
     type: Boolean,
@@ -98,7 +106,7 @@ function error(message: string) {
 }
 
 async function runAsync() {
-  const { src, dest, help, repo, file } = options;
+  const { src, dest, help, repo, file, error: enableErrorCode } = options;
 
   if (help) {
     printUsage();
@@ -111,14 +119,24 @@ async function runAsync() {
 
   const errors = [] as string[];
   console.log(chalk`{bold.underline Extracting docs:}\n`);
-  const docs = await Promise.all(
+  const processed = await Promise.all(
     src.map(async (path) => {
-      const [docResult, error] = getDocs(await readFile(path, "utf8"), path);
+      const [file, fileError] = await toResultAsync(() =>
+        readFile(path, "utf8")
+      );
+
+      if (fileError != null) {
+        console.error(chalk`{bold.red ✘} '{white ${path}}'`);
+        errors.push(chalk`'{white ${path}}': Error loading file: ${fileError}`);
+        return null;
+      }
+
+      const [docResult, error] = getDocs(file, path);
 
       if (error != null) {
         console.error(chalk`{bold.red ✘} '{white ${path}}'`);
         errors.push(chalk`'{white ${path}}': ${error}`);
-        return [];
+        return null;
       }
 
       const [docs, docErrors] = docResult;
@@ -134,12 +152,14 @@ async function runAsync() {
     })
   );
 
+  const valid = processed.filter((e) => e != null);
+
   console.log(chalk`\n{bold.underline Writing output:}\n`);
 
   if (file === undefined) {
     // Multi-file output.
     await Promise.all(
-      docs.map(async ([path, ds]) => {
+      valid.map(async ([path, ds]) => {
         const outPath = join(dest, `${basename(path, extname(path))}.lua`);
         await writeLibraryFile(ds, outPath, repo, [path]);
       })
@@ -147,9 +167,9 @@ async function runAsync() {
   } else {
     // Single-file output.
     const outPath = join(dest, file);
-    const sources = docs.map(([path]) => path);
+    const sources = valid.map(([path]) => path);
     await writeLibraryFile(
-      docs.flatMap(([, ds]) => ds),
+      valid.flatMap(([, ds]) => ds),
       outPath,
       repo,
       sources
@@ -160,6 +180,9 @@ async function runAsync() {
 
   if (errors.length > 0) {
     console.error(chalk`\n{red.underline ERRORS}\n\n${errors.join("\n")}`);
+    if (enableErrorCode) {
+      process.exit(1);
+    }
   }
 }
 

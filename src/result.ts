@@ -35,3 +35,13 @@ export function toResult<T>(fn: () => T): Result<T> {
     return failAny(e);
   }
 }
+
+export async function toResultAsync<T>(
+  fn: () => Promise<T>
+): Promise<Result<T>> {
+  try {
+    return success(await fn());
+  } catch (e) {
+    return failAny(e);
+  }
+}
