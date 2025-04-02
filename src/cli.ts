@@ -9,11 +9,13 @@ import { basename, dirname, extname, join } from "path";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
 import { Doc } from "./doc";
+import { toResultAsync } from "./result";
 
 interface Options {
   src: string[];
   dest: string;
   help: boolean;
+  error?: boolean;
   repo?: string;
   file?: string;
 }
@@ -58,6 +60,12 @@ const optionList = [
       `,
   },
   {
+    name: "error",
+    type: Boolean,
+    description:
+      "{white (Default: false)} Return error code 1 if any errors or warnings are encountered.\n",
+  },
+  {
     name: "help",
     alias: "h",
     type: Boolean,
@@ -98,7 +106,7 @@ function error(message: string) {
 }
 
 async function runAsync() {
-  const { src, dest, help, repo, file } = options;
+  const { src, dest, help, repo, file, error: enableErrorCode } = options;
 
   if (help) {
     printUsage();
@@ -172,6 +180,9 @@ async function runAsync() {
 
   if (errors.length > 0) {
     console.error(chalk`\n{red.underline ERRORS}\n\n${errors.join("\n")}`);
+    if (enableErrorCode) {
+      process.exit(1);
+    }
   }
 }
 
