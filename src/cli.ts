@@ -148,8 +148,12 @@ async function runAsync() {
       if (docErrors.length > 0) {
         errors.push(...docErrors.map((e) => chalk`'{white ${path}}': ${e}`));
         console.log(chalk`{bold.yellow ⚠} '{white ${path}}'`);
+      } else if (docs.length === 0) {
+        console.log(chalk`{bold.yellow -} {gray '${path}'}`);
       } else {
-        console.log(chalk`{bold.green ✔} '{white ${path}}'`);
+        const col = chalk`{bold.green ✔} '{white ${path}}'`;
+        const count = `${docs.length}`;
+        console.log(`${col.padEnd(80 - count.length - 1)} ${count}`);
       }
 
       return [path, docs] as const;
