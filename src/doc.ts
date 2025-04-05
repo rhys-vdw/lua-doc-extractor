@@ -68,7 +68,7 @@ export function removeEmptyDocs(docs: Doc[]): Doc[] {
   return docs.filter((d) => !isDocEmpty(d));
 }
 
-function isDocEmpty(doc: Doc): boolean {
+export function isDocEmpty(doc: Doc): boolean {
   return (
     doc.lua.length === 0 &&
     doc.description.trim() === "" &&

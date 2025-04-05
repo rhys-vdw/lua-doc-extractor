@@ -5,7 +5,9 @@ import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import dedent from "dedent-js";
 import { mkdir, readFile, writeFile } from "fs/promises";
-import { basename, dirname, extname, join } from "path";
+import { glob } from "glob";
+import { dirname, join, relative } from "path";
+import { cwd } from "process";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
 import { Doc } from "./doc";
@@ -27,7 +29,7 @@ const optionList = [
     multiple: true,
     defaultValue: [],
     typeLabel: "{underline file} ...",
-    description: "Files to extract lua doc from.\n",
+    description: "Files to extract lua doc from. Supports globs.\n",
   },
   {
     name: "dest",
@@ -81,7 +83,7 @@ function printUsage() {
   `;
   const examples = [
     "$ lua-doc-extractor file_a.cpp file_b.cpp",
-    "$ lua-doc-extractor ---src src/*.cpp --dest output/lib.lua",
+    "$ lua-doc-extractor ---src src/**/*.{cpp,h} --dest output/lib.lua",
     "$ lua-doc-extractor *.cpp --repo https://github.com/user/proj/blob/12345c/",
   ];
   console.log(
@@ -113,14 +115,16 @@ async function runAsync() {
     process.exit(0);
   }
 
-  if (src.length === 0) {
+  const srcFiles = await glob(src);
+
+  if (srcFiles.length === 0) {
     error("No source files provided.");
   }
 
   const errors = [] as string[];
   console.log(chalk`{bold.underline Extracting docs:}\n`);
   const processed = await Promise.all(
-    src.map(async (path) => {
+    srcFiles.map(async (path) => {
       const [file, fileError] = await toResultAsync(() =>
         readFile(path, "utf8")
       );
@@ -144,8 +148,12 @@ async function runAsync() {
       if (docErrors.length > 0) {
         errors.push(...docErrors.map((e) => chalk`'{white ${path}}': ${e}`));
         console.log(chalk`{bold.yellow ⚠} '{white ${path}}'`);
+      } else if (docs.length === 0) {
+        console.log(chalk`{bold.yellow -} {gray '${path}'}`);
       } else {
-        console.log(chalk`{bold.green ✔} '{white ${path}}'`);
+        const col = chalk`{bold.green ✔} '{white ${path}}'`;
+        const count = `${docs.length}`;
+        console.log(`${col.padEnd(80 - count.length - 1)} ${count}`);
       }
 
       return [path, docs] as const;
@@ -160,8 +168,11 @@ async function runAsync() {
     // Multi-file output.
     await Promise.all(
       valid.map(async ([path, ds]) => {
-        const outPath = join(dest, `${basename(path, extname(path))}.lua`);
-        await writeLibraryFile(ds, outPath, repo, [path]);
+        const rel = relative(cwd(), path);
+        const outPath = join(dest, `${rel}.lua`);
+        if (ds.length > 0) {
+          await writeLibraryFile(ds, outPath, repo, [path]);
+        }
       })
     );
   } else {

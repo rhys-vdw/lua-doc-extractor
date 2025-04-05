@@ -33,6 +33,7 @@
     "command-line-usage": "^7.0.3",
     "comment-parser": "^1.4.1",
     "dedent-js": "^1.0.1",
+    "glob": "^11.0.1",
     "lodash": "^4.17.21",
     "moo": "^0.5.2",
     "nearley": "^2.20.1"

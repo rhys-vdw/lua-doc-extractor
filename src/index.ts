@@ -1,5 +1,5 @@
 import { getComments } from "./comment";
-import { Doc, formatDoc, getDoc, removeEmptyDocs } from "./doc";
+import { Doc, formatDoc, getDoc, isDocEmpty, removeEmptyDocs } from "./doc";
 import { addTableToEnumFields, mergeEnumAttributes } from "./enum";
 import { renderStandaloneFields } from "./field";
 import { processGlobals } from "./global";
@@ -27,7 +27,7 @@ export function getDocs(
   comments.map(getDoc).forEach(([doc, error]) => {
     if (error != null) {
       docErrors.push(error);
-    } else {
+    } else if (!isDocEmpty(doc)) {
       doc.path = path;
       docs.push(doc);
     }
