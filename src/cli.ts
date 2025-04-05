@@ -161,7 +161,9 @@ async function runAsync() {
     await Promise.all(
       valid.map(async ([path, ds]) => {
         const outPath = join(dest, `${basename(path, extname(path))}.lua`);
-        await writeLibraryFile(ds, outPath, repo, [path]);
+        if (ds.length > 0) {
+          await writeLibraryFile(ds, outPath, repo, [path]);
+        }
       })
     );
   } else {
