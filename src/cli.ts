@@ -5,6 +5,7 @@ import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import dedent from "dedent-js";
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { glob } from "glob";
 import { dirname, join, relative } from "path";
 import { cwd } from "process";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
@@ -28,7 +29,7 @@ const optionList = [
     multiple: true,
     defaultValue: [],
     typeLabel: "{underline file} ...",
-    description: "Files to extract lua doc from.\n",
+    description: "Files to extract lua doc from. Supports globs.\n",
   },
   {
     name: "dest",
@@ -82,7 +83,7 @@ function printUsage() {
   `;
   const examples = [
     "$ lua-doc-extractor file_a.cpp file_b.cpp",
-    "$ lua-doc-extractor ---src src/*.cpp --dest output/lib.lua",
+    "$ lua-doc-extractor ---src src/**/*.{cpp,h} --dest output/lib.lua",
     "$ lua-doc-extractor *.cpp --repo https://github.com/user/proj/blob/12345c/",
   ];
   console.log(
@@ -114,14 +115,16 @@ async function runAsync() {
     process.exit(0);
   }
 
-  if (src.length === 0) {
+  const srcFiles = await glob(src);
+
+  if (srcFiles.length === 0) {
     error("No source files provided.");
   }
 
   const errors = [] as string[];
   console.log(chalk`{bold.underline Extracting docs:}\n`);
   const processed = await Promise.all(
-    src.map(async (path) => {
+    srcFiles.map(async (path) => {
       const [file, fileError] = await toResultAsync(() =>
         readFile(path, "utf8")
       );
