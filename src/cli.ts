@@ -5,7 +5,8 @@ import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import dedent from "dedent-js";
 import { mkdir, readFile, writeFile } from "fs/promises";
-import { basename, dirname, extname, join } from "path";
+import { dirname, join, relative } from "path";
+import { cwd } from "process";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
 import { Doc } from "./doc";
@@ -160,7 +161,8 @@ async function runAsync() {
     // Multi-file output.
     await Promise.all(
       valid.map(async ([path, ds]) => {
-        const outPath = join(dest, `${basename(path, extname(path))}.lua`);
+        const rel = relative(cwd(), path);
+        const outPath = join(dest, `${rel}.lua`);
         if (ds.length > 0) {
           await writeLibraryFile(ds, outPath, repo, [path]);
         }
