@@ -69,8 +69,11 @@ export interface FieldAttribute extends BaseAttribute {
 export function createAttribute<TType extends string>(
   type: TType,
   args: Extract<Attribute, { attributeType: TType }>["args"]
-): Extract<Attribute, { attributeType: TType }> {
-  return { attributeType: type, args } as Attribute as any;
+) {
+  return { attributeType: type, args } as Extract<
+    Attribute,
+    { attributeType: TType }
+  >;
 }
 
 export function isAttribute<TType extends string>(
@@ -109,9 +112,9 @@ export function formatAttribute(attribute: Readonly<Attribute>): string {
       const { name, type, description } = known.args;
       return format(known.attributeType, name, formatType(type), description);
     }
+    default:
+      return format(attribute.attributeType, attribute.args.description);
   }
-  // @ts-ignore: Unreachable code error due to false exhaustive switch.
-  return format(attribute.attributeType, attribute.args.description);
 }
 
 function ensureLeadingWhitespace(str: string): string {

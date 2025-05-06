@@ -145,3 +145,19 @@ testInput(
     local Example = {}
   `
 );
+
+testInput(
+  "Class with nested tables",
+  dedent`
+    /***
+     * @class Foo.Bar
+     *
+     * @field a Foo.Bar
+     */
+  `,
+  dedent`
+    ---@class Foo.Bar
+    ---@field a Foo.Bar
+    local Foo.Bar = {}
+  `
+);
