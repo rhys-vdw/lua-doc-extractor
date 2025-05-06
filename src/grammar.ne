@@ -107,9 +107,11 @@ literal -> %literal {% ([d]) =>
   type("literal", { value: d.value })
 %}
 
-namedType -> identifier generics:? {% ([name, g, ]) =>
-  type("named", { name: name, generics: g ?? [] })
-%}
+namedType -> (identifier "."):* identifier generics:? {% ([ts, name, g, ]) => {
+  const tableNames = ts.map(([table]: [string, string]) => table);
+  const joined = [...tableNames, name].join(".");
+  return type("named", { name: joined, generics: g ?? [] })
+}%}
 
 identifier -> %identifier {% ([d]) => d.value %}
 

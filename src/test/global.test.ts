@@ -56,6 +56,7 @@ const types = [
   "integer[]",
   "string?[]",
   "(string?|number)[]",
+  "a.b.c",
 ];
 
 types.forEach((type) => {
