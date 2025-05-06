@@ -69,8 +69,11 @@ export interface FieldAttribute extends BaseAttribute {
 export function createAttribute<TType extends string>(
   type: TType,
   args: Extract<Attribute, { attributeType: TType }>["args"]
-): Extract<Attribute, { attributeType: TType }> {
-  return { attributeType: type, args } as Attribute as any;
+) {
+  return { attributeType: type, args } as Extract<
+    Attribute,
+    { attributeType: TType }
+  >;
 }
 
 export function isAttribute<TType extends string>(
