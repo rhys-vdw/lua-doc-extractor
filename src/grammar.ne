@@ -86,17 +86,17 @@ paramName ->
 
 description ->
     __ lines {% ([, d]) => d %}
-  | %newline lines {% ([, d]) => d %}
+  | eol lines {% ([, d]) => d %}
 
 unionDesc ->
     __ anyWordButPipe lines {% ([, word, ls]) => [word, ls].join('') %}
-  | %newline lines {% ([, ls]) => ls %}
+  | eol lines {% ([, ls]) => ls %}
 
 # -- Text --
 
 lines -> line:* {% d => d[0].flat().join("") %}
 
-line -> anyWord:* %newline {% ([l, nl]) => [...l.flat(), nl].join("") %}
+line -> anyWord:* eol {% ([l, nl]) => [...l.flat(), nl].join("") %}
 
 anyWordButPipe -> (%word | __ | %literal | identifier | %syntax) {% id %}
 anyWord -> (anyWordButPipe | %pipe) {% id %}
@@ -175,3 +175,4 @@ parameter ->
 
 _ -> %space:? {% ([d]) => d?.value %}
 __ -> %space {% ([d]) => d.value %}
+eol -> _ %newline {% ([d]) => '\n' %}
