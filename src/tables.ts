@@ -16,7 +16,6 @@ export function addTables(docs: Doc[]): Doc[] {
       const name = classAttr.args.type.name;
       const tableAttr = createAttribute("table", {
         isLocal: true,
-        tables: [],
         name,
         description: "",
       });
@@ -30,7 +29,6 @@ export function addTables(docs: Doc[]): Doc[] {
       const enumName = enumAttr.args.name;
       const tableAttr = createAttribute("table", {
         isLocal: false,
-        tables: [],
         name: enumName,
         description: "",
       });
@@ -54,8 +52,9 @@ export function mergeTables(docs: Doc[]): Doc[] {
 
     if (tableAttr != null) {
       const { args: table } = tableAttr;
-      if (byTable.has(table.name)) {
-        const prev = byTable.get(table.name)!;
+      const key = table.name.join(".");
+      if (byTable.has(key)) {
+        const prev = byTable.get(key)!;
 
         // Merge descriptions with a blank line.
         prev.description = joinLines(prev.description, doc.description);
@@ -69,7 +68,7 @@ export function mergeTables(docs: Doc[]): Doc[] {
         // Exit early to remove comment from list.
         return;
       } else {
-        byTable.set(table.name, doc);
+        byTable.set(key, doc);
       }
     }
 
