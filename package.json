@@ -1,6 +1,6 @@
 {
   "name": "lua-doc-extractor",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Extracts lua documentation from C-style comments",
   "main": "dist/src/index.js",
   "homepage": "https://github.com/rhys-vdw/lua-doc-extractor",
