@@ -123,8 +123,9 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
         : `fun(${ps}): ${f(t.returnType)}`;
     case "tuple":
       return `[${t.types.map(f).join(", ")}]`;
+    default:
+      throw new Error(`Unknown Lua type kind: ${(t as LuaType).kind}`);
   }
-  throw new Error(`Unknown Lua type kind: ${(t as LuaType).kind}`);
 }
 
 function params(ps: readonly [string, LuaType][]): string {
