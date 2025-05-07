@@ -45,11 +45,6 @@ function getCommentsUnsafe(s: string): Comment[] {
         // de-indent the first line. It strips all leading newlines.
         const dedented = dedent("\n" + text);
         result.push({
-          // NOTE: Trimming trailing whitespace here because it makes the
-          // grammer easier to write. Ideally the gammar would be whitespace
-          // insensitive.
-          //
-          // See https://github.com/rhys-vdw/lua-doc-extractor/issues/60
           text: trimTrailingWhitespace(dedented.trimStart()),
           start: current.start,
           end: {
