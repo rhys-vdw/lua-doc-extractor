@@ -41,7 +41,7 @@ export function formatMethodName(name: readonly string[]): string {
   }
   const tables = name.slice(0, -1);
   const last = name.at(-1)!;
-  return formatFieldPath(tables) + ":" + last;
+  return `${formatFieldPath(tables)}:${last}`;
 }
 
 export function formatFieldPath(name: readonly string[]): string {
