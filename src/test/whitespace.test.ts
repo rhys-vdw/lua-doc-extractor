@@ -18,5 +18,6 @@ testInput(
     ---@field name string
     ---@field value string
     ---@field submitted boolean
+    local Foo = {}
   `
 );

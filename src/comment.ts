@@ -2,6 +2,7 @@ import dedent from "dedent-js";
 import moo from "moo";
 import { Result, toResult } from "./result";
 import { Position } from "./source";
+import { trimTrailingWhitespace } from "./utility";
 
 export interface Comment {
   start: Position;
@@ -21,10 +22,6 @@ const commentLexer = moo.states({
     text: moo.fallback,
   },
 });
-
-function trimParagraph(s: string): string {
-  return s.replace(/\s+$/, "").trimStart();
-}
 
 export function getComments(s: string): Result<Comment[]> {
   return toResult(() => getCommentsUnsafe(s));
@@ -48,7 +45,12 @@ function getCommentsUnsafe(s: string): Comment[] {
         // de-indent the first line. It strips all leading newlines.
         const dedented = dedent("\n" + text);
         result.push({
-          text: trimParagraph(dedented),
+          // NOTE: Trimming trailing whitespace here because it makes the
+          // grammer easier to write. Ideally the gammar would be whitespace
+          // insensitive.
+          //
+          // See https://github.com/rhys-vdw/lua-doc-extractor/issues/60
+          text: trimTrailingWhitespace(dedented.trimStart()),
           start: current.start,
           end: {
             line: entry.line,

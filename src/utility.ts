@@ -20,13 +20,16 @@ export function joinLines(dest: string, src: string) {
   return `${d}\n\n${s}`;
 }
 
+/***
+ * Prefix each line of a string with `---` and an optional indent.
+ */
 export function toLuaComment(text: string, indent = ""): string {
   if (text === "") return "";
   return text.replace(/^/gm, `${indent}---`);
 }
 
 /**
- * Joins strings after trimming any trailing whitespace and discarding any empty
+ * Join strings after trimming any final whitespace and discarding any empty
  * entries.
  */
 export function joinNonEmpty(
@@ -40,6 +43,9 @@ export function joinNonEmpty(
     .join(separator);
 }
 
+/**
+ * Remove trailing whitespace from each line in a string.
+ */
 export function trimTrailingWhitespace(input: string): string {
   return input.replace(/[^\S\n\r]+$/gm, "");
 }
