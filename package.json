@@ -22,8 +22,10 @@
     "build": "rm -rf dist && npm run grammar && tsc --build",
     "clean": "tsc --build --clean",
     "test-clean": "rm -rf src/test/output/",
-    "test-raw": "npm run test-clean && npm run grammar && tape -r ./src/test/utility/register-tsx.js src/test/**/*.test.ts",
-    "test": "npm run test-raw | tap-diff",
+    "test-path": "npm run test-clean && npm run grammar && tape -r ./src/test/utility/register-tsx.js",
+    "test-raw": "npm run test-path src/test/**/*.test.ts",
+    "test-format": "tap-diff",
+    "test": "npm run test-raw | npm run test-format",
     "grammar": "nearleyc src/grammar.ne -o src/grammar.ne.ts"
   },
   "author": "Rhys van der Waerden",
