@@ -59,7 +59,7 @@ export const tableRule: Rule = (table, doc) => {
     : removeAttributes(doc, "field");
   const fields = formatTableFields(fieldAttrs);
   const qualifiedName = formatFieldPath(name);
-  if (isLocal) {
+  if (isLocal && name.length === 1) {
     doc.lua.push(`local ${qualifiedName} = {${fields}}`);
   } else {
     doc.lua.push(`${qualifiedName} = {${fields}}`);

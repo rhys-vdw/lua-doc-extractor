@@ -158,6 +158,6 @@ testInput(
   dedent`
     ---@class Foo.Bar
     ---@field a Foo.Bar
-    local Foo.Bar = {}
+    Foo.Bar = {}
   `
 );

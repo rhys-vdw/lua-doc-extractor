@@ -53,6 +53,6 @@ export function formatFieldPath(name: readonly string[]): string {
 
   return [
     isKeyword(first) ? `["${first}"]` : first,
-    rest.map((n) => (isKeyword(n) ? `["${n}"]` : `.${n}`)),
+    ...rest.map((n) => (isKeyword(n) ? `["${n}"]` : `.${n}`)),
   ].join("");
 }
