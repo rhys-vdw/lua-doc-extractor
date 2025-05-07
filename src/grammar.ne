@@ -31,10 +31,10 @@ attribute ->
   | %paramAttr __ paramName lines {% ([,, name, description]) =>
       attr("param", { name, description })
     %}
-  | %tableAttr __ fieldIdentifier description {% ([,, field, description]) =>
-      attr("table", { isLocal: false, ...field, description })
+  | %tableAttr __ fieldIdentifier description {% ([,, name, description]) =>
+      attr("table", { isLocal: false, name, description })
     %}
-  | %enumAttr __ identifier lines {% ([,, name, description]) =>
+  | %enumAttr __ fieldIdentifier description {% ([,, name, description]) =>
       attr("enum", { name, description })
     %}
   | %classAttr __ namedType description {% ([,, type, description]) =>
@@ -47,23 +47,34 @@ attribute ->
 
 fieldAttr ->
     (%fieldAttr|%globalAttr) __ fieldIdentifier __ unionType unionDesc {%
-      ([[a],, field,, type, description]) =>
-        attr(a.value, { ...field, type, description })
+      ([[a],, name,, type, description]) =>
+        attr(a.value, { name, type, description })
     %}
   | %fieldAttr __ indexKey __ unionType unionDesc {%
       ([,, name,, type, description]) =>
-        attr("field", { tables:[], name, type, description })
+        attr("field", { name: [name], type, description })
     %}
 
-functionAttr -> %functionAttr __ fieldIdentifier description {%
-  ([,, field, description]) =>
-    attr("function", { ...field, description })
-%}
+functionAttr ->
+    %functionAttr __ fieldIdentifier description {%
+      ([,, name, description]) =>
+        attr("function", { name, description, isMethod: false })
+    %}
+  | %functionAttr __ methodIdentifier description {%
+      ([,, name, description]) =>
+        attr("function", { name, description, isMethod: true })
+    %}
 
-fieldIdentifier -> (identifier ("."|":")):* identifier {%
+fieldIdentifier -> (identifier "."):* identifier {%
     ([ts, name]) => {
-      const tables = ts.map(([table, [sep]]: any) => ({ name: table, sep }));
-      return ({ tables, name })
+      const tables = ts.map(([table]: any) => table);
+      return [...tables, name];
+    }
+  %}
+
+methodIdentifier -> fieldIdentifier ":" identifier {%
+    ([tables, _, name]) => {
+      return [...tables, name];
     }
   %}
 
@@ -107,10 +118,8 @@ literal -> %literal {% ([d]) =>
   type("literal", { value: d.value })
 %}
 
-namedType -> (identifier "."):* identifier generics:? {% ([ts, name, g, ]) => {
-  const tableNames = ts.map(([table]: [string, string]) => table);
-  const joined = [...tableNames, name].join(".");
-  return type("named", { name: joined, generics: g ?? [] })
+namedType -> fieldIdentifier generics:? {% ([name, g]) => {
+  return type("named", { name, generics: g ?? [] })
 }%}
 
 identifier -> %identifier {% ([d]) => d.value %}

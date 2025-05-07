@@ -1,5 +1,6 @@
 import { createAttribute } from "./attribute";
 import { Doc, filterAttributes, removeAttributes } from "./doc";
+import { formatTypeName } from "./lua";
 import { joinLines } from "./utility";
 
 /**
@@ -7,37 +8,32 @@ import { joinLines } from "./utility";
  */
 export function addTableToEnumFields(docs: Doc[]): Doc[] {
   // Collect all enum name.
-  const enumNames = new Set<string>();
-  docs
-    .flatMap((doc) => filterAttributes(doc, "enum"))
-    .forEach((attr) => {
-      enumNames.add(attr.args.name);
-    });
+  const enumNames = new Set<string>(
+    docs
+      .flatMap((doc) => filterAttributes(doc, "enum"))
+      .map((attr) => formatTypeName(attr.args.name))
+  );
 
   // Process each enum field.
   docs.forEach((doc) => {
     const fields = filterAttributes(doc, "field");
     const tableNames = fields.reduce((acc, field) => {
-      const { tables } = field.args;
+      const { name } = field.args;
 
-      // This field has no table.
-      if (tables.length === 0) {
+      // This field has no table (or name).
+      if (name.length < 2) {
         return acc;
       }
 
-      // This field has too many tables.
-      if (tables.length > 1) {
-        return acc;
-      }
+      const tableName = name.slice(0, -1);
+      const key = formatTypeName(tableName);
 
-      const tableName = tables[0].name;
-
-      if (!enumNames.has(tableName)) {
+      if (!enumNames.has(key)) {
         return acc;
       }
 
       // Remove the tables.
-      field.args.tables = [];
+      field.args.name = [name.at(-1)!];
 
       // Marge the leading description into the field.
       field.args.description = joinLines(
@@ -46,20 +42,19 @@ export function addTableToEnumFields(docs: Doc[]): Doc[] {
       );
 
       // Add to table names.
-      acc.add(tableName);
+      acc.set(key, tableName);
       return acc;
-    }, new Set<string>());
+    }, new Map<string, string[]>());
 
     if (tableNames.size > 0) {
       doc.description = "";
     }
 
-    for (const tableName of tableNames) {
+    for (const [, tableName] of tableNames) {
       // Add a table attribute so it can be merged later.
       doc.attributes.push(
         createAttribute("table", {
           isLocal: false,
-          tables: [],
           name: tableName,
           description: "",
         })

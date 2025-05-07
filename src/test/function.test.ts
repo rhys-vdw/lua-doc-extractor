@@ -101,3 +101,27 @@ testInput(
     function returner() end
   `
 );
+
+testInput(
+  "Nested table function",
+  dedent`
+    /***
+     * @function Foo.Bar.baz
+     */
+    `,
+  dedent`
+    function Foo.Bar.baz() end
+  `
+);
+
+testInput(
+  "Nested table method",
+  dedent`
+    /***
+     * @function Foo.Bar.baz
+     */
+    `,
+  dedent`
+    function Foo.Bar.baz() end
+  `
+);

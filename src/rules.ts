@@ -6,8 +6,9 @@ import {
   isAttribute,
 } from "./attribute";
 import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
-import { formatFieldName, generateField } from "./field";
+import { generateField } from "./field";
 import { logError, logWarning } from "./log";
+import { formatFieldPath, formatMethodName } from "./lua";
 import { joinLines } from "./utility";
 
 export type Rule = (ruleAttr: Attribute, doc: Doc) => void;
@@ -23,7 +24,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
 
   pull(doc.attributes, ruleAttr);
 
-  const { tables, name, description } = ruleAttr.args;
+  const { name, description, isMethod } = ruleAttr.args;
 
   const paramNames = filterAttributes(doc, "param").map((t) => t.args.name);
 
@@ -31,7 +32,7 @@ export const functionRule: Rule = (ruleAttr, doc) => {
     doc.description = joinLines(doc.description, description);
   }
 
-  const fieldName = formatFieldName(tables, name);
+  const fieldName = isMethod ? formatMethodName(name) : formatFieldPath(name);
   doc.lua.push(`function ${fieldName}(${paramNames.join(", ")}) end`);
 };
 
@@ -52,12 +53,12 @@ export const tableRule: Rule = (table, doc) => {
   doc.description = joinLines(doc.description, table.args.description);
 
   // Generate code.
-  const { isLocal, tables, name } = table.args;
+  const { isLocal, name } = table.args;
   const fieldAttrs = hasAttribute(doc, "class")
     ? []
     : removeAttributes(doc, "field");
   const fields = formatTableFields(fieldAttrs);
-  const qualifiedName = formatFieldName(tables, name);
+  const qualifiedName = formatFieldPath(name);
   if (isLocal) {
     doc.lua.push(`local ${qualifiedName} = {${fields}}`);
   } else {

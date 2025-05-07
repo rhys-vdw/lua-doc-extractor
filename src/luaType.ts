@@ -1,3 +1,5 @@
+import { formatTypeName } from "./lua";
+
 export type LuaType =
   | LuaLiteralType
   | LuaNamedType
@@ -34,7 +36,7 @@ export interface LuaLiteralType extends BaseLuaType {
  */
 export interface LuaNamedType extends BaseLuaType {
   readonly kind: "named";
-  readonly name: string;
+  readonly name: readonly string[];
   readonly generics: LuaType[];
 }
 
@@ -43,7 +45,7 @@ export interface LuaNamedType extends BaseLuaType {
  */
 export interface LuaUnionType extends BaseLuaType {
   readonly kind: "union";
-  readonly types: LuaType[];
+  readonly types: readonly LuaType[];
   readonly parens?: boolean;
 }
 
@@ -103,8 +105,8 @@ function formatTypeWithoutOptional(luaType: LuaType): string {
       return t.value;
     case "named":
       return t.generics.length === 0
-        ? t.name
-        : `${t.name}<${t.generics.map(f).join(", ")}>`;
+        ? formatTypeName(t.name)
+        : `${formatTypeName(t.name)}<${t.generics.map(f).join(", ")}>`;
     case "array":
       return `${f(t.arrayType)}[]`;
     case "union":

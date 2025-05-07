@@ -1,3 +1,4 @@
+import { formatFieldPath, formatTypeName } from "./lua";
 import { formatType, LuaNamedType, LuaType } from "./luaType";
 
 export type Attribute = KnownAttribute | DefaultAttribute;
@@ -16,18 +17,13 @@ interface BaseAttribute {
   args: { description: string };
 }
 
-export interface Table {
-  name: string;
-  sep: "." | ":";
-}
-
 export interface DefaultAttribute extends BaseAttribute {}
 
 export interface FunctionAttribute extends BaseAttribute {
   attributeType: "function";
   args: {
-    tables: Table[];
-    name: string;
+    name: readonly string[];
+    isMethod: boolean;
     description: string;
   };
 }
@@ -39,15 +35,14 @@ export interface ParamAttribute extends BaseAttribute {
 
 export interface EnumAttribute extends BaseAttribute {
   attributeType: "enum";
-  args: { name: string; description: string };
+  args: { name: readonly string[]; description: string };
 }
 
 export interface TableAttribute extends BaseAttribute {
   attributeType: "table";
   args: {
     isLocal: boolean;
-    tables: Table[];
-    name: string;
+    name: readonly string[];
     description: string;
   };
 }
@@ -63,7 +58,7 @@ export interface GlobalAttribute extends Omit<FieldAttribute, "attributeType"> {
 
 export interface FieldAttribute extends BaseAttribute {
   attributeType: "field";
-  args: { tables: Table[]; name: string; type: LuaType; description: string };
+  args: { name: readonly string[]; type: LuaType; description: string };
 }
 
 export function createAttribute<TType extends string>(
@@ -99,10 +94,13 @@ export function formatAttribute(attribute: Readonly<Attribute>): string {
         `Attempting to format internal attribute type '${known.attributeType}'`
       );
       return "";
-    case "param":
-    case "enum": {
+    case "param": {
       const { name, description } = known.args;
       return format(known.attributeType, name, description);
+    }
+    case "enum": {
+      const { name, description } = known.args;
+      return format(known.attributeType, formatTypeName(name), description);
     }
     case "class": {
       const { type, description } = known.args;
@@ -110,7 +108,12 @@ export function formatAttribute(attribute: Readonly<Attribute>): string {
     }
     case "field": {
       const { name, type, description } = known.args;
-      return format(known.attributeType, name, formatType(type), description);
+      return format(
+        known.attributeType,
+        formatFieldPath(name),
+        formatType(type),
+        description
+      );
     }
     default:
       return format(attribute.attributeType, attribute.args.description);

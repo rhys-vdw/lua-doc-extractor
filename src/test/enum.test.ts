@@ -198,3 +198,28 @@ testInput(
     }
   `
 );
+
+testInput(
+  "Handles nested enum",
+  dedent`
+    /***
+     * @enum Foo.Bar
+     * @field Z 0
+     * @field A -1
+     */
+
+    /***
+     * @field Foo.Bar.B -2
+     */
+  `,
+  dedent`
+    ---@enum Foo.Bar
+    Foo.Bar = {
+    \tZ = 0,
+
+    \tA = -1,
+
+    \tB = -2
+    }
+  `
+);
