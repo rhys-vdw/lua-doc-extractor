@@ -29,7 +29,16 @@ const optionList = [
     multiple: true,
     defaultValue: [],
     typeLabel: "{underline file} ...",
-    description: "Files to extract lua doc from. Supports globs.\n",
+    description: dedent`
+      Files to extract lua doc from. Supports globs.
+
+      Note that if globs are used, you may need to wrap them in quotes to prevent shell expansion.
+      For example:
+
+      lua-doc-extractor "**/*.cpp"
+      lua-doc-extractor --src "lib/**/*.\\{c,h\\}"
+
+    `,
   },
   {
     name: "dest",
@@ -83,7 +92,7 @@ function printUsage() {
   `;
   const examples = [
     "$ lua-doc-extractor file_a.cpp file_b.cpp",
-    "$ lua-doc-extractor ---src src/**/*.{cpp,h} --dest output/lib.lua",
+    '$ lua-doc-extractor ---src "src/**/*.\\{cpp,h\\}" --dest output/lib.lua',
     "$ lua-doc-extractor *.cpp --repo https://github.com/user/proj/blob/12345c/",
   ];
   console.log(
