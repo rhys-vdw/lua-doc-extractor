@@ -36,8 +36,8 @@ const optionList = [
       Note that if globs are used, you may need to wrap them in quotes to prevent shell expansion.
       For example:
 
-      lua-doc-extractor "**/*.cpp"
-      lua-doc-extractor --src "lib/**/*.\\{c,h\\}"
+      {yellow lua-doc-extractor "**/*.cpp"}
+      {yellow lua-doc-extractor --src "lib/**/*.\\{c,h\\}"}
 
     `,
   },
@@ -61,13 +61,13 @@ const optionList = [
     type: String,
     typeLabel: "{underline url}",
     description: dedent`
-      {white (Optional)} The root URL of a repository.
+      The root URL of a repository.
 
       If provided, links will be added to each generated doc comment with a link to the original source.
 
       Should be in format:
 
-      {white "https://github.com/<user>/<repository>/blob/<commit>/"}
+      {yellow "https://github.com/<user>/<repository>/blob/<commit>/"}
 
       `,
   },
@@ -96,11 +96,12 @@ const options = commandLineArgs(optionList) as Options;
 function printUsage() {
   const usageNote = dedent`
     {bold.white Note:} Always run this command from the root of your project ensure correct paths in output headers and repo links.
+
   `;
   const examples = [
-    "$ lua-doc-extractor file_a.cpp file_b.cpp",
-    '$ lua-doc-extractor ---src "src/**/*.\\{cpp,h\\}" --dest output/lib.lua',
-    "$ lua-doc-extractor *.cpp --repo https://github.com/user/proj/blob/12345c/",
+    "lua-doc-extractor file_a.cpp file_b.cpp",
+    'lua-doc-extractor ---src "src/**/*.\\{cpp,h\\}" --dest output/lib.lua',
+    "lua-doc-extractor *.cpp --repo https://github.com/user/proj/blob/12345c/",
   ];
   console.log(
     commandLineUsage([
@@ -110,7 +111,9 @@ function printUsage() {
       },
       {
         header: "{white Usage}",
-        content: [usageNote, ...examples].join("\n\n"),
+        content: [usageNote, ...examples.map((e) => chalk.yellow(e))].join(
+          "\n"
+        ),
       },
       { header: "{white Options}", optionList },
     ])
