@@ -17,6 +17,7 @@ interface Options {
   src: string[];
   dest: string;
   help: boolean;
+  version: boolean;
   error?: boolean;
   repo?: string;
   file?: string;
@@ -82,6 +83,12 @@ const optionList = [
     type: Boolean,
     description: "Print this usage guide.\n",
   },
+  {
+    name: "version",
+    alias: "v",
+    type: Boolean,
+    description: "Print the version number.\n",
+  },
 ];
 
 const options = commandLineArgs(optionList) as Options;
@@ -117,7 +124,20 @@ function error(message: string) {
 }
 
 async function runAsync() {
-  const { src, dest, help, repo, file, error: enableErrorCode } = options;
+  const {
+    src,
+    dest,
+    help,
+    version,
+    repo,
+    file,
+    error: enableErrorCode,
+  } = options;
+
+  if (version) {
+    console.log(project.version);
+    process.exit(0);
+  }
 
   if (help) {
     printUsage();
