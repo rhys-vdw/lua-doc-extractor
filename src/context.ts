@@ -14,18 +14,18 @@ import {
 } from "./doc";
 import { FileOutput } from "./output";
 
-// Strips `@context` attributes after they've done their job in the pipeline
-// (fallback routing in `outputFileFor`). `@context` is an internal signal for
+// Strips `@env` attributes after they've done their job in the pipeline
+// (fallback routing in `outputFileFor`). `@env` is an internal signal for
 // non-Spring tables — it doesn't belong in the emitted stubs.
 export function removeContextAttributes(docs: Doc[]): Doc[] {
   for (const doc of docs) {
-    removeAttributes(doc, "context");
+    removeAttributes(doc, "env");
   }
   return docs;
 }
 
 // Doc types that mark a doc as "declaring something" (function, table, class,
-// etc.). A doc that has a `@context` and none of these is a file-level marker
+// etc.). A doc that has a `@env` and none of these is a file-level marker
 // — its context applies to every other doc in the same file.
 const DECLARATION_ATTR_TYPES = [
   "function",
@@ -38,16 +38,16 @@ const DECLARATION_ATTR_TYPES = [
 
 function isFileLevelContextDoc(doc: Doc): boolean {
   return (
-    hasAttribute(doc, "context") &&
+    hasAttribute(doc, "env") &&
     !DECLARATION_ATTR_TYPES.some((t) => hasAttribute(doc, t))
   );
 }
 
-// Parse a doc's `@context` attribute list into a set of bucket names. The
+// Parse a doc's `@env` attribute list into a set of bucket names. The
 // attribute grammar carries comma-separated values in `description` (e.g.
-// `@context synced, unsynced`).
+// `@env synced, unsynced`).
 export function getDocContexts(doc: Doc): string[] {
-  const contextAttrs = filterAttributes(doc, "context") as DefaultAttribute[];
+  const contextAttrs = filterAttributes(doc, "env") as DefaultAttribute[];
   const contexts = new Set<string>();
   for (const attr of contextAttrs) {
     for (const part of attr.args.description.split(",")) {
@@ -58,7 +58,7 @@ export function getDocContexts(doc: Doc): string[] {
   return [...contexts];
 }
 
-// Find file-level `@context` markers (a standalone doc with only `@context`
+// Find file-level `@env` markers (a standalone doc with only `@env`
 // and no declaration) and propagate their context onto every other doc in the
 // same file that doesn't already have one. The marker doc is then removed.
 // Returns authoring errors (e.g. multiple markers per file, marker not at
@@ -75,13 +75,13 @@ export function applyFileContexts(
     if (markerIndices.length === 0) continue;
     if (markerIndices.length > 1) {
       errors.push(
-        `'${path}': multiple file-level @context docs (found ${markerIndices.length}, expected at most 1)`
+        `'${path}': multiple file-level @env docs (found ${markerIndices.length}, expected at most 1)`
       );
       continue;
     }
     if (markerIndices[0] !== 0) {
       errors.push(
-        `'${path}': file-level @context doc must be the first doc in the file`
+        `'${path}': file-level @env doc must be the first doc in the file`
       );
       continue;
     }
@@ -89,10 +89,10 @@ export function applyFileContexts(
     docs.splice(0, 1);
     if (fileContexts.length === 0) continue;
     for (const doc of docs) {
-      if (hasAttribute(doc, "context")) continue;
+      if (hasAttribute(doc, "env")) continue;
       for (const ctx of fileContexts) {
         doc.attributes.push({
-          attributeType: "context",
+          attributeType: "env",
           args: { description: ctx },
         });
       }
@@ -174,7 +174,7 @@ const SPRING_OUTPUTS: ReadonlyMap<string, { file: string; preamble: string }> =
 const FALLBACK_OUTPUT = "shared.lua";
 
 // Non-Spring tables (UnitScript, ObjectRendering, etc.) don't carry a bucket
-// in their `@function` prefix, so they rely on a file-level `@context` tag
+// in their `@function` prefix, so they rely on a file-level `@env` tag
 // (propagated by `applyFileContexts`) to land in the right output. A single
 // `synced` or `unsynced` context maps to that bucket; anything else — mixed
 // contexts or unrecognized names — falls through to shared.

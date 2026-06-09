@@ -91,7 +91,7 @@ function format(attr: string, ...rest: string[]) {
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
-  if (attribute.attributeType === "context") {
+  if (attribute.attributeType === "env") {
     console.error(
       `Attempting to format internal attribute type '${attribute.attributeType}'`
     );

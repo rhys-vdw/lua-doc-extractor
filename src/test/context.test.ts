@@ -292,15 +292,15 @@ test("lintDuplicateDeclarations: silent when all names are unique", (t) => {
 
 // --- removeContextAttributes (defensive no-op stripper) ---
 
-test("removeContextAttributes: strips stray @context", (t) => {
+test("removeContextAttributes: strips stray @env", (t) => {
   const docs = parseDocs(dedent`
     /***
      * @function SpringSynced.Foo
-     * @context synced
+     * @env synced
      */
   `);
   removeContextAttributes(docs);
-  const hasContext = docs[0].attributes.some((a) => a.attributeType === "context");
+  const hasContext = docs[0].attributes.some((a) => a.attributeType === "env");
   t.notOk(hasContext);
   t.end();
 });
@@ -311,7 +311,7 @@ test("getDocContexts: single context", (t) => {
   const docs = parseDocs(dedent`
     /***
      * @function Foo.Bar
-     * @context synced
+     * @env synced
      */
   `);
   t.deepEqual(getDocContexts(docs[0]), ["synced"]);
@@ -322,14 +322,14 @@ test("getDocContexts: comma-separated contexts", (t) => {
   const docs = parseDocs(dedent`
     /***
      * @function Foo.Bar
-     * @context synced, unsynced
+     * @env synced, unsynced
      */
   `);
   t.deepEqual(getDocContexts(docs[0]).sort(), ["synced", "unsynced"]);
   t.end();
 });
 
-test("getDocContexts: no @context returns empty", (t) => {
+test("getDocContexts: no @env returns empty", (t) => {
   const docs = parseDocs(dedent`
     /***
      * @function Foo.Bar
@@ -341,9 +341,9 @@ test("getDocContexts: no @context returns empty", (t) => {
 
 // --- applyFileContexts ---
 
-test("applyFileContexts: standalone @context stamps subsequent docs", (t) => {
+test("applyFileContexts: standalone @env stamps subsequent docs", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context synced */
+    /*** @env synced */
 
     /***
      * @function UnitScript.AttachUnit
@@ -362,13 +362,13 @@ test("applyFileContexts: standalone @context stamps subsequent docs", (t) => {
   t.end();
 });
 
-test("applyFileContexts: existing @context on doc is preserved", (t) => {
+test("applyFileContexts: existing @env on doc is preserved", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context synced */
+    /*** @env synced */
 
     /***
      * @function Foo.Bar
-     * @context unsynced
+     * @env unsynced
      */
   `);
   const entries: [string, Doc[]][] = [["a.cpp", docs]];
@@ -397,7 +397,7 @@ test("applyFileContexts: marker not at file start is an error", (t) => {
      * @function Foo.Bar
      */
 
-    /*** @context synced */
+    /*** @env synced */
   `);
   const entries: [string, Doc[]][] = [["a.cpp", docs]];
   const errors = applyFileContexts(entries);
@@ -408,9 +408,9 @@ test("applyFileContexts: marker not at file start is an error", (t) => {
 
 test("applyFileContexts: multiple markers in one file is an error", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context synced */
+    /*** @env synced */
 
-    /*** @context unsynced */
+    /*** @env unsynced */
 
     /***
      * @function Foo.Bar
@@ -419,15 +419,15 @@ test("applyFileContexts: multiple markers in one file is an error", (t) => {
   const entries: [string, Doc[]][] = [["a.cpp", docs]];
   const errors = applyFileContexts(entries);
   t.equal(errors.length, 1);
-  t.ok(errors[0].includes("multiple file-level @context"));
+  t.ok(errors[0].includes("multiple file-level @env"));
   t.end();
 });
 
-// --- projectOutputs: @context fallback for non-Spring tables ---
+// --- projectOutputs: @env fallback for non-Spring tables ---
 
-test("projectOutputs: non-Spring table with @context synced routes to synced.lua", (t) => {
+test("projectOutputs: non-Spring table with @env synced routes to synced.lua", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context synced */
+    /*** @env synced */
 
     /***
      * @function UnitScript.AttachUnit
@@ -441,9 +441,9 @@ test("projectOutputs: non-Spring table with @context synced routes to synced.lua
   t.end();
 });
 
-test("projectOutputs: non-Spring table with @context unsynced routes to unsynced.lua", (t) => {
+test("projectOutputs: non-Spring table with @env unsynced routes to unsynced.lua", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context unsynced */
+    /*** @env unsynced */
 
     /***
      * @function ObjectRenderingTable.SetLODCount
@@ -457,9 +457,9 @@ test("projectOutputs: non-Spring table with @context unsynced routes to unsynced
   t.end();
 });
 
-test("projectOutputs: Spring prefix wins over @context fallback", (t) => {
+test("projectOutputs: Spring prefix wins over @env fallback", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context unsynced */
+    /*** @env unsynced */
 
     /***
      * @function SpringSynced.Foo
@@ -475,7 +475,7 @@ test("projectOutputs: Spring prefix wins over @context fallback", (t) => {
 
 test("projectOutputs: multi-context doc falls through to shared.lua", (t) => {
   const docs = parseDocs(dedent`
-    /*** @context synced, unsynced */
+    /*** @env synced, unsynced */
 
     /***
      * @function SomeTable.Foo
