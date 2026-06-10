@@ -1,4 +1,5 @@
 import { getComments } from "./comment";
+import { removeContextAttributes } from "./context";
 import { Doc, formatDoc, getDoc, isDocEmpty, removeEmptyDocs } from "./doc";
 import { addTableToEnumFields, mergeEnumAttributes } from "./enum";
 import { renderStandaloneFields } from "./field";
@@ -45,6 +46,7 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
 export function processDocs(docs: Doc[], repoUrl: string | null): Doc[] {
   return runProcessors(docs, [
     removeEmptyDocs,
+    removeContextAttributes,
     appendSourceLinks(repoUrl),
     processGlobals,
     addTables,

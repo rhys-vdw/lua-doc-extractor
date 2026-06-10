@@ -91,6 +91,12 @@ function format(attr: string, ...rest: string[]) {
 }
 
 export function formatAttribute(attribute: Readonly<Attribute>): string {
+  if (attribute.attributeType === "env") {
+    console.error(
+      `Attempting to format internal attribute type '${attribute.attributeType}'`
+    );
+    return "";
+  }
   const known = attribute as KnownAttribute;
   switch (known.attributeType) {
     case "global":

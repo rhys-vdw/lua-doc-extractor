@@ -6,11 +6,16 @@ import commandLineUsage from "command-line-usage";
 import dedent from "dedent-js";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { glob } from "glob";
-import { dirname, join, relative } from "path";
-import { cwd } from "process";
+import { dirname, join } from "path";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
+import {
+  applyFileContexts,
+  lintDuplicateDeclarations,
+  projectOutputs,
+} from "./context";
 import { Doc } from "./doc";
+import { mergeFileOutputs } from "./output";
 import { toResultAsync } from "./result";
 
 interface Options {
@@ -192,30 +197,25 @@ async function runAsync() {
     })
   );
 
-  const valid = processed.filter((e) => e != null);
+  const valid = processed.filter((e) => e != null) as [string, Doc[]][];
+
+  errors.push(...applyFileContexts(valid));
+  errors.push(...lintDuplicateDeclarations(valid));
+  let outputs = projectOutputs(valid);
+  if (file !== undefined) {
+    outputs = mergeFileOutputs(outputs, file);
+  }
 
   console.log(chalk`\n{bold.underline Writing output:}\n`);
 
-  if (file === undefined) {
-    // Multi-file output.
-    await Promise.all(
-      valid.map(async ([path, ds]) => {
-        const rel = relative(cwd(), path);
-        const outPath = join(dest, `${rel}.lua`);
-        if (ds.length > 0) {
-          await writeLibraryFile(ds, outPath, repo, [path]);
-        }
-      })
-    );
-  } else {
-    // Single-file output.
-    const outPath = join(dest, file);
-    const sources = valid.map(([path]) => path);
+  for (const output of outputs) {
+    if (output.docs.length === 0 && !output.preamble) continue;
     await writeLibraryFile(
-      valid.flatMap(([, ds]) => ds),
-      outPath,
+      output.docs,
+      join(dest, output.name),
       repo,
-      sources
+      output.sources,
+      output.preamble || undefined
     );
   }
 
@@ -233,12 +233,17 @@ async function writeLibraryFile(
   docs: Doc[],
   outPath: string,
   repo?: string,
-  sources: string[] = []
+  sources: string[] = [],
+  preamble?: string
 ) {
   try {
     const formattedDocs = formatDocs(processDocs(docs, repo ?? null));
+    const header = addHeader("", sources);
+    const body = preamble
+      ? `${header}\n${preamble}\n\n${formattedDocs}`
+      : addHeader(formattedDocs, sources);
     await mkdir(dirname(outPath), { recursive: true });
-    await writeFile(outPath, addHeader(formattedDocs, sources));
+    await writeFile(outPath, body);
     console.log(chalk`{bold.blue ►} '{white ${outPath}}'`);
   } catch (e) {
     console.error(
