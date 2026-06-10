@@ -39,13 +39,13 @@ test("getDocTableName: bare function returns null", (t) => {
   t.end();
 });
 
-test("getDocTableName: SpringSynced qualified function", (t) => {
+test("getDocTableName: Engine.Synced qualified function", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringSynced.GiveOrderToUnit
+     * @function Engine.Synced.GiveOrderToUnit
      */
   `);
-  t.equal(getDocTableName(docs[0]), "SpringSynced");
+  t.equal(getDocTableName(docs[0]), "Engine.Synced");
   t.end();
 });
 
@@ -61,42 +61,42 @@ test("getDocTableName: table declaration", (t) => {
 
 // --- projectOutputs: Spring-bucket routing ---
 
-test("projectOutputs: SpringShared goes to shared.lua", (t) => {
+test("projectOutputs: Engine.Shared goes to shared.lua", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringShared.Echo
+     * @function Engine.Shared.Echo
      */
   `);
   const outputs = projectOutputs([["a.cpp", docs]]);
   t.equal(outputs.length, 1);
   t.equal(outputs[0].name, "shared.lua");
-  t.ok(outputs[0].preamble.includes("---@class SpringShared"));
+  t.ok(outputs[0].preamble.includes("---@class Engine.Shared"));
   t.end();
 });
 
-test("projectOutputs: SpringSynced goes to synced.lua", (t) => {
+test("projectOutputs: Engine.Synced goes to synced.lua", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringSynced.GiveOrderToUnit
+     * @function Engine.Synced.GiveOrderToUnit
      */
   `);
   const outputs = projectOutputs([["a.cpp", docs]]);
   t.equal(outputs.length, 1);
   t.equal(outputs[0].name, "synced.lua");
-  t.ok(outputs[0].preamble.includes("---@class SpringSynced"));
+  t.ok(outputs[0].preamble.includes("---@class Engine.Synced"));
   t.end();
 });
 
-test("projectOutputs: SpringUnsynced goes to unsynced.lua", (t) => {
+test("projectOutputs: Engine.Unsynced goes to unsynced.lua", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringUnsynced.GetMouseState
+     * @function Engine.Unsynced.GetMouseState
      */
   `);
   const outputs = projectOutputs([["a.cpp", docs]]);
   t.equal(outputs.length, 1);
   t.equal(outputs[0].name, "unsynced.lua");
-  t.ok(outputs[0].preamble.includes("---@class SpringUnsynced"));
+  t.ok(outputs[0].preamble.includes("---@class Engine.Unsynced"));
   t.end();
 });
 
@@ -118,7 +118,7 @@ test("projectOutputs: mixed Spring buckets produce three files", (t) => {
   const docsA = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.GiveOrderToUnit
+       * @function Engine.Synced.GiveOrderToUnit
        */
     `,
     "a.cpp"
@@ -126,7 +126,7 @@ test("projectOutputs: mixed Spring buckets produce three files", (t) => {
   const docsB = parseDocs(
     dedent`
       /***
-       * @function SpringUnsynced.GetMouseState
+       * @function Engine.Unsynced.GetMouseState
        */
     `,
     "b.cpp"
@@ -134,7 +134,7 @@ test("projectOutputs: mixed Spring buckets produce three files", (t) => {
   const docsC = parseDocs(
     dedent`
       /***
-       * @function SpringShared.GetUnitPosition
+       * @function Engine.Shared.GetUnitPosition
        */
     `,
     "c.cpp"
@@ -153,7 +153,7 @@ test("projectOutputs: same bucket across files merges into one output", (t) => {
   const docsA = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.Foo
+       * @function Engine.Synced.Foo
        */
     `,
     "a.cpp"
@@ -161,7 +161,7 @@ test("projectOutputs: same bucket across files merges into one output", (t) => {
   const docsB = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.Bar
+       * @function Engine.Synced.Bar
        */
     `,
     "b.cpp"
@@ -180,17 +180,17 @@ test("projectOutputs: same bucket across files merges into one output", (t) => {
 test("projectOutputs: preamble dedup (one @class per bucket even across docs)", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringSynced.Foo
+     * @function Engine.Synced.Foo
      */
 
     /***
-     * @function SpringSynced.Bar
+     * @function Engine.Synced.Bar
      */
   `);
   const outputs = projectOutputs([["a.cpp", docs]]);
   t.equal(outputs.length, 1);
-  // `---@class SpringSynced` should appear once in the preamble, not twice.
-  const matches = outputs[0].preamble.match(/---@class SpringSynced/g) ?? [];
+  // `---@class Engine.Synced` should appear once in the preamble, not twice.
+  const matches = outputs[0].preamble.match(/---@class Engine.Synced/g) ?? [];
   t.equal(matches.length, 1);
   t.end();
 });
@@ -201,7 +201,7 @@ test("lintDuplicateDeclarations: flags same @function in two files", (t) => {
   const docsA = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.Foo
+       * @function Engine.Synced.Foo
        */
     `,
     "a.cpp"
@@ -209,7 +209,7 @@ test("lintDuplicateDeclarations: flags same @function in two files", (t) => {
   const docsB = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.Foo
+       * @function Engine.Synced.Foo
        */
     `,
     "b.cpp"
@@ -219,7 +219,7 @@ test("lintDuplicateDeclarations: flags same @function in two files", (t) => {
     ["b.cpp", docsB],
   ]);
   t.equal(errors.length, 1);
-  t.ok(errors[0].includes("SpringSynced.Foo"));
+  t.ok(errors[0].includes("Engine.Synced.Foo"));
   t.ok(errors[0].includes("a.cpp"));
   t.ok(errors[0].includes("b.cpp"));
   t.end();
@@ -228,11 +228,11 @@ test("lintDuplicateDeclarations: flags same @function in two files", (t) => {
 test("lintDuplicateDeclarations: ignores same @function duplicated in one file", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringSynced.Foo
+     * @function Engine.Synced.Foo
      */
 
     /***
-     * @function SpringSynced.Foo
+     * @function Engine.Synced.Foo
      */
   `);
   const errors = lintDuplicateDeclarations([["a.cpp", docs]]);
@@ -269,7 +269,7 @@ test("lintDuplicateDeclarations: silent when all names are unique", (t) => {
   const docsA = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.Foo
+       * @function Engine.Synced.Foo
        */
     `,
     "a.cpp"
@@ -277,7 +277,7 @@ test("lintDuplicateDeclarations: silent when all names are unique", (t) => {
   const docsB = parseDocs(
     dedent`
       /***
-       * @function SpringSynced.Bar
+       * @function Engine.Synced.Bar
        */
     `,
     "b.cpp"
@@ -295,7 +295,7 @@ test("lintDuplicateDeclarations: silent when all names are unique", (t) => {
 test("removeContextAttributes: strips stray @env", (t) => {
   const docs = parseDocs(dedent`
     /***
-     * @function SpringSynced.Foo
+     * @function Engine.Synced.Foo
      * @env synced
      */
   `);
@@ -457,12 +457,12 @@ test("projectOutputs: non-Spring table with @env unsynced routes to unsynced.lua
   t.end();
 });
 
-test("projectOutputs: Spring prefix wins over @env fallback", (t) => {
+test("projectOutputs: Engine bucket prefix wins over @env fallback", (t) => {
   const docs = parseDocs(dedent`
     /*** @env unsynced */
 
     /***
-     * @function SpringSynced.Foo
+     * @function Engine.Synced.Foo
      */
   `);
   const entries: [string, Doc[]][] = [["a.cpp", docs]];

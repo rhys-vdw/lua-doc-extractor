@@ -102,9 +102,9 @@ export function applyFileContexts(
 }
 
 // Each doc that declares a table method has a qualified name like
-// `SpringSynced.GiveOrderToUnit` — the first identifier is the "table name",
-// the rest is the method path. Used both for output-file grouping and for
-// duplicate-declaration linting.
+// `Engine.Synced.GiveOrderToUnit` — everything but the last identifier is the
+// "table name" (`Engine.Synced`), the last is the method. Used both for
+// output-file grouping and for duplicate-declaration linting.
 const NAME_ATTR_TYPES = [
   "function",
   "table",
@@ -121,12 +121,12 @@ export function getDocTableName(doc: Doc): string | null {
         return (attr as TableAttribute | EnumAttribute).args.name[0] ?? null;
       case "function": {
         const name = (attr as FunctionAttribute).args.name;
-        return name.length > 1 ? name[0] : null;
+        return name.length > 1 ? name.slice(0, -1).join(".") : null;
       }
       case "global":
       case "field": {
         const name = (attr as GlobalAttribute | FieldAttribute).args.name;
-        return name.length > 1 ? name[0] : null;
+        return name.length > 1 ? name.slice(0, -1).join(".") : null;
       }
     }
   }
@@ -142,31 +142,31 @@ function getDocQualifiedName(doc: Doc): string | null {
   return null;
 }
 
-// Authors declare Spring API methods under one of three top-level tables;
-// each maps to its own output stub file. Tables outside this set (MoveCtrl,
-// UnitScript, etc.) fall through to `shared.lua` — they're accessible in
-// every Lua context.
+// Authors declare engine API methods under one of three buckets nested in the
+// `Engine` namespace; each maps to its own output stub file. Tables outside
+// this set (MoveCtrl, UnitScript, etc.) fall through to `shared.lua` — they're
+// accessible in every Lua context.
 const SPRING_OUTPUTS: ReadonlyMap<string, { file: string; preamble: string }> =
   new Map([
     [
-      "SpringShared",
+      "Engine.Shared",
       {
         file: "shared.lua",
-        preamble: "---@class SpringShared\nSpringShared = {}",
+        preamble: "---@class Engine.Shared\nEngine.Shared = {}",
       },
     ],
     [
-      "SpringSynced",
+      "Engine.Synced",
       {
         file: "synced.lua",
-        preamble: "---@class SpringSynced\nSpringSynced = {}",
+        preamble: "---@class Engine.Synced\nEngine.Synced = {}",
       },
     ],
     [
-      "SpringUnsynced",
+      "Engine.Unsynced",
       {
         file: "unsynced.lua",
-        preamble: "---@class SpringUnsynced\nSpringUnsynced = {}",
+        preamble: "---@class Engine.Unsynced\nEngine.Unsynced = {}",
       },
     ],
   ]);
