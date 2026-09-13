@@ -81,7 +81,7 @@ methodIdentifier -> fieldIdentifier ":" identifier {%
     }
   %}
 
-indexKey -> "[" _ %literal _ "]" {% (ds) => ds.join('') %}
+indexKey -> "[" _ (%literal | identifier) _ "]" {% ([,,id]) => `[${id}]` %}
 
 paramName ->
     identifier {% id %}

@@ -147,6 +147,42 @@ testInput(
 );
 
 testInput(
+  "Class with index-style integer keys (issue #79)",
+  dedent`
+    /***
+     * @class Bad
+     * @field n integer
+     * @field [integer] string
+     */
+  `,
+  dedent`
+    ---@class Bad
+    ---@field n integer
+    ---@field [integer] string
+    local Bad = {}
+  `
+);
+
+testInput(
+  "Class with arbitrary index-style key identifiers",
+  dedent`
+    /***
+     * @class Example
+     * @field [string] number A named key type.
+     * @field [ CustomKey ] string A custom key type.
+     * @field [intger] boolean An unvalidated key type.
+     */
+  `,
+  dedent`
+    ---@class Example
+    ---@field [string] number A named key type.
+    ---@field [CustomKey] string A custom key type.
+    ---@field [intger] boolean An unvalidated key type.
+    local Example = {}
+  `
+);
+
+testInput(
   "Class with nested tables",
   dedent`
     /***
