@@ -170,7 +170,9 @@ async function runAsync() {
     error(envErrors.join("\n"));
   }
 
-  const srcFiles = await glob(src);
+  // The glob walks asynchronously, so its order is not stable; merged outputs
+  // (`--file`, `--env`) take the files in path order.
+  const srcFiles = (await glob(src)).sort();
 
   if (srcFiles.length === 0) {
     error("No source files provided.");
