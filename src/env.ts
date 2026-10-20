@@ -1,4 +1,4 @@
-import { DefaultAttribute } from "./attribute";
+import { createAttribute } from "./attribute";
 import { Doc, filterAttributes, hasAttribute, removeAttributes } from "./doc";
 
 // `@env` names the Lua environments (handles) a doc's subject is registered
@@ -29,17 +29,12 @@ function isFileLevelEnvDoc(doc: Doc): boolean {
   );
 }
 
-// Parse a doc's `@env` attribute list into a set of env names. The attribute
-// grammar carries comma-separated values in `description` (e.g.
-// `@env server, client`).
+// The env names a doc carries, deduplicated across its `@env` attributes
+// (e.g. `@env server, client`).
 export function getDocEnvs(doc: Doc): string[] {
-  const envAttrs = filterAttributes(doc, "env") as DefaultAttribute[];
   const envs = new Set<string>();
-  for (const attr of envAttrs) {
-    for (const part of attr.args.description.split(",")) {
-      const trimmed = part.trim();
-      if (trimmed) envs.add(trimmed);
-    }
+  for (const attr of filterAttributes(doc, "env")) {
+    for (const name of attr.args.names) envs.add(name);
   }
   return [...envs];
 }
@@ -76,12 +71,9 @@ export function applyFileEnvs(
     if (fileEnvs.length === 0) continue;
     for (const doc of docs) {
       if (hasAttribute(doc, "env")) continue;
-      for (const env of fileEnvs) {
-        doc.attributes.push({
-          attributeType: "env",
-          args: { description: env },
-        });
-      }
+      doc.attributes.push(
+        createAttribute("env", { names: fileEnvs, description: "" }),
+      );
     }
   }
   return errors;

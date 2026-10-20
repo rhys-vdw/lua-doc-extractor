@@ -10,6 +10,7 @@ import {
   removeEnvAttributes,
 } from "../env";
 import { Doc } from "../doc";
+import { formatAttribute, isAttribute } from "../attribute";
 
 const perFile = (path: string) => `${path}.lua`;
 
@@ -258,6 +259,26 @@ test("removeEnvAttributes: strips stray @env", (t) => {
   removeEnvAttributes(docs);
   const hasEnv = docs[0].attributes.some((a) => a.attributeType === "env");
   t.notOk(hasEnv);
+  t.end();
+});
+
+// --- the attribute ---
+
+test("@env: parsed names, a continuation line is description, never formatted", (t) => {
+  const docs = parseDocs(dedent`
+    /***
+     * @function Foo.Bar
+     * @env server, client
+     * only on the two
+     */
+  `);
+  const env = docs[0].attributes.find((a) => a.attributeType === "env");
+  t.ok(env);
+  if (env && isAttribute(env, "env")) {
+    t.deepEqual(env.args.names, ["server", "client"]);
+    t.equal(env.args.description.trim(), "only on the two");
+    t.equal(formatAttribute(env), "");
+  }
   t.end();
 });
 
