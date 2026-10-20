@@ -7,6 +7,7 @@ export const docLexer = moo.states({
       type: keywords({
         classAttr: "@class",
         enumAttr: "@enum",
+        envAttr: "@env",
         fieldAttr: "@field",
         globalAttr: "@global",
         tableAttr: "@table",

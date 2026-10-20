@@ -6,6 +6,7 @@ export type Attribute = KnownAttribute | DefaultAttribute;
 export type KnownAttribute =
   | ClassAttribute
   | EnumAttribute
+  | EnvAttribute
   | FieldAttribute
   | FunctionAttribute
   | GlobalAttribute
@@ -46,6 +47,11 @@ export interface TableAttribute extends BaseAttribute {
     name: readonly string[];
     description: string;
   };
+}
+
+export interface EnvAttribute extends BaseAttribute {
+  attributeType: "env";
+  args: { names: readonly string[]; description: string };
 }
 
 export interface ClassAttribute extends BaseAttribute {
@@ -93,6 +99,7 @@ function format(attr: string, ...rest: string[]) {
 export function formatAttribute(attribute: Readonly<Attribute>): string {
   const known = attribute as KnownAttribute;
   switch (known.attributeType) {
+    case "env":
     case "global":
     case "function":
     case "table":

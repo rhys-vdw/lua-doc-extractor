@@ -44,6 +44,9 @@ attribute ->
       attr("return", { type, description } as any)
     %}
   | fieldAttr {% id %}
+  | %envAttr __ envNames _ eol lines {% ([,, names,,, description]) =>
+      attr("env", { names, description })
+    %}
   | %attribute lines {% ([a, description]) =>
       attr(a.value, { description })
     %}
@@ -82,6 +85,10 @@ methodIdentifier -> fieldIdentifier ":" identifier {%
   %}
 
 indexKey -> "[" _ (%literal | identifier) _ "]" {% ([,,id]) => `[${id}]` %}
+
+envNames ->
+    identifier {% ([name]) => [name] %}
+  | identifier _ "," _ envNames {% ([name,,,, rest]) => [name, ...rest] %}
 
 paramName ->
     identifier {% id %}

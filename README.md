@@ -104,6 +104,12 @@ To add GitHub source links to the exported library. Provide the `--repo` argumen
 $ lua-doc-extractor **/*.cpp --dest library --repo https://github.com/beyond-all-reason/spring/blob/62ee0b4/
 ```
 
+To split the output by the environments a doc's subject is registered in, tag the docs with [`@env`](#env) and route each set of names to a file with `--env`. Docs without a tag are written as before.
+
+```sh
+$ lua-doc-extractor **/*.cpp --dest library --env synced=synced.lua --env unsynced=unsynced.lua --env synced,unsynced=shared.lua
+```
+
 ### Comments
 
 Lua docs in document comment blocks (`/*** <docs> */`) will be parsed.
@@ -174,6 +180,27 @@ Defines a global table marked with the `@enum` attribute. Entries can be added w
 ```
 
 Defines a class. Fields can be added with [`@field`](#field), methods can be added with [`@function`](#function).
+
+#### `@env`
+
+```
+@env <name>[, <name>...]
+```
+
+Names the environments (Lua states, handles) the doc's subject is registered in. It is not written to the output: it routes the doc to the file given for that exact set of names by `--env`, and is dropped when no `--env` is given. A doc that holds only `@env`, placed before every other doc in a file, tags the whole file; a doc's own `@env` overrides it.
+
+```c
+/*** @env unsynced */
+
+/***
+ * @function Spring.GetMouseState
+ */
+
+/***
+ * @function Spring.SendMessage
+ * @env synced, unsynced
+ */
+```
 
 ## Contributing
 

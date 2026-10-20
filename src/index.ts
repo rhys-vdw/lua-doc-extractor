@@ -1,4 +1,5 @@
 import { getComments } from "./comment";
+import { removeEnvAttributes } from "./env";
 import { Doc, formatDoc, getDoc, isDocEmpty, removeEmptyDocs } from "./doc";
 import { addTableToEnumFields, mergeEnumAttributes } from "./enum";
 import { renderStandaloneFields } from "./field";
@@ -17,7 +18,7 @@ export function addHeader(body: string, sources: string[]): string {
 
 export function getDocs(
   source: string,
-  path: string
+  path: string,
 ): Result<[Doc[], Error[]]> {
   const [comments, error] = getComments(source);
   if (error != null) {
@@ -45,6 +46,7 @@ function runProcessors(docs: Doc[], processors: readonly DocProcessor[]) {
 export function processDocs(docs: Doc[], repoUrl: string | null): Doc[] {
   return runProcessors(docs, [
     removeEmptyDocs,
+    removeEnvAttributes,
     appendSourceLinks(repoUrl),
     processGlobals,
     addTables,

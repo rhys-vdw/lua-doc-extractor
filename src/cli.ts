@@ -10,6 +10,7 @@ import { dirname, join, relative } from "path";
 import { cwd } from "process";
 import { addHeader, formatDocs, getDocs, processDocs } from ".";
 import project from "../package.json";
+import { applyFileEnvs, parseEnvOutputs, projectOutputs } from "./env";
 import { Doc } from "./doc";
 import { toResultAsync } from "./result";
 
@@ -21,6 +22,7 @@ interface Options {
   error?: boolean;
   repo?: string;
   file?: string;
+  env: string[];
 }
 const optionList = [
   {
@@ -55,6 +57,21 @@ const optionList = [
     typeLabel: "{underline filename}",
     description:
       "If provided, all output will be written to a single file with this name.\n",
+  },
+  {
+    name: "env",
+    type: String,
+    multiple: true,
+    defaultValue: [],
+    typeLabel: "{underline name[,name...]=file}",
+    description: dedent`
+      Write the docs tagged {yellow @env} with exactly these names to this file (relative to --dest). May be repeated. Docs without a tag go where they always go.
+
+      For example:
+
+      {yellow --env synced=synced.lua --env unsynced=unsynced.lua --env synced,unsynced=shared.lua}
+
+    `,
   },
   {
     name: "repo",
@@ -112,11 +129,11 @@ function printUsage() {
       {
         header: "{white Usage}",
         content: [usageNote, ...examples.map((e) => chalk.yellow(e))].join(
-          "\n"
+          "\n",
         ),
       },
       { header: "{white Options}", optionList },
-    ])
+    ]),
   );
 }
 
@@ -134,6 +151,7 @@ async function runAsync() {
     version,
     repo,
     file,
+    env,
     error: enableErrorCode,
   } = options;
 
@@ -147,7 +165,14 @@ async function runAsync() {
     process.exit(0);
   }
 
-  const srcFiles = await glob(src);
+  const [envOutputs, envErrors] = parseEnvOutputs(env);
+  if (envErrors.length > 0) {
+    error(envErrors.join("\n"));
+  }
+
+  // The glob walks asynchronously, so its order is not stable; merged outputs
+  // (`--file`, `--env`) take the files in path order.
+  const srcFiles = (await glob(src)).sort();
 
   if (srcFiles.length === 0) {
     error("No source files provided.");
@@ -158,7 +183,7 @@ async function runAsync() {
   const processed = await Promise.all(
     srcFiles.map(async (path) => {
       const [file, fileError] = await toResultAsync(() =>
-        readFile(path, "utf8")
+        readFile(path, "utf8"),
       );
 
       if (fileError != null) {
@@ -189,33 +214,32 @@ async function runAsync() {
       }
 
       return [path, docs] as const;
-    })
+    }),
   );
 
-  const valid = processed.filter((e) => e != null);
+  const valid = processed.filter((e) => e != null) as [string, Doc[]][];
+
+  errors.push(...applyFileEnvs(valid));
+  const defaultOutput =
+    file === undefined
+      ? (path: string) => `${relative(cwd(), path)}.lua`
+      : () => file;
+  const [outputs, outputErrors] = projectOutputs(
+    valid,
+    envOutputs,
+    defaultOutput,
+  );
+  errors.push(...outputErrors);
 
   console.log(chalk`\n{bold.underline Writing output:}\n`);
 
-  if (file === undefined) {
-    // Multi-file output.
-    await Promise.all(
-      valid.map(async ([path, ds]) => {
-        const rel = relative(cwd(), path);
-        const outPath = join(dest, `${rel}.lua`);
-        if (ds.length > 0) {
-          await writeLibraryFile(ds, outPath, repo, [path]);
-        }
-      })
-    );
-  } else {
-    // Single-file output.
-    const outPath = join(dest, file);
-    const sources = valid.map(([path]) => path);
+  for (const output of outputs) {
+    if (output.docs.length === 0) continue;
     await writeLibraryFile(
-      valid.flatMap(([, ds]) => ds),
-      outPath,
+      output.docs,
+      join(dest, output.name),
       repo,
-      sources
+      output.sources,
     );
   }
 
@@ -233,7 +257,7 @@ async function writeLibraryFile(
   docs: Doc[],
   outPath: string,
   repo?: string,
-  sources: string[] = []
+  sources: string[] = [],
 ) {
   try {
     const formattedDocs = formatDocs(processDocs(docs, repo ?? null));
@@ -243,7 +267,7 @@ async function writeLibraryFile(
   } catch (e) {
     console.error(
       chalk`{bold.rgb(255, 0, 0) ERROR:} Could not write '{white ${outPath}}'\n\n`,
-      e
+      e,
     );
     process.exit(1);
   }
