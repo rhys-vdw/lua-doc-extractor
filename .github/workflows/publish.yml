@@ -1,8 +1,9 @@
 name: Publish Package to npmjs
-run-name: ${{ inputs.tag || github.event.release.tag_name }}
+run-name: ${{ inputs.tag || github.ref_name }}
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       tag:
@@ -18,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22.x"
