@@ -2,6 +2,12 @@ name: Publish Package to npmjs
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to publish (for example, v3.4.0)"
+        required: true
+        type: string
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,12 +16,13 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      # Setup .npmrc file to publish to npm
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22.x"
           registry-url: "https://registry.npmjs.org"
+      # Ensure npm supports trusted publishing through GitHub Actions OIDC.
+      - run: npm install --global npm@11
       - run: npm ci
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
