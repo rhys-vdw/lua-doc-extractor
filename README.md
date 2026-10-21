@@ -1,5 +1,6 @@
 # lua-doc-extractor
 
+[![npm](https://img.shields.io/npm/v/lua-doc-extractor.svg?style=flat-square)](https://www.npmjs.com/package/lua-doc-extractor)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 Extracts lua documentation from C-style comments.
